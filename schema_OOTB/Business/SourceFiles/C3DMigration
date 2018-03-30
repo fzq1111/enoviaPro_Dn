@@ -1,0 +1,27 @@
+/*
+**  ${CLASSNAME}.java
+**
+**  Copyright Dassault Systemes, 1992-2015.
+**  All Rights Reserved.
+**  This program contains proprietary and trade secret information of Dassault Systemes and its 
+**  subsidiaries, Copyright notice is precautionary only
+**  and does not evidence any actual or intended publication of such program
+**
+**	This JPO will take care of migration of C3D specific data generated on releases prior to R2015x
+**  to R2015x server.
+*/
+import matrix.db.Context;
+
+public class ${CLASSNAME} extends ${CLASS:C3DMigrationBase}
+	{
+    public ${CLASSNAME}(Context context) {
+        super(context);
+    }
+
+	public ${CLASSNAME}()
+   {
+		super();		
+   }
+}
+
+

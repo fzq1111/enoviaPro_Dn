@@ -1,0 +1,198 @@
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.RelationshipType;
+import matrix.db.State;
+import matrix.util.StringList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import org.apache.log4j.Logger;
+public class ${CLASSNAME} 
+{
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	StringList busList = new StringList("id");
+    StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	private static final int slash =92;
+    public ${CLASSNAME}(Context context, String[] args)throws Exception
+    {
+    }
+    public MapList getSEMCostRequest(Context context, String[] args)
+			throws Exception {
+		MapList returnMapList=new MapList();
+    	try{	
+    		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+    		String objectId = (String)paramMap.get("objectId");
+		     DomainObject projectObj = new DomainObject(objectId);
+		     String strAttrValue = projectObj.getAttributeValue(context, "SEM Budget Code");
+		      String costItemName=FrameworkProperties.getProperty(context,"SEM.CostItem.Name");
+		      String where="name=='"+costItemName.trim()+"'";
+		      
+		      MapList mapList=DomainObject.findObjects(context,"Cost Item","*",where,busList);
+				
+		      if(mapList!= null && mapList.size()>0) {
+				Map TempMap = (Map)mapList.get(0);
+				String ciId=(String) TempMap.get("id");
+				DomainObject ciObj = DomainObject.newInstance(context, ciId);
+				ciObj.open(context);
+				//String strWhere = "attribute[SEM Budget Number]~~'*"+strAttrValue+"*'";
+				MapList requestList=ciObj.getRelatedObjects(context,"SEM CostRequest Budget",
+						"SEM Cost Request", busList, relList,false, true,
+						(short)1, "", null);
+				Iterator it = requestList.iterator();
+				while(it.hasNext())
+				{
+					Map requestMap = (Map)it.next();
+					String requestId = (String)requestMap.get("id");
+					DomainObject requestObj = new DomainObject(requestId);
+					String requestAttrValue = requestObj.getAttributeValue(context, "SEM Budget Number");
+					if(requestAttrValue.length()>2)
+					{
+						requestAttrValue = requestAttrValue.substring(requestAttrValue.length()-2,requestAttrValue.length());
+
+						if(requestAttrValue.equals(strAttrValue))
+						{
+							returnMapList.add(requestMap);
+						}
+					}
+					
+				}
+				
+		      }
+        }catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+			throw e;
+    	}
+		return returnMapList;
+	}
+    public StringList getCurrentProjectSpace(Context context,String[] args)throws Exception
+	{
+		StringList projectList = new StringList();
+    	try{
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		String objectId = (String)paramMap.get("objectId");
+		DomainObject strProject = new DomainObject(objectId);
+		String preRows = (String)paramMap.get("preRows");
+		String[] splitRowIds = preRows.split(String.format("%c", slash)+"|");
+
+		for(int i = 0; i<splitRowIds.length;i++)
+		{
+			String rowIds[]=splitRowIds[i].split(",");
+			String rowId=rowIds[1];
+			if(rowId.length()>0)
+			{
+				DomainObject strObj = new DomainObject(rowId);
+				String strRequestCode = strObj.getAttributeValue(context,"SEM Budget Number");
+				String strRequestCodePre4="";
+				if(strRequestCode.length()>4){
+				  strRequestCodePre4 = strRequestCode.substring(0,4);
+				}else{
+				  strRequestCodePre4=strRequestCode;
+				}
+				String where = "attribute[SEM DepCode]=='"+strRequestCodePre4+"'";
+			    MapList mapList=DomainObject.findObjects(context,"Budget","*",where,busList);				
+
+				if(mapList.size()>0)
+				{
+					Iterator it = mapList.iterator();
+					while(it.hasNext()){
+						Map map = (Map)it.next();
+						String budgetId = (String)map.get("id");
+						DomainObject strBudget = new DomainObject(budgetId);
+						MapList projectList1 =strBudget.getRelatedObjects(context, "Project Financial Item,SEM Sub Budget", "Budget,Project Space", busList, relList, true, false, (short)0, "", null);
+                        boolean isRel = false;
+						Iterator ix = projectList1.iterator();
+						while(ix.hasNext())
+						{
+							Map map2 = (Map)ix.next();
+							String projectId = (String)map2.get("id");
+							if(projectId.equals(objectId))
+							{
+								isRel=true;
+							}
+						}
+						
+						if(isRel)
+						{
+							MapList mapList1 = strBudget.getRelatedObjects(context, "Financial Items", "Cost Item", busList, relList, false, true, (short)0, "", null);
+							Iterator ite = mapList1.iterator();
+							while(ite.hasNext())
+							{
+								Map map1 = (Map)ite.next();
+								String costItemId = (String)map1.get("id");
+								projectList.add(costItemId);
+							}
+						}
+					}
+				}
+			}
+		}
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    	}
+		return projectList;
+	}
+    public MapList getProjectCostItem(Context context,String[] args)throws Exception
+	{
+		MapList includeIdList = new MapList();
+		try{
+			HashMap hashMap = (HashMap)JPO.unpackArgs(args);
+	 		String projectId = (String)hashMap.get("objectId");
+	 		DomainObject projectObj = new DomainObject(projectId);
+	 		MapList mapList= projectObj.getRelatedObjects(context,"Project Financial Item,SEM Sub Budget,Financial Items","Budget,Cost Item", busList, relList,false, true, (short)3,null, null);
+	 		Iterator items=mapList.iterator();
+	 		while(items.hasNext()){
+	 			Map map=(Map) items.next();
+	 			DomainObject obj=new DomainObject((String)map.get("id"));
+	 			if(!obj.getType(context).equals("Cost Item")){
+	 				map.put("disableSelection", "true");
+	 			}
+	 			includeIdList.add(map);
+	 		}
+	 		
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		includeIdList.add(0, includeIdList.size() - 1); 
+		return includeIdList;
+	}
+    //cost item related Task
+	public MapList getSEMRelatedTask(Context context,String[] args)throws Exception
+	{
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		String objectId = (String)paramMap.get("objectId");
+		DomainObject strTaskObj = new DomainObject(objectId);		
+		MapList mapList = strTaskObj.getRelatedObjects(context,"Affected Item","Task Management",busList,relList,false,true,(short)1,"","");
+		return mapList;
+	}
+	public StringList includeProjectSpace(Context context,String[] args)throws Exception
+	{
+		StringList includeIdList = new StringList();
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		String objectId = (String)paramMap.get("objectId");
+		System.out.println("objectId--"+objectId);
+		try{
+		  DomainObject costitemObj = new DomainObject(objectId);
+ 		  MapList mapList=costitemObj.getRelatedObjects(context,"Financial Items,SEM Sub Budget,Project Financial Item","Budget,Project Space", busList, relList,true,false, (short)3,null, null);
+ 		  Iterator items=mapList.iterator();
+ 		  while(items.hasNext()){
+ 			Map map=(Map) items.next();
+ 			String id=(String)map.get("id");
+ 			DomainObject obj=new DomainObject(id);
+ 			if(obj.getType(context).equals("Project Space")){
+ 				includeIdList.add(id);
+ 			}
+ 		  }
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+ 		return includeIdList;
+	}
+}
+
+

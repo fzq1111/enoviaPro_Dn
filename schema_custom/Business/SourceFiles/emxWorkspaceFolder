@@ -1,0 +1,85 @@
+/*
+ *  emxWorkspaceFolder.java
+ *
+ * Copyright (c) 1992-2015 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ */
+import matrix.db.*;
+import matrix.util.StringList;
+
+import java.lang.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+import com.matrixone.apps.framework.ui.UIUtil;
+/**
+ * @version AEF Rossini - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxWorkspaceFolderBase}
+{
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF Rossini
+     * @grade 0
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+        super(context, args);
+    }
+    public static String getDepartmentDisplayName(Context context, String[] args) throws Exception
+	{
+		String lable = "";
+		try
+		{
+
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			HashMap paramMap=(HashMap)programMap.get("paramMap");
+			String oid = (String)paramMap.get("objectId");
+			String relId = (String)paramMap.get("relId");
+			DomainObject obj = DomainObject.newInstance(context, oid);
+			StringList selects = new StringList(4);
+			selects.add(SELECT_ATTRIBUTE_COUNT);
+			selects.add(SELECT_NAME);
+			Map objMap = obj.getInfo(context, selects);
+
+			String languageStr = (String)paramMap.get("languageStr");
+			String stringResFileId = "emxTeamCentralStringResource";
+			String linked = EnoviaResourceBundle.getProperty(context,stringResFileId,new Locale(languageStr),"emxTeamCentral.Common.Linked");
+
+			String name = (String) objMap.get(SELECT_NAME);
+			String count = (String) objMap.get(SELECT_ATTRIBUTE_COUNT);
+			lable = name;
+			if(! UIUtil.isNullOrEmpty(relId) && ! relId.equalsIgnoreCase("undefined")) 
+			{
+				DomainRelationship rel = new DomainRelationship(relId);
+				rel.open(context);
+				String relName = rel.getRelationshipType().getName();
+				if( "Department".equals(relName) )
+				{
+					lable = lable + "("+ linked +")";
+				}
+				rel.close(context);
+			}
+		
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return lable;
+  	}
+}
+

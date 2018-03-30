@@ -1,0 +1,18 @@
+import matrix.db.Context;
+
+
+public class ${CLASSNAME} extends ${CLASS:emxCurrencyConversionBase}{
+	 /**
+    *
+    * @param context the eMatrix <code>Context</code> object
+    * @param args holds no arguments
+    * @throws Exception if the operation fails  
+    */
+   public ${CLASSNAME} (Context context, String[] args)
+       throws Exception
+   {
+     super(context, args);
+   }
+	
+}
+

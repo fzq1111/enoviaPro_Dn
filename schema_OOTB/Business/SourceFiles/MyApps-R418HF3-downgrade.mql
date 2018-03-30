@@ -1,0 +1,18 @@
+tcl;
+eval {
+	puts "Start MyApps HF3 downgrade"
+
+	mql del prog MyAppsCustomRoleIcon;
+	mql del prog MyAppsPushDump;
+
+	mql mod type "Invitation Notification" rem attribute "Sent Time";
+	
+	mql del attribute "Sent Time";
+	
+	puts "End MyApps HF3 downgrade"
+	exit 0
+}
+
+
+
+

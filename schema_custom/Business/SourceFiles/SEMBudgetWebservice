@@ -1,0 +1,868 @@
+import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
+
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.MapList;
+import org.apache.log4j.Logger;
+import matrix.db.Context;
+import matrix.util.MatrixException;
+import matrix.util.MatrixService;
+import matrix.util.MatrixWrappedService;
+import matrix.util.StringList;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.json.JSONArray;
+import com.matrixone.json.JSONObject;
+
+
+public class ${CLASSNAME} implements MatrixService
+{
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	public ${CLASSNAME}()
+	{
+		
+	}
+	public void conUser(Context context, String user, String password)
+			throws Exception {
+		if (null != user) {
+			user = user.trim();
+		}
+		if (user =="") {
+			throw new Exception("User name cannot be  empty.");
+		}
+		if(user.equalsIgnoreCase("creator")) {
+			throw new Exception("Must not be creator user.");
+		}
+		context.setUser(user);
+		context.setPassword(password);
+		context.connect();
+		if (!context.isConnected()) {
+			throw new Exception("The user or password error.");
+		}
+	}
+
+	public void disContext(Context context) {
+		try {
+			context.shutdown();
+		} catch (MatrixException e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}
+	
+	StringList  busList = new StringList("id");	
+	
+	public String openProjectId = "";
+	StringList relList = new StringList(DomainRelationship.SELECT_ID);
+    
+	public String getCostItemsFromPM(String sBudgetCode)throws Exception
+	{
+		String returnValue = "";
+		Context context = ContextUtil.getAnonymousContext();
+		JSONArray returnJson = new JSONArray();
+		JSONObject costItemJson = null;
+		JSONObject resultJson = null;
+		try{			
+			conUser(context, "pmadmin", "Sem999");
+			StringList projectIdList = getProjectIdList(context,sBudgetCode);
+			if(projectIdList.size()>0)
+			{
+
+				boolean isLockProject = projectIsLock(context,sBudgetCode);			
+				if(isLockProject)
+				{
+					
+					returnJson = getSpecialCostItemInfo(context);				
+					returnValue=  returnJson.toString();	
+				}else{
+					
+					returnValue = getCostItem(context,sBudgetCode);
+				}
+			}else{
+				if(sBudgetCode.length()>0)
+				{
+					
+					String projectBudgetCode =  sBudgetCode.substring(sBudgetCode.length()-2,sBudgetCode.length());
+					String sMsg = "\u672A\u627E\u5230\u9884\u7B97\u7801\u4E3A\uFF1A"+projectBudgetCode+"\u7684\u9879\u76EE\u3002";
+					resultJson  = new JSONObject();
+					resultJson.put("sResult","F");
+					resultJson.put("sMsg",sMsg);
+					returnJson.put(resultJson);
+					returnValue = returnJson.toString();
+				}
+			}
+										
+		}catch(Exception e){
+			String msg = e.getMessage();
+			resultJson  = new JSONObject();
+			resultJson.put("sResult","F");			
+			resultJson.put("sMsg",msg);
+			returnJson.put(resultJson);
+			returnValue=  returnJson.toString();				
+			m_logger.error(e.getMessage(), e);
+		}finally {
+			disContext(context);
+		}
+		return returnValue;
+	}
+	
+	public String createCostRequestInPM(String sRequest)throws Exception
+	{
+		String returnValue = "";
+		Context context = ContextUtil.getAnonymousContext();
+		JSONArray returnArray = new JSONArray();
+        JSONObject returnObj = new JSONObject();
+		try{			
+			conUser(context, "pmadmin", "Sem999");
+			String testJson = "" ; 
+			JSONArray TestJson = new JSONArray(); 						
+			testJson = TestJson.toString();
+	        JSONArray costJsonArray = new JSONArray(sRequest);	        
+            for (int j = 0; j < costJsonArray.length(); j++) 
+            {
+            	JSONObject jsonObj = costJsonArray.getJSONObject(j);
+            	String strRC = jsonObj.getString("RequestCode");
+            	String strRP = jsonObj.getString("RequestPerson");
+            	String strRD = jsonObj.getString("RequestDesc");
+            	String strBC = jsonObj.getString("BudgetCode");
+            	String strCostItemID = jsonObj.getString("CostItemID");
+            	String strRequestAmount = jsonObj.getString("RequestAmount");
+            	String strContractAmount = jsonObj.getString("ContractAmount");
+            	String strPayAmount = jsonObj.getString("PayAmount");
+            	String strCostItemType = jsonObj.getString("CostItemType");
+
+            	Map attrMap = new HashMap();
+            	attrMap.put("SEM RequestCode",strRC);
+            	attrMap.put("SEM Requestor",strRP);
+            	attrMap.put("SEM Budget Number",strBC);
+            	attrMap.put("SEM Request Amount",strRequestAmount);
+            	attrMap.put("SEM Contract Amount",strContractAmount);
+            	attrMap.put("SEM Pay Amount",strPayAmount);
+            	
+            	
+            	String strYear =  "20"+strRC.substring(0,2);
+            	attrMap.put("Year",strYear);
+            	attrMap.put("SEM CostRequest Category",strCostItemType);
+            	boolean isSpecial=false;
+           	
+            	DomainObject costItemObj = new DomainObject();
+            
+        		costItemObj = new DomainObject(strCostItemID);           		
+        		StringList projectIdList = getProjectIdList(context,strBC);
+        		
+        		boolean projectIsLock = projectIsLock(context,strBC);
+        		String strName = costItemObj.getName(context);
+        		if(projectIsLock || strName.equals("99999999"))
+        		{
+        			strCostItemID = getSpecialCostItem(context);
+        			costItemObj = new DomainObject(strCostItemID);  
+            		isSpecial=true;
+        		}
+        	
+            	
+
+            	DomainObject cqObj = new DomainObject();
+            	String strWhere="attribute[SEM RequestCode]=='"+strRC+"'";
+        		MapList costRequestList = DomainObject.findObjects(context,"SEM Cost Request","*","*",null,null,strWhere,null,true,busList,(short)0);        			
+        		if(costRequestList.size()==0)
+            	{
+	            	MapList numberList = DomainObject.findObjects(context, "eService Number Generator", "type_SEMCostRequest", "*", null, null, null, null, true, busList,(short)0);
+	            	String numberId="";
+	            	if(numberList!=null && numberList.size()>0)
+					{    					
+						Iterator costItemIt = numberList.iterator();
+						while(costItemIt.hasNext())
+						{
+							Map costMap = (Map)costItemIt.next();
+							numberId = (String)costMap.get("id");
+						}
+					}	
+	
+	            	DomainObject genObj = new DomainObject(numberId);
+			    	String techNextNumber 		= genObj.getInfo(context, "attribute[eService Next Number]");
+			    	String eServiceNumber 		= String.valueOf(Integer.parseInt(techNextNumber)+1);
+		    		int techNumberLength 	 	= eServiceNumber.length();	    		
+			    	for(int i = 0; i < 7 - techNumberLength; i ++)
+			    	{
+			    		eServiceNumber 			=  "0" + eServiceNumber;
+			    	}
+			    	ContextUtil.pushContext(context);
+				  	genObj.setAttributeValue(context, "eService Next Number",eServiceNumber);
+				  	ContextUtil.popContext(context);			  	
+	
+				  	String cqName    		=  "CQ-" + techNextNumber;
+			    	
+			    	//create cost request;
+					ContextUtil.startTransaction(context, true);
+			    	cqObj.createObject(context, "SEM Cost Request", cqName, "-", "SEM Cost Request", "eService Production");
+			    	cqObj.setAttributeValues(context,attrMap);
+			    	cqObj.setDescription(context,strRD);
+			    	//build relationship;
+			    	if(isSpecial)
+			    	{
+			    		ContextUtil.commitTransaction(context);
+				    	DomainRelationship rel = costItemObj.connectTo(context,"SEM CostRequest Budget",cqObj); 
+				    	returnObj.put("sResult","S");
+				    	returnArray.put(returnObj);
+				    	returnValue = returnArray.toString();
+			    	}else{
+			    		double dBalance =  getBalanceFromCostItem(context,strCostItemID); 
+			    		double dRequestAmount = Double.parseDouble(strRequestAmount);
+			    		double dContractAmount = Double.parseDouble(strContractAmount);	
+			    		
+			    		double reValue =0;
+			    		if(dContractAmount==0.0 || dContractAmount==0)
+			    		{
+			    			reValue = dBalance-dRequestAmount;
+				    		
+			    		}else{
+			    		
+			    			reValue = dBalance-dContractAmount;
+			    		}
+			    		
+			    		if(reValue>=0)
+			    		{
+			    			ContextUtil.commitTransaction(context);
+					    	DomainRelationship rel = costItemObj.connectTo(context,"SEM CostRequest Budget",cqObj); 
+					    	returnObj.put("sResult","S");
+					    	returnArray.put(returnObj);
+					    	returnValue = returnArray.toString();
+			    		}else{
+			    			ContextUtil.abortTransaction(context);
+			    			returnObj.put("sResult","F");
+			    			returnObj.put("sMsg","\u4F59\u989D\u4E0D\u8DB3\u3002");
+			    	    	returnArray.put(returnObj);
+			    	    	returnValue = returnArray.toString();
+			    		}
+			    	}
+            	}else{
+            		Iterator costRequestIt = costRequestList.iterator();
+            		String costRequestId ="";
+    				while(costRequestIt.hasNext())
+    				{
+    					Map costRequestMap = (Map)costRequestIt.next();
+    					costRequestId = (String)costRequestMap.get("id");
+    				}
+
+    				cqObj.setId(costRequestId);
+    				MapList mapList = cqObj.getRelatedObjects(context, "SEM CostRequest Budget", "Cost Item", busList, relList, true, false, (short)1, null, null);
+    				if(mapList.size()>0)
+			    	{
+			    		
+			    		if(isSpecial)
+				    	{
+			    			for(int i = 0; i<mapList.size(); i++)
+							{
+								Map map = (Map)mapList.get(i);
+								String relId = (String)map.get("id[connection]");
+								DomainRelationship.disconnect(context, relId);
+							}			    			
+		    				cqObj.setAttributeValues(context,attrMap);
+					    	cqObj.setDescription(context,strRD);
+			    			DomainRelationship rel = costItemObj.connectTo(context,"SEM CostRequest Budget",cqObj); 
+					    	returnObj.put("sResult","S");
+					    	returnArray.put(returnObj);
+					    	returnValue = returnArray.toString();
+				    	}else{
+				    		ContextUtil.startTransaction(context, true);
+				    		cqObj.setAttributeValues(context,attrMap);
+					    	cqObj.setDescription(context,strRD);
+					    	for(int i = 0; i<mapList.size(); i++)
+							{
+								Map map = (Map)mapList.get(i);
+								String relId = (String)map.get("id[connection]");
+								DomainRelationship.disconnect(context, relId);
+							}
+				    		double dBalance =  getBalanceFromCostItem(context,strCostItemID); 
+				    		double dRequestAmount = Double.parseDouble(strRequestAmount);
+				    		double dContractAmount = Double.parseDouble(strContractAmount);	
+				    		
+				    		double reValue =0;
+				    		if(dContractAmount==0.0 || dContractAmount==0)
+				    		{
+				    			reValue = dBalance-dRequestAmount;
+					    		
+				    		}else{
+				    		
+				    			reValue = dBalance-dContractAmount;
+				    		}
+				    		
+				    		
+				    		if(reValue>=0)
+				    		{
+				    			
+				    			ContextUtil.commitTransaction(context);
+						    	DomainRelationship rel = costItemObj.connectTo(context,"SEM CostRequest Budget",cqObj); 
+						    	returnObj.put("sResult","S");
+						    	returnArray.put(returnObj);
+						    	returnValue = returnArray.toString();
+				    		}else{	
+				    			ContextUtil.abortTransaction(context);
+				    			returnObj.put("sResult","F");
+				    			returnObj.put("sMsg","\u4F59\u989D\u4E0D\u8DB3\u3002");
+				    	    	returnArray.put(returnObj);
+				    	    	returnValue = returnArray.toString();
+				    		}
+				    	}
+			    	}else{
+			    		if(isSpecial)
+				    	{
+			    			cqObj.setAttributeValues(context,attrMap);
+					    	cqObj.setDescription(context,strRD);
+			    			DomainRelationship rel = costItemObj.connectTo(context,"SEM CostRequest Budget",cqObj); 
+					    	returnObj.put("sResult","S");
+					    	returnArray.put(returnObj);
+					    	returnValue = returnArray.toString();
+				    	}else{
+				    		ContextUtil.startTransaction(context, true);
+				    		cqObj.setAttributeValues(context,attrMap);
+					    	cqObj.setDescription(context,strRD);	    						    		
+				    		double dBalance =  getBalanceFromCostItem(context,strCostItemID); 
+				    		double dRequestAmount = Double.parseDouble(strRequestAmount);
+				    		double dContractAmount = Double.parseDouble(strContractAmount);					    		
+				    		double reValue =0;
+				    		if(dContractAmount==0.0 || dContractAmount==0)
+				    		{
+				    			reValue = dBalance-dRequestAmount;
+					    		
+				    		}else{
+				    		
+				    			reValue = dBalance-dContractAmount;
+				    		}
+				    		
+				    		if(reValue>=0)
+				    		{
+				    			ContextUtil.commitTransaction(context);
+				    			
+						    	DomainRelationship rel = costItemObj.connectTo(context,"SEM CostRequest Budget",cqObj); 
+						    	returnObj.put("sResult","S");
+						    	returnArray.put(returnObj);
+						    	returnValue = returnArray.toString();
+				    		}else{
+				    			ContextUtil.abortTransaction(context);
+				    			returnObj.put("sResult","F");
+				    			returnObj.put("sMsg","\u4F59\u989D\u4E0D\u8DB3\u3002");
+				    	    	returnArray.put(returnObj);
+				    	    	returnValue = returnArray.toString();
+				    		}
+				    	}
+			    	}
+    				
+            	}			    	
+            }
+            
+		}catch(Exception e){
+			String errorMsg = e.getMessage();
+			returnObj.put("sResult","F");
+			returnObj.put("sMsg",errorMsg);
+	    	returnArray.put(returnObj);
+	    	returnValue = returnArray.toString();
+			m_logger.error(e.getMessage(), e);
+		}finally {
+			disContext(context);
+		}
+		return returnValue;
+		
+	}
+
+	public double getBalanceFromCostItem(Context context,String costItemId)throws Exception
+	{
+		
+		DomainObject costObj = new DomainObject(costItemId);
+		MapList mapList = costObj.getRelatedObjects(context, "SEM CostRequest Budget", "SEM Cost Request", busList, relList, false, true, (short)1, null, null);
+		double balance=0;
+		if(mapList.size()>0)
+		{
+			double dSEMRequestAmounttotal=0;
+			for(int i = 0; i<mapList.size(); i++)
+			{
+				Map map = (Map)mapList.get(i);
+				String requestId = (String)map.get("id");
+				DomainObject requestObj = new DomainObject(requestId);
+				String sSEMContractAmount = requestObj.getAttributeValue(context, "SEM Contract Amount");
+				double dsSEMContractAmount = Double.parseDouble(sSEMContractAmount);
+				if(dsSEMContractAmount==0.0){
+					String sSEMRequestAmount = requestObj.getAttributeValue(context, "SEM Request Amount");
+				
+					double dSEMRequestAmount = Double.parseDouble(sSEMRequestAmount);
+					dSEMRequestAmounttotal += dSEMRequestAmount;
+					
+				}else{
+					dSEMRequestAmounttotal += dsSEMContractAmount;
+				}
+				
+			}
+			
+				String sPlannedCost=costObj.getAttributeValue(context, "Planned Cost");
+				if(sPlannedCost.length()>0)
+				{
+					double dPlannedCost = Double.parseDouble(sPlannedCost);
+					balance = dPlannedCost-dSEMRequestAmounttotal;
+				}
+		}else{
+			String sPlannedCost=costObj.getAttributeValue(context, "Planned Cost");
+			if(sPlannedCost.length()>0)
+			{
+				double dPlannedCost = Double.parseDouble(sPlannedCost);
+				balance= dPlannedCost;
+			}
+		}
+		return balance;
+	}
+	
+	public String deleteCostRequestInPM(String sRequestCode)throws Exception{
+		String returnValue = "";
+		Context context = ContextUtil.getAnonymousContext();
+		JSONArray returnArray = new JSONArray();
+        JSONObject returnObj = new JSONObject();
+		try{
+			
+			conUser(context, "pmadmin", "Sem999");
+			/*String testJson = "" ;  
+			JSONArray TestJson = new JSONArray(); 
+			JSONObject test = new JSONObject();
+			test.put("RequestCode","Test005,Test006,Test008");
+			TestJson.put(test);
+			
+			testJson = TestJson.toString();*/
+			//get costItem 99999999 id
+			String strCostItemID = getSpecialCostItem(context);
+			DomainObject costObj = new DomainObject(strCostItemID);
+			
+			JSONArray costJsonArray = new JSONArray(sRequestCode);		        
+	        for (int j = 0; j < costJsonArray.length(); j++) 
+	        {
+	        	JSONObject jsonObj = costJsonArray.getJSONObject(j);
+            	String strRC = jsonObj.getString("RequestCode");
+            	String[] strSplitRc = strRC.split(",");
+            	for(int i = 0 ; i< strSplitRc.length; i++)
+            	{
+            		String strSingleRc = strSplitRc[i];
+
+	            	String strWhere="attribute[SEM RequestCode]=='"+strSingleRc+"'";
+	        		MapList costRequestList = DomainObject.findObjects(context,"SEM Cost Request","*","*",null,null,strWhere,null,true,busList,(short)0);
+	        		if(costRequestList!=null && costRequestList.size()>0)
+	    			{    					
+	    				Iterator costRequestIt = costRequestList.iterator();
+	    				while(costRequestIt.hasNext())
+	    				{
+	    					Map costRequestMap = (Map)costRequestIt.next();
+	    					String costRequestId = (String)costRequestMap.get("id");
+	    					DomainObject costRequestObj = new DomainObject(costRequestId);
+	    					MapList budgetList = costRequestObj.getRelatedObjects(context,"SEM CostRequest Budget","Cost Item",busList,relList,true,false,(short)1,"" ,"");
+	    					Iterator budgetIt = budgetList.iterator();
+	        				while(budgetIt.hasNext())
+	        				{
+	        					Map budgetMap = (Map)budgetIt.next();
+	        					String budgetId = (String)budgetMap.get("id");
+	        					String relId = (String)budgetMap.get(DomainRelationship.SELECT_ID);
+	        					DomainRelationship.disconnect(context, relId);
+	
+	        				}
+	        		    	//DomainRelationship relObj = costObj.connectTo(context,"SEM CostRequest Budget",costRequestObj); 			
+	
+	    				}
+	    			}
+            	}
+	        }
+	    	returnObj.put("sResult","S");
+	    	returnArray.put(returnObj);
+	    	returnValue = returnArray.toString();
+		}catch(Exception e){
+			String errorMsg = e.getMessage();
+			returnObj.put("sResult","F");
+			returnObj.put("sMsg",errorMsg);
+	    	returnArray.put(returnObj);
+	    	returnValue = returnArray.toString();
+			m_logger.error(e.getMessage(), e);
+		}finally {
+			disContext(context);
+		}	
+		return returnValue;
+	}
+	public boolean projectIsLock(Context context,String sBudgetCode)throws Exception
+	{
+		boolean isLockProject = true;
+		try{
+			String projectBudgetCode =  sBudgetCode.substring(sBudgetCode.length()-2,sBudgetCode.length());
+			String busWhere = "attribute[SEM Budget Code]=='"+projectBudgetCode+"'";
+			MapList projectList = DomainObject.findObjects(context,"Project Space","*","*",null,null,busWhere,null,true,busList,(short)0);
+			
+			if(projectList!=null && projectList.size()>0)
+			{
+				Iterator projectIt = projectList.iterator();
+				while(projectIt.hasNext())
+				{
+					Map projectMap = (Map)projectIt.next();
+					String projectId = (String)projectMap.get("id");
+					DomainObject projectObj = new DomainObject(projectId);
+					String SEMBudgetOpenStatus = projectObj.getAttributeValue(context,"SEM Budget Open Status");
+					if(SEMBudgetOpenStatus.equals("YES"))
+					{
+						openProjectId = projectId;
+						isLockProject = false;
+					}
+				}
+			}else{
+				isLockProject = true;
+			}
+			
+			
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw new Exception(e.getMessage());
+		}
+		return isLockProject;
+	}
+	
+	public StringList getProjectIdList(Context context,String sBudgetCode)throws Exception
+	{
+		StringList projectIdList = new StringList();
+		try{
+			String projectBudgetCode =  sBudgetCode.substring(sBudgetCode.length()-2,sBudgetCode.length());
+			String busWhere = "attribute[SEM Budget Code]=='"+projectBudgetCode+"'";
+			MapList projectList = DomainObject.findObjects(context,"Project Space","*","*",null,null,busWhere,null,true,busList,(short)0);
+			
+			if(projectList!=null && projectList.size()>0)
+			{
+				Iterator projectIt = projectList.iterator();
+				while(projectIt.hasNext())
+				{
+					Map projectMap = (Map)projectIt.next();
+					String projectId = (String)projectMap.get("id");
+					projectIdList.add(projectId);
+				}
+			}
+			
+			
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw new Exception(e.getMessage());
+		}
+		return projectIdList;
+	}
+	
+	
+	public String getCostItem(Context context,String sBudgetCode)throws Exception
+	{
+		String returnValue="";
+		try{
+			JSONArray returnJson = new JSONArray();
+			JSONObject costItemJson = null;
+			JSONObject resultJson = null;
+			String SEMDepCode =  sBudgetCode.substring(0,4);
+			String busWhere = "attribute[SEM DepCode]=='"+SEMDepCode+"'";
+			DomainObject projectObj = new DomainObject(openProjectId);
+			String projectName = projectObj.getName(context);
+			MapList budgetList = projectObj.getRelatedObjects(context,"Project Financial Item,SEM Sub Budget","Budget",busList,relList,false,true,(short)0,"" ,"");
+			if(budgetList!=null&&budgetList.size()>0)
+			{
+				StringList  accordBudgetIdList = new StringList();
+				Iterator budgetIt = budgetList.iterator();
+				while(budgetIt.hasNext())
+				{
+					Map budgetMap = (Map)budgetIt.next();
+					String budgetId = (String)budgetMap.get("id");
+					DomainObject budgetObj = new DomainObject(budgetId);
+					String SEMDepCodeValue = budgetObj.getAttributeValue(context,"SEM DepCode");
+					if(SEMDepCodeValue.equals(SEMDepCode))
+					{
+						accordBudgetIdList.add(budgetId);
+					}else{
+						continue;
+					}
+						
+				}
+				if(accordBudgetIdList.size()==1)
+				{
+					
+					DomainObject budgetObj1 = new DomainObject((String)accordBudgetIdList.get(0));
+					boolean cossDown=false;
+					MapList costItemList = budgetObj1.getRelatedObjects(context,"Financial Items","*",busList,relList,false,true,(short)1,"" ,"");
+					if(costItemList.size()>0)
+					{
+						if(costItemList.size()==1)
+						{
+							String costName =budgetObj1.getInfo(context, "from[Financial Items].to.name");
+							if(costName.equals("abcdefg123")){
+								cossDown=true;
+								String errorMsg = "\u9879\u76EE\uFF1A"+projectName+"\u4E2D\uFF0C\u90E8\u95E8\u7F16\u53F7\uFF1A"+SEMDepCode+"\u672A\u627E\u5230\u6295\u8D44\u9879\u3002";
+								resultJson  = new JSONObject();
+								resultJson.put("sResult","F");
+								resultJson.put("sMsg",errorMsg);
+								returnJson.put(resultJson);
+							}
+						}
+						if(!cossDown){
+							resultJson  = new JSONObject();
+							resultJson.put("sResult","S");
+							returnJson.put(resultJson);
+							Iterator costIt = costItemList.iterator();
+							while(costIt.hasNext())
+							{
+								Map costMap = (Map)costIt.next();
+								String costId = (String)costMap.get("id");					
+								DomainObject costObj = new DomainObject(costId);
+								String strCostItemName = costObj.getName(context);
+								if(strCostItemName.equals("abcdefg123"))
+								{
+									continue;
+								}
+								String planCost = costObj.getAttributeValue(context,"Planned Cost");
+								double doublePlanCost = Double.parseDouble(planCost);
+								String strContractCost = getAttributeValues(context, costId, "SEM CostRequest Budget", "SEM Contract Amount");
+								double doubleContractCost = Double.parseDouble(strContractCost);
+								double balance = 0;
+								String strRequestCost = getAttributeValues(context, costId, "SEM CostRequest Budget", "SEM Request Amount");
+								double doubleRequestCost = Double.parseDouble(strRequestCost);
+								if(doubleContractCost==0.0)
+								{
+									balance += (doublePlanCost  - doubleRequestCost);
+								}else{
+									balance += (doublePlanCost  - doubleContractCost);	
+								}
+								String strBalance = String.valueOf(balance);
+								String strCostName = costObj.getName(context);
+								costItemJson = new JSONObject();
+								costItemJson.put("CostItemID",costId);
+								costItemJson.put("CostItemName",strCostName);
+								costItemJson.put("CostItemBalance",strBalance);
+								costItemJson.put("CostItemAllotment",planCost);
+								returnJson.put(costItemJson);
+							}	
+						}
+					}else{
+						String errorMsg = "\u9879\u76EE\uFF1A"+projectName+"\u4E2D\uFF0C\u90E8\u95E8\u7F16\u53F7\uFF1A"+SEMDepCode+"\u672A\u627E\u5230\u6295\u8D44\u9879\u3002";
+						resultJson  = new JSONObject();
+						resultJson.put("sResult","F");
+						resultJson.put("sMsg",errorMsg);
+						returnJson.put(resultJson);
+					}
+				}else if(accordBudgetIdList.size()>1){
+					
+					String errorMsg = "\u9879\u76EE\uFF1A"+projectName+"\u4E2D\u90E8\u95E8\u7F16\u53F7\uFF1A"+SEMDepCode+"\u4E0D\u552F\u4E00\u3002";
+					resultJson  = new JSONObject();
+					resultJson.put("sResult","F");
+					resultJson.put("sMsg",errorMsg);
+					returnJson.put(resultJson);
+					
+				}else{
+					
+					String errorMsg = "\u9879\u76EE\uFF1A"+projectName+"\u4E2D\uFF0C\u90E8\u95E8\u7F16\u53F7\uFF1A"+SEMDepCode+"\u4E0D\u5B58\u5728\u3002";
+					resultJson  = new JSONObject();
+					resultJson.put("sResult","F");
+					resultJson.put("sMsg",errorMsg);
+					returnJson.put(resultJson);
+					//returnJson = getSpecialCostItemInfo(context);
+				}
+				
+			}else{
+				String msg = "\u9879\u76EE\uFF1A"+projectName+"\u4E2D\u4E0D\u5B58\u5728\u4EFB\u4F55\u6295\u8D44\u9879\u3002";
+				resultJson  = new JSONObject();
+				resultJson.put("sResult","F");
+				resultJson.put("sMsg",msg);
+				returnJson.put(resultJson);
+				//costItem is not exist system return 99999999;
+				//returnJson = getSpecialCostItemInfo(context);
+			}
+			
+			
+			returnValue = returnJson.toString();
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw new Exception(e.getMessage());
+
+		}
+		return returnValue;
+	}
+	
+	public JSONArray  getSpecialCostItemInfo(Context context)throws Exception
+	{
+		JSONObject resultJson  = new JSONObject();
+		JSONArray returnJson = new JSONArray();
+		MapList costItemList = DomainObject.findObjects(context,"Cost Item","99999999","*",null,null,null,null,true,busList,(short)0);
+		if(costItemList!=null && costItemList.size()>0)
+		{
+			resultJson  = new JSONObject();
+			resultJson.put("sResult","S");
+			returnJson.put(resultJson);
+			Iterator costItemIt = costItemList.iterator();
+			while(costItemIt.hasNext())
+			{
+				Map costMap = (Map)costItemIt.next();
+				String costId = (String)costMap.get("id");
+				DomainObject costObj = new DomainObject(costId);
+				String costName = costObj.getName(context);
+				String plannedCost = costObj.getAttributeValue(context,"Planned Cost");
+				JSONObject costItemJson =  new JSONObject();
+				costItemJson.put("CostItemID",costId);
+				costItemJson.put("CostItemName",costName);
+				costItemJson.put("CostItemAllotment",plannedCost);
+				returnJson.put(costItemJson);
+			}
+		}else{
+			String sMsg="\u7CFB\u7EDF\u4E0D\u5B58\u5728\u6295\u8D44\u9879\u540D\u79F0\u4E3A\uFF1A99999999\u7684\u6295\u8D44\u9879\u3002";
+			resultJson  = new JSONObject();
+			resultJson.put("sResult","F");
+			resultJson.put("sMsg",sMsg);
+			returnJson.put(resultJson);
+		}
+		return returnJson;
+	}
+	public String getAttributeValues(Context context,String objectId,String relName,String attributeName)throws Exception
+	{
+		String value = "";
+		try{
+			DomainObject strObject = new DomainObject(objectId);
+			MapList mapList = strObject.getRelatedObjects(context,relName,"*",busList,relList,false,true,(short)1,"" ,"");
+			Iterator it = mapList.iterator();
+			double doubleBudgetCost=0;
+			while(it.hasNext())
+			{
+				Map map = (Map)it.next();
+				String objId = (String)map.get("id");
+				DomainObject strObj = new DomainObject(objId);
+				String attrValue = strObj.getAttributeValue(context,attributeName);
+				double doubleCost = Double.parseDouble(attrValue);
+				doubleBudgetCost += doubleCost;	
+			}
+			value = String.valueOf(doubleBudgetCost);
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw new Exception(e.getMessage());
+
+		}
+		return value;
+	}
+	
+	public String getSpecialCostItem(Context context)throws Exception{
+		String strCostItemID = "";
+		try{
+			MapList costItemList = DomainObject.findObjects(context,"Cost Item","99999999","*",null,null,null,null,true,busList,(short)0);
+			if(costItemList!=null && costItemList.size()>0)
+			{    					
+				Iterator costItemIt = costItemList.iterator();
+				while(costItemIt.hasNext())
+				{
+					Map costMap = (Map)costItemIt.next();
+					strCostItemID = (String)costMap.get("id");
+				}
+			}
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return strCostItemID;
+	}
+	
+	
+	public String getCostRequestFromOA(String sCostRequests)throws Exception
+	{
+		Context context = ContextUtil.getAnonymousContext();
+		String resultValue = "";
+		JSONArray returnJson = new JSONArray();
+		JSONObject costItemJson = null;
+		JSONObject resultJson = null;
+		busList.add("name");
+		try{			
+			conUser(context, "pmadmin", "Sem999");	
+		/*	String testJson = "" ;  
+			JSONArray TestJson = new JSONArray(); 
+			JSONObject test2 = new JSONObject();
+			test2.put("sResult","S");
+			TestJson.put(test2);
+			
+			JSONObject test = new JSONObject();
+			test.put("RequestCode","Test011");
+			test.put("RequestPerson","pmadmin");
+			test.put("RequestDesc","Test002");
+			test.put("BudgetCode","Test001");
+			test.put("CostItemID","58460.2456.37924.63629");
+			test.put("RequestAmount","100");
+			test.put("ContractAmount","50");
+			test.put("PayAmount","70");
+			TestJson.put(test);
+			
+			JSONObject test1 = new JSONObject();
+			test1.put("RequestCode","Test012");
+			test1.put("RequestPerson","pmadmin");
+			test1.put("RequestDesc","Test003");
+			test1.put("BudgetCode","Test001");
+			test1.put("CostItemID","58460.2456.37924.63629");
+			test1.put("RequestAmount","10000");
+			test1.put("ContractAmount","5000");
+			test1.put("PayAmount","7000");
+			TestJson.put(test1);
+			testJson = TestJson.toString();*/
+			JSONArray costJsonArray = new JSONArray(sCostRequests);		        
+			JSONObject jsonObj = costJsonArray.getJSONObject(0);
+        	String sResult = jsonObj.getString("sResult");
+        	
+	        for (int j = 1; j < costJsonArray.length(); j++) 
+	        {
+	        	JSONObject costJson = costJsonArray.getJSONObject(j);
+            	if(sResult.equals("S"))
+            	{
+            		String strRC = costJson.getString("RequestCode");
+            		String strRP = costJson.getString("RequestPerson");
+                	String strRD = costJson.getString("RequestDesc");
+                	String strBC = costJson.getString("BudgetCode");
+                	String strCostItemID = costJson.getString("CostItemID");
+                	String strRequestAmount = costJson.getString("RequestAmount");
+                	String strContractAmount = costJson.getString("ContractAmount");
+                	String strPayAmount = costJson.getString("PayAmount");
+                	
+                	Map attrMap = new HashMap();
+                	attrMap.put("SEM Requestor",strRP);
+                	attrMap.put("SEM Budget Number",strBC);
+                	attrMap.put("SEM Request Amount",strRequestAmount);
+                	attrMap.put("SEM Contract Amount",strContractAmount);
+                	attrMap.put("SEM Pay Amount",strPayAmount);
+                	
+                	String strWhere="attribute[SEM RequestCode]=='"+strRC+"'";
+            		MapList costRequestList = DomainObject.findObjects(context,"SEM Cost Request","*","*",null,null,strWhere,null,true,busList,(short)0);
+            			
+            		if(costRequestList.size()>0)
+                	{
+    					   					
+						Iterator costItemIt = costRequestList.iterator();
+						while(costItemIt.hasNext())
+						{
+							Map costMap = (Map)costItemIt.next();
+							String numberId = (String)costMap.get("id");
+							DomainObject strObj = new DomainObject(numberId);
+							strObj.setAttributeValues(context,attrMap);
+							strObj.setDescription(context,strRD);
+						}
+    						
+                	}
+            	}else{
+            		String sMsg = costJson.getString("sMsg");
+            		resultJson  = new JSONObject();
+        			resultJson.put("sResult","F");			
+        			resultJson.put("sMsg",sMsg);
+        			returnJson.put(resultJson);
+        			resultValue = returnJson.toString();
+            	}
+	        }
+	        
+			return "";
+		}catch(Exception e){
+			String msg = e.getMessage();
+			resultJson  = new JSONObject();
+			resultJson.put("sResult","F");			
+			resultJson.put("sMsg",msg);
+			returnJson.put(resultJson);
+			resultValue = returnJson.toString();
+			
+			m_logger.error(e.getMessage(), e);
+			return resultValue;
+			
+		}finally {
+			disContext(context);
+		}
+	}
+	
+	
+	
+	
+}

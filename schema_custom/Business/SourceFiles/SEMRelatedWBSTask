@@ -1,0 +1,130 @@
+
+
+
+
+
+
+
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Vector;
+import java.util.HashMap;
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.MapList;
+
+public class ${CLASSNAME} {
+	public ${CLASSNAME}(Context context,String[] args)throws Exception
+	{
+		
+	}
+	
+	public MapList getSEMRelatedWBSTask(Context context,String[] args)throws Exception
+	{
+		 MapList list =new MapList();
+		 try{
+			 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			// HashMap requestMap = (HashMap) programMap.get("requestMap");
+			 String objectId = programMap.get("objectId").toString();
+			 DomainObject strObj = new DomainObject(objectId);
+			// System.out.println("objectId==="+objectId);
+			 StringList busList = new StringList();
+			 busList.add("id");
+		 	 StringList relList = new StringList();
+		 	 relList.add("id[connection]");
+		 	 list = strObj.getRelatedObjects(context, "SEM Related WBSTask", "Task", busList, relList,  false, true,(short)1,null ,null);
+		 }catch(Exception e){
+			
+		 }
+	 	 return list;
+		 
+	}
+	
+	public Vector getRelatedProject(Context context,String[] args)throws Exception
+	{
+		Vector vector = new Vector();
+		try{
+			
+			HashMap programMap = (HashMap)JPO.unpackArgs(args);
+			StringList busList = new StringList(DomainObject.SELECT_ID);
+			StringList rel = new StringList(DomainRelationship.SELECT_ID);
+			MapList objectList = (MapList)programMap.get("objectList");
+			Iterator it = objectList.iterator();
+			while(it.hasNext())
+			{
+				Map map = (Map)it.next();
+				String objectId = (String)map.get("id");
+				DomainObject strObj = new DomainObject(objectId);
+				
+				MapList projectList = strObj.getRelatedObjects(context, "Subtask", "*", busList, rel, true, false, (short)0, "", "");
+				//System.out.println("projectList==="+projectList);
+				Iterator itProj=projectList.iterator();
+				String attrValue = "";
+				if(projectList.size()>0)
+				{
+					while(itProj.hasNext())
+					{
+						Map prjMap = (Map)itProj.next();
+						String prjId = (String)prjMap.get("id");
+						DomainObject prjObj = new DomainObject(prjId);
+						String strType = prjObj.getType(context);
+						if("Project Space".equals(strType))
+						{
+							String sap= prjObj.getName(context);
+							
+							String url="../common/emxTree.jsp?objectId="+prjId;
+							attrValue  +="<a href=\"javascript:showModalDialog('"+url+"','600', '600',true)\">"+ sap +"</a>,";
+						}
+						
+					}
+					attrValue = attrValue.substring(0, attrValue.length()-1);
+					
+					
+					
+					vector.add(attrValue);
+				}else{
+					vector.add("");
+				}
+				
+			}
+		}catch(Exception e){
+			throw new Exception(e.getMessage());
+		}
+		return vector;
+	}
+
+	
+	public int checkRelatedWBSTaskState(Context context,String[] args)throws Exception
+	{
+		try{
+			String objectId = args[0];
+			DomainObject strObj = new DomainObject(objectId);
+			StringList busList = new StringList(DomainObject.SELECT_ID);
+			StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		 	MapList list = strObj.getRelatedObjects(context, "SEM Related WBSTask", "Task", busList, relList,  false, true,(short)1,null ,null);
+			Iterator it=list.iterator();
+		 	while(it.hasNext())
+			{
+				Map relatedMap = (Map)it.next();
+				String relatedId = (String)relatedMap.get("id");
+				DomainObject relatedObj = new DomainObject(relatedId);
+				String current = relatedObj.getInfo(context,DomainObject.SELECT_CURRENT);
+				if(!current.equals("Complete"))
+				{
+					String sErrMsg = "\u4EFB\u52A1\u4E2D\u5B58\u5728\u6CA1\u6709\u5B8C\u6210\u7684\u76F8\u5173WBS\u4EFB\u52A1\uFF0C\u65E0\u6CD5\u5B8C\u6210";
+					${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+					return 1;
+				}
+			}
+		}catch(Exception e){
+			throw new Exception(e.getMessage());
+		}
+		return 0;
+	}
+}
+

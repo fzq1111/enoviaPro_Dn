@@ -1,0 +1,861 @@
+/*
+ *  emxMeeting.java
+ *
+ * Copyright (c) 1992-2015 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ */
+import matrix.db.*;
+import java.lang.*;
+import java.text.DateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.Vector;
+import java.util.Set;
+import java.util.HashSet;
+
+import org.apache.log4j.Logger;
+
+import matrix.db.Attribute;
+import matrix.db.AttributeList;
+import matrix.db.AttributeType;
+import matrix.db.BusinessObject;
+import matrix.db.BusinessObjectWithSelect;
+import matrix.db.Context;
+import matrix.db.ExpansionIterator;
+import matrix.db.JPO;
+import matrix.db.User;
+import matrix.db.Relationship;
+import matrix.db.RelationshipItr;
+import matrix.db.RelationshipType;
+import matrix.util.List;
+import matrix.util.MatrixException;
+import matrix.util.Pattern;
+import matrix.util.StringList;
+
+import com.matrixone.apps.common.Company;
+import com.matrixone.apps.common.Document;
+import com.matrixone.apps.common.Meeting;
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.common.Search;
+import com.matrixone.apps.common.util.ComponentsUtil;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UINavigatorUtil;
+import com.matrixone.apps.framework.ui.UITableIndented;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.jdom.Element;
+import com.matrixone.apps.domain.util.MessageUtil;
+import com.matrixone.apps.program.ProgramCentralConstants;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+/**
+ * @version AEF Rossini - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxMeetingBase}
+{
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	private static final int slash1 = 92; // ASCII 92 == '\\'
+    private static final int slash=47; // ASCII 47 == '/'
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF Rossini
+     * @grade 0
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+    public Vector getColumnMeetingRelationshipData(Context context,
+    	      String[] args) throws Exception {
+    	    try {
+    	      // Create result vector
+    	      Vector vecResult = new Vector();
+    	      // Get object list information from packed arguments
+    	      HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    	      MapList objectList = (MapList) programMap.get("objectList");
+    	      HashMap paramList  = (HashMap) programMap.get("paramList");
+    	      String strLanguage = (String) paramList.get("languageStr");
+    	      Map mapRowData = null;
+    	      String strColumnValues = null;
+    	      String strMeetingAttendee=EnoviaResourceBundle.getProperty(context,"emxFrameworkStringResource",new Locale(strLanguage),"emxFramework.Attribute.Meeting_Attendee");
+    	      String strDecision= EnoviaResourceBundle.getProperty(context,"emxFrameworkStringResource",new Locale(strLanguage),"emxFramework.Relationship.Decision");
+    	      String strAgendaItem= EnoviaResourceBundle.getProperty(context,"emxFrameworkStringResource",new Locale(strLanguage),"emxFramework.Relationship.Agenda_Item");
+    	      String strIssue= EnoviaResourceBundle.getProperty(context,"emxFrameworkStringResource",new Locale(strLanguage),"emxFramework.Relationship.Issue");
+    	      for (Iterator itrObjects = objectList.iterator(); itrObjects
+    	          .hasNext();) {
+    	        mapRowData = (Map) itrObjects.next();
+    	        if (mapRowData.get(SELECT_TYPE).equals(TYPE_MEETING)) {
+    	          strColumnValues = "";
+    	        } else if (mapRowData.get(SELECT_TYPE).equals(TYPE_PERSON)) {
+    	          strColumnValues=strMeetingAttendee;
+    	        } else if (mapRowData.get(SELECT_TYPE).equals(TYPE_DECISION)) {
+    	          strColumnValues = strDecision;
+    	        }else if (mapRowData.get(SELECT_TYPE).equals(RELATIONSHIP_AGENDA_ITEM)) {
+    	          strColumnValues = strAgendaItem;
+    	        }else if(mapRowData.get(SELECT_TYPE).equals("Issue"))
+    	        	strColumnValues = strIssue;
+    	        vecResult.add(strColumnValues);
+    	      }
+    	      return vecResult;
+    	    } catch (Exception ex) {
+    	      m_logger.error(ex.getMessage(), ex);
+    	      throw new MatrixException(ex);
+    	    }
+    	  }
+    public MapList getAffectedItem(Context context,String[] args) 
+    		throws Exception {
+        HashMap programMap          = (HashMap) JPO.unpackArgs(args);
+		StringList busList = new StringList("id");
+		String objectId = (String) programMap.get("objectId");
+		DomainObject strObj = new DomainObject(objectId);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList mapList = strObj.getRelatedObjects(context,"SEM Meeting ContactOrder","Meeting", busList, relList,true,false, (short)1,"","");
+		return mapList;
+    	
+    }
+    public MapList getMeetingIssue(Context context, String[] args)throws Exception
+    {
+        HashMap requestMap          = (HashMap) JPO.unpackArgs(args);
+        HashMap requestMap2          = (HashMap)requestMap.get("requestMap");
+        MapList AgendaItemList = new MapList();
+        String strMeetingId = (String)requestMap.get("objectId");
+        //matrix.util.Pattern typePattern = new matrix.util.Pattern("Agenda Item");
+        //matrix.util.Pattern relPattern  = new matrix.util.Pattern("Agenda Item");
+        DomainObject MeetingObj = DomainObject.newInstance(context);
+        MeetingObj.setId(strMeetingId);
+        StringList selectTypeStmts = new StringList();
+
+        selectTypeStmts.add(MeetingObj.SELECT_ID);
+        selectTypeStmts.add(MeetingObj.SELECT_TYPE);
+        selectTypeStmts.add(MeetingObj.SELECT_NAME);
+        selectTypeStmts.add(MeetingObj.SELECT_DESCRIPTION);
+        selectTypeStmts.add(MeetingObj.SELECT_OWNER);
+        selectTypeStmts.add(MeetingObj.SELECT_CURRENT);
+        AgendaItemList = MeetingObj.getRelatedObjects(context,
+                                       "Issue",  //String relPattern
+                                       "Issue", //String typePattern
+                                       selectTypeStmts,          //StringList objectSelects,
+                                       null,                     //StringList relationshipSelects,
+                                       true,                     //boolean getTo,
+                                       false,                     //boolean getFrom,
+                                       (short)1,                 //short recurseToLevel,
+                                       "",          //String objectWhere,
+                                       "",                       //String relationshipWhere,
+                                       null,                     //Pattern includeType,
+                                       null,                     //Pattern includeRelationship,
+                                       null);
+
+        return AgendaItemList;
+    }
+    public MapList getTableMeetingData(Context context, String[] args)
+    	      throws Exception {
+    	    MapList resultList = new MapList();
+    	    Map tempMap = null;
+
+    	    HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    	    String parentId = (String) programMap.get("parentId");
+    	    String objectId = (String) programMap.get("objectId");
+
+    	    if (null != parentId && null != objectId && !parentId.equals(objectId)) {
+
+    	      MapList agendaList = getMeetingAgendas(context, args);
+    	      MapList attendeeList = getMeetingttendee(context, args);
+    	      MapList decisionList = (MapList) JPO.invoke(context, "emxDecision",
+    	          null, "getRelatedDecisions", args, MapList.class);
+    	      MapList IssueList=getMeetingIssue(context, args);
+
+    	      for (int i = 0; i < agendaList.size(); i++) {
+    	        tempMap = (Map) agendaList.get(i);
+    	        tempMap.put(DomainConstants.SELECT_TYPE,
+    	            RELATIONSHIP_AGENDA_ITEM);
+    	        tempMap.put("disableSelection","true");
+    	        resultList.add(tempMap);
+    	      }
+
+    	      for (int i = 0; i < attendeeList.size(); i++) {
+    	          tempMap = (Map) attendeeList.get(i);
+    	          tempMap.put("disableSelection","true");
+    	          resultList.add(tempMap);
+    	      }
+
+    	      for (int i = 0; i < decisionList.size(); i++) {
+    	          tempMap = (Map) decisionList.get(i);
+    	          tempMap.put("disableSelection","true");
+    	          resultList.add(tempMap);
+    	      }
+    	      for (int i = 0; i < IssueList.size(); i++) {
+    	          tempMap = (Map) IssueList.get(i);
+    	          tempMap.put("disableSelection","true");
+    	          resultList.add(tempMap);
+    	      }
+    	      
+    	    }
+    	    return resultList;
+    	  }
+    /*
+     * add send Email related
+     */
+    public String getMeetingScheduledSubject(Context context,String[] args) throws Exception{
+    	 Map info = (Map) JPO.unpackArgs(args);
+	     String subject="\u4F1A\u8BAE\u63D0\u9192";
+	     String companyName = null;
+	     String basePropName = (String) info.get("bundleName");
+	     Locale locale = (Locale) info.get("locale");
+	     subject = MessageUtil.getMessage(context, null, subject,null,null, companyName, locale, basePropName);
+	     return (subject);
+   }
+    public StringList getAssignedMeetings(Context context, String[] args)throws MatrixException {
+    	StringList  AssignedMeetings = new StringList();
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String objectId = (String) programMap.get("id");
+			DomainObject meetingObj = DomainObject.newInstance(context, objectId);
+			StringList personIdList = meetingObj.getInfoList(context,"to[Assigned Meetings].from.id");
+			if(personIdList.size()>0)
+			{
+				for(int i = 0 ; i < personIdList.size(); i++)
+				{
+					String personId = (String)personIdList.get(i);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					if(strPersonName!=null){
+						AssignedMeetings.add(strPersonName);
+					}
+				}					
+			}	
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw new MatrixException(e.getMessage());
+		}
+		return (AssignedMeetings);
+    }
+    /**
+     * @param context
+     * @param args
+     * @return
+     * @throws Exception
+     * @author watts
+     * get assign html content
+     */
+    public String getSEMMeetingScheduledMessageHTML(Context context, String args[])throws Exception{
+    	String message="";
+ 		StringList busList = new StringList("id");
+ 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+    	try {  
+    		String MeetingInProject="";
+        	String MeetingType ="";
+        	String MeetingName ="";
+        	String MeetingOwner="";
+        	String MeetingURL ="";
+        	String MeetingTitle="";
+        	String MeetingLocation="";
+        	String MeetingDate="";
+        	String MeetingStartTime="";
+        	String MeetingAgendas="";
+        	String MeetingPerson="";
+        	String MeetingDuration="";
+        	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("id");
+    		DomainObject  meetingObject = DomainObject.newInstance(context, objectId);
+    		busList.add("name");
+    		MapList mapList1=meetingObject.getRelatedObjects(context,"Meeting Context", "Project Space", busList, relList,true,false,
+    				(short)1,"", null);
+    		if(mapList1.size()>0){
+    			Map map=(Map) mapList1.get(0);
+    			MeetingInProject=(String) map.get("name");
+    		}
+    		
+    		MeetingType = meetingObject.getType(context);
+    		MeetingName = meetingObject.getName(context);
+    		User Owner= meetingObject.getOwner(context);
+    		MeetingOwner=PersonUtil.getFullName(context,Owner.toString());
+    		MeetingTitle= meetingObject.getDescription(context);
+    		MeetingLocation=meetingObject.getAttributeValue(context,"Meeting Location");
+    		MeetingDuration=meetingObject.getAttributeValue(context,"Meeting Duration");
+    		
+    		String MeetingStartDateTime=meetingObject.getAttributeValue(context,"Meeting Start Date Time");
+    		if(MeetingStartDateTime!=null&&!MeetingStartDateTime.equals("")){
+    			String dateAndTime[]=MeetingStartDateTime.trim().split(" ");
+    			String[] temp=dateAndTime[0].split("/");
+    			if(temp.length>=2){
+    				MeetingDate=temp[2]+"-"+temp[0]+"-"+temp[1];
+    			}
+    			if(dateAndTime.length>=2){
+    				MeetingStartTime=dateAndTime[1]+" "+dateAndTime[2];
+    			}
+    		}
+    		DomainObject meetingObj = DomainObject.newInstance(context, objectId);
+			StringList personIdList = meetingObj.getInfoList(context,"to[Assigned Meetings].from.id");
+			if(personIdList.size()>0)
+			{
+				for(int i = 0 ; i < personIdList.size(); i++)
+				{
+					String personId = (String)personIdList.get(i);
+					Person personObj= new Person(personId);
+					String strPersonName = personObj.getName(context);
+					if(strPersonName!=null){
+						MeetingPerson+=personObj.getDisplayName(context,strPersonName)+"  ";
+					}
+				}					
+			}	
+			MapList mapList=meetingObj.getRelatedObjects(context,"Agenda Item","*", busList,relList,false,
+					true, (short)1,"","");
+	    	Iterator it=mapList.iterator();
+	 	    while(it.hasNext())
+	 		{
+	 	    	Map map=(Map)it.next();
+	 			String relId=(String)map.get("id[connection]");
+	 			DomainRelationship relObj=new DomainRelationship(relId);
+	    		String topic=relObj.getAttributeValue(context,"Topic").trim();
+	    		MeetingAgendas+=topic+" ";
+	 		}
+    		String url="";
+    		String fileName ="";
+    		try {
+    		    url=this.getClass().getResource("/").getPath();
+    			url = url.substring(1,url.length()-16);
+    			fileName = url+"ContentTextHtmlTemplate"+String.format("%c", slash)+"SEMMeetingScheduled.html";
+    		} catch (Exception e) {
+    			m_logger.error(e.getMessage(), e);
+    			message = "Can Not Find Email Template \"SEMMeetingScheduled.html\", Please Connect Administrator.";
+    			return message;
+    		}    		
+    		try {
+    			MeetingURL = FrameworkProperties.getProperty(context, "CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+    		} catch (Exception e) {
+    			MeetingURL =(String) programMap.get("baseURL");
+    		}
+    		//MeetingURL=MeetingURL + "?objectId="+objectId;	
+    		File file = new File(fileName);
+    		InputStreamReader imput = new InputStreamReader(new FileInputStream(file), "UTF-8");
+    		BufferedReader reader = new BufferedReader(imput);
+    		String htmlStr = "";
+    		StringBuffer htmlContent = new StringBuffer();
+    		String tmpStr = "";
+    		while ((tmpStr = reader.readLine()) != null) {
+    			htmlContent.append(tmpStr);
+    		}
+    		reader.close();
+    		imput.close();
+    		htmlStr = htmlContent.toString();
+    		htmlStr = htmlStr.replace("${MeetingInProject}",MeetingInProject);
+    		htmlStr = htmlStr.replace("${MeetingType}",MeetingType);
+    		htmlStr = htmlStr.replace("${MeetingName}",MeetingName);
+    		htmlStr = htmlStr.replace("${MeetingOwner}",MeetingOwner);
+    		htmlStr = htmlStr.replace("${MeetingURL}",MeetingURL);
+    		htmlStr = htmlStr.replace("${MeetingTitle}",MeetingTitle);
+    		htmlStr = htmlStr.replace("${MeetingLocation}",MeetingLocation);
+    		htmlStr = htmlStr.replace("${MeetingDate}",MeetingDate);
+    		htmlStr = htmlStr.replace("${MeetingStartTime}",MeetingStartTime);
+    		htmlStr = htmlStr.replace("${MeetingAgendas}",MeetingAgendas);
+    		htmlStr = htmlStr.replace("${MeetingPerson}",MeetingPerson);
+    		htmlStr = htmlStr.replace("${MeetingDuration}",MeetingDuration);
+    		message = htmlStr;
+        	return message;
+        
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+    	return message;
+    }
+    //cancel meeting by  send email
+    public Map createCancelLSNotificationRequest(Context context,String[]args)throws Exception
+	{
+   	    HashMap programMap = (HashMap)JPO.unpackArgs(args);
+        Map returnMap = new HashMap();
+   		String subject=(String)programMap.get("SubjectText");
+   		String description=(String) programMap.get("Description");
+   		String objectId=(String)programMap.get("objectId");
+   		String notifyType="Email";
+   		String fromAgent="Test Everything";
+   		String notificationName="APPObjectProjectTaskAssignedEvent";
+
+	    String meetingURL =(String) programMap.get("baseURL");
+	    meetingURL=meetingURL + "?objectId="+objectId;	
+     	AttributeList attributes = new AttributeList();
+        AttributeType attrType = null;
+        Attribute attrObject = null;
+         	StringBuffer content=new StringBuffer();
+     		DomainObject meetingObj=new DomainObject(objectId);
+     		String meetingName=meetingObj.getName(context);
+     		content.append("<div>");
+      		content.append("<p style=\"text-indent: 1em;\">\u4F1A\u8BAE"+meetingName+"\u5DF2\u7ECF\u53D6\u6D88\u4E86</p>");
+      		content.append("<p style=\"text-indent: 1em;\">\u8981\u4E86\u89E3\u6709\u5173\u8BE5\u4F1A\u8BAE\u7684\u66F4\u591A\u4FE1\u606F\uFF0C\u4F7F\u7528\u5982\u4E0B URL:<a href=\""+meetingURL+"\">"+meetingName+"</a></p>");
+      		content.append("</div>");
+      		content.append("<div><p style=\"text-indent: 1em;\">\u53D6\u6D88\u539F\u56E0:"+description+"</p></div>");
+     		StringList personIdList=meetingObj.getInfoList(context,"to[Assigned Meetings].from.id");
+     		if(personIdList.size()>0)
+			{
+				for(int j = 0 ;j < personIdList.size();j++)
+				{
+					String personId = (String)personIdList.get(j);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					if(strPersonName!=null){
+					   	attrType = new AttributeType(
+				        PropertyUtil.getSchemaProperty(context, "attribute_SubjectText"));
+				        attrObject = new Attribute(attrType,subject);
+				        attributes.addElement(attrObject);
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_NotificationType"));
+				        attrObject = new Attribute(attrType, notifyType);
+				        attributes.addElement(attrObject);
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_NotificationName"));
+				        attrObject = new Attribute(attrType, notificationName);
+				        attributes.addElement(attrObject);
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_StaticToList"));
+				        attrObject = new Attribute(attrType,strPersonName);
+				        attributes.addElement(attrObject);
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_BodyText"));
+				        attrObject = new Attribute(attrType,content.toString());
+				        attributes.addElement(attrObject);
+				        
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_BodyHTML"));
+				        attrObject = new Attribute(attrType,content.toString());
+				        attributes.addElement(attrObject);
+				        
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_FromAgent"));
+				        attrObject = new Attribute(attrType, fromAgent);
+				        attributes.addElement(attrObject);
+				        boolean isContextPushed = false;
+			            try{
+						    ContextUtil.pushContext(context);
+					        isContextPushed = true;
+				            String strNotificationRequestId = FrameworkUtil.autoName(context, "type_LSNotificationRequest", "", "policy_LSNotificationRequest");
+			                DomainObject notificationRequestObj = DomainObject.newInstance(context, strNotificationRequestId);
+			                notificationRequestObj.setAttributes(context, attributes);
+				   		    String projectId =notificationRequestObj.getInfo(context, "id");
+				   	        returnMap.put("id", projectId);
+			            }
+			            catch(Exception e){
+			            	m_logger.error(e.getMessage(), e);
+			            	throw new MatrixException(e);
+			            }finally{
+			            	if (isContextPushed) {
+			            		ContextUtil.popContext(context);
+			            	}
+			            }
+					}
+				}					
+			}
+     		try{
+     		   ContextUtil.pushContext(context);
+    		   meetingObj.setAttributeValue(context,"Branch To","Cancel");
+     		   meetingObj.setState(context,"Cancelled");}
+     		finally{
+    		   ContextUtil.popContext(context);
+     		}
+   	        return returnMap;
+	}
+	 //add filter
+    public MapList getScheduledMeeting(Context context,String[]args)throws Exception
+	{
+    	MapList returnList=new MapList();
+    	try{
+    		MapList mapList=getMeetingSummaryList(context,args);
+    		Iterator items=mapList.iterator();
+    		while(items.hasNext()){
+    			Map map=(Map) items.next();
+    			String id=(String) map.get("id");
+    			DomainObject meetingObj=new DomainObject(id);
+    			State currentState=meetingObj.getCurrentState(context);
+    			String name=currentState.getName();
+    			if(name.equals("Scheduled")){
+    				returnList.add(map);
+    			}
+    		}
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    	}
+    	return returnList;
+    }
+    public MapList getCompleteAndCancelledMeeting(Context context,String[]args)throws Exception
+   	{
+       	MapList returnList=new MapList();
+       	try{
+       		MapList mapList=getMeetingSummaryList(context,args);
+       		Iterator items=mapList.iterator();
+       		while(items.hasNext()){
+       			Map map=(Map) items.next();
+       			String id=(String) map.get("id");
+       			DomainObject meetingObj=new DomainObject(id);
+       			State currentState=meetingObj.getCurrentState(context);
+       			String name=currentState.getName();
+       			if(name.equals("Complete")||name.equals("Cancelled")){
+       				returnList.add(map);
+       			}
+       		}
+       	}catch(Exception e){
+       		m_logger.error(e.getMessage(), e);
+       	}
+       	return returnList;
+       }
+    //add home pannel
+    public String[] getMeetingDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[1];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+        int count=0;
+		MapList mapList=getScheduledMeeting(context,args);
+        count=mapList.size();
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?program=emxMeeting:getScheduledMeeting,emxMeeting:getCompleteAndCancelledMeeting&programLabel=emxComponents.Label.Notice,emxComponents.Label.CompleteAndCancelled&editLink=true&table=APPMeetingSummary&toolbar=APPGlobalMeetingToolbar&mode=view&selection=multiple&sortColumnName=Name,Relationship&header=emxComponents.MeetingMyDesk.MyMeetings&postProcessJPO=emxMeeting:postProcessRefresh&GlobalContext=true&HelpMarker=emxhelpmeetings&expandProgram=emxMeeting:getTableMeetingData&displayView=details&suiteKey=Components\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(count== 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("yellow");  }
+	    sbCounter.append("'><span class='counterText ");
+	    if(count== 0){ sbCounter.append("grayBright");   }
+        else                        { sbCounter.append("yellow");       }
+	    sbCounter.append("'>").append(count).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context, "Components", "emxComponents.Common.Meetings", sLanguage)).append("</td>");         
+	       
+	    aResults[0]=sbCounter.toString();
+	    return aResults;
+	}
+
+    public String getMeetingHost(Context context,String[] args)throws Exception{
+    	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    	HashMap requestMap = (HashMap) programMap.get("requestMap");
+    	String objectId=(String)requestMap.get("objectId");
+    	StringList person=new StringList();
+    	person.add(DomainObject.SELECT_NAME);
+    	person.add(DomainObject.SELECT_ID);
+    	person.add(DomainObject.SELECT_TYPE);
+    	DomainObject newObj=DomainObject.newInstance(context,objectId);
+    	MapList mlRoute=newObj.getRelatedObjects(context, "Host Meetings", "Person",person , new StringList(DomainConstants.SELECT_RELATIONSHIP_ID), true, false, (short) 1, null, null);
+		String routeId=null;
+		String strName="";
+		if(mlRoute != null && mlRoute.size() > 0){
+		    	    Map tempMap = null;
+		    	    for(int i = 0; i < mlRoute.size(); i++){
+		    	    	tempMap = (Map) mlRoute.get(i);
+						String strId = (String)tempMap.get("id");
+		    	    	DomainObject perObj=DomainObject.newInstance(context,strId);
+		    	    	strName =perObj.getAttributeValue(context, "Last Name");
+		    	    	//strName +=(String) tempMap.get("name")+";";
+		    	    	
+		    	    }
+		    	 }
+		
+		return strName;
+    }
+    
+    public String getMeetingHostCreate(Context context,String[] args)throws Exception{
+    	String personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+    	DomainObject psObj = new DomainObject(personId);  		
+    	String  strMeetingHost = psObj.getInfo(context, psObj.SELECT_NAME);  		
+    	return strMeetingHost;
+    }
+    
+    public void updateMeetingHost(Context context,String[] args)throws Exception{
+    	try{
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			HashMap paramMap = (HashMap) programMap.get("paramMap");
+			String objectId = (String) paramMap.get("objectId");			
+			String newValueOID = (String) paramMap.get("New OID"); 		    
+			DomainObject obj=DomainObject.newInstance(context,objectId);
+			
+			if(newValueOID != null && !newValueOID.equals(""))
+			{
+				RelationshipType relType = new RelationshipType("Host Meetings");
+				obj.addFromObject(context,relType, newValueOID);										
+			}
+		
+    	}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		
+    }
+    
+    public void personShMetting(Context context,String[] args)throws Exception{
+    	try{
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			HashMap paramMap = (HashMap) programMap.get("paramMap");
+			String objectId = (String) paramMap.get("objectId");			
+			String newValueOID = (String) paramMap.get("New OID"); 		    
+			DomainObject obj=DomainObject.newInstance(context,objectId);
+			String owner = obj.getInfo(context, "owner");
+			String personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+			String[] aa = newValueOID.split(String.format("%c", slash1)+"|");			 
+			String str = new String();
+			for( int i=0;i<aa.length;i++){				 
+				 str = aa[i];
+				
+				if(str != null && !str.equals("") && !str.equals(personId))
+				{
+					RelationshipType relType = new RelationshipType("Assigned Meetings");
+					obj.addFromObject(context,relType, str);										
+				}
+			}
+    	}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		
+    }
+    
+    public String  attendeeMothed(Context context,String[] args)throws Exception{
+    	
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	    	HashMap requestMap = (HashMap) programMap.get("requestMap");
+	    	String objectId=(String)requestMap.get("objectId");
+	    	StringList person=new StringList();
+	    	person.add(DomainObject.SELECT_NAME);
+	    	person.add(DomainObject.SELECT_ID);
+	    	person.add(DomainObject.SELECT_TYPE);
+	    	DomainObject newObj=DomainObject.newInstance(context,objectId);
+	    	MapList mlRoute=newObj.getRelatedObjects(context, "Assigned Meetings", "Person",person , new StringList(DomainConstants.SELECT_RELATIONSHIP_ID), true, false, (short) 1, null, null);
+			String routeId=null;
+			String strName="";
+			if(mlRoute != null && mlRoute.size() > 0){
+			    	    Map tempMap = null;
+			    	    for(int i = 0; i < mlRoute.size(); i++){
+			    	    	tempMap = (Map) mlRoute.get(i);
+							String strId = (String)tempMap.get("id");
+			    	    	DomainObject perObj=DomainObject.newInstance(context,strId);
+			    	    	strName +=perObj.getAttributeValue(context, "Last Name")+";" ;
+			    	    	
+			    	    }
+			    	 }
+			
+			return strName;
+    	
+    	
+    } 
+    @com.matrixone.apps.framework.ui.IncludeOIDProgramCallable
+    public StringList includeMeetingPerson(Context context,String[] args)throws Exception{
+    	StringList includeIdList = new StringList();
+    	try{   		
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);		
+			String objectId = (String) programMap.get("objectId");
+			DomainObject objMeeting = new DomainObject(objectId);
+			StringList busList = new StringList("id");
+			StringList relList = new StringList(DomainRelationship.SELECT_ID);
+			MapList mapList=objMeeting.getRelatedObjects(context, "Meeting Context", "*",busList , relList, true, false, (short) 1, null, null);
+			for(int i=0;i<mapList.size();i++){
+				Map projMap = (Map)mapList.get(i);
+			    String projectId = (String)projMap.get("id");
+			    String objSpaceId = null;
+			    DomainObject obj = new DomainObject(projectId);
+			    String objType = obj.getType(context);
+			    if("Task".equals(objType) || "Gate".equals(objType) || "Milestone".equals(objType)){
+			    	MapList mapList1=obj.getRelatedObjects(context, "Subtask", "Project Space",busList , relList, true, false, (short) 0, null, null);
+			    	for(int j=0;j<mapList1.size();j++){
+						Map projMap1 = (Map)mapList1.get(j);
+						objSpaceId = (String)projMap1.get("id");
+						obj = new DomainObject(objSpaceId);
+					}
+			    }
+			    includeIdList = obj.getInfoList(context, ProgramCentralConstants.SELECT_MEMBER_ID);
+			}
+			
+    	}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+    	return includeIdList;
+    }
+    
+    @com.matrixone.apps.framework.ui.IncludeOIDProgramCallable
+    public StringList includeMeetingPersonCreate(Context context,String[] args)throws Exception{
+    	StringList includeIdList = new StringList();
+    	try{   		
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);			
+			String objectId = (String) programMap.get("objectId");			
+			DomainObject objSpace = DomainObject.newInstance(context,objectId);
+			String strType = objSpace.getType(context);
+			if(strType.equals("Project Space")){
+				includeIdList = objSpace.getInfoList(context, ProgramCentralConstants.SELECT_MEMBER_ID);
+			}
+			if(strType.equals("Task") || strType.equals("Gate")|| strType.equals("Milestone")){
+				StringList busList = new StringList("id");
+				StringList relList = new StringList(DomainRelationship.SELECT_ID);
+				MapList mapList=objSpace.getRelatedObjects(context, "Subtask", "*",busList , relList, true, false, (short) 0, null, null);
+				String projectId = null;
+				for(int i=0;i<mapList.size();i++){
+					Map projMap = (Map)mapList.get(i);
+				    projectId = (String)projMap.get("id");
+				}			
+				DomainObject proSpace = DomainObject.newInstance(context,projectId);
+				includeIdList = proSpace.getInfoList(context, ProgramCentralConstants.SELECT_MEMBER_ID);
+			}
+    	}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+    	return includeIdList;
+    }
+    
+    /**
+     * Access program for Edit Meeting command.
+     *
+     * @param context the eMatrix Context object
+     * @param String array contains Meetings Id
+     * @return boolean
+     * @throws Exception if the operation fails
+     * @since V6 R207 Author : Louis M
+     * @grade 0
+     */
+  public boolean checkEditMeeting(Context context, String[] args) throws Exception {
+	  try{
+		  HashMap programMap = (HashMap)JPO.unpackArgs(args);
+		    String strMeetingId = (String)programMap.get("objectId");
+		    String stateScheduled = (String)FrameworkUtil.lookupStateName(context,
+		                                               DomainObject.POLICY_MEETING,//java.lang.String absolutePolicyName,
+		                                               STATE_SCHEDULED);//java.lang.String symbolicStateName)
+		    //state_InProgress  comment by zhangshuai 3/21/2017
+//		    String stateInProgress = (String)FrameworkUtil.lookupStateName(context,
+//		                                               DomainObject.POLICY_MEETING,//java.lang.String absolutePolicyName,
+//		                                               STATE_IN_PROGRESS);//java.lang.String symbolicStateName)
+		    //end comment
+		    String stateComplete = (String)FrameworkUtil.lookupStateName(context,
+		                                               DomainObject.POLICY_MEETING,//java.lang.String absolutePolicyName,
+		                                               STATE_COMPLETE);//java.lang.String symbolicStateName)
+
+
+		    String strLoggedInUser = context.getUser();
+		    DomainObject MeetingDom = DomainObject.newInstance(context,strMeetingId);
+		    StringList selects = new StringList();
+		    selects.addElement(DomainConstants.SELECT_OWNER);
+		    selects.addElement(DomainConstants.SELECT_CURRENT);
+		    java.util.Map MeetingInfoList = (java.util.Map)MeetingDom.getInfo(context,selects);
+		    String strOwner = (String)MeetingInfoList.get(DomainConstants.SELECT_OWNER);
+		    String strMeetingStatus = (String)MeetingInfoList.get(DomainConstants.SELECT_CURRENT);
+		    if(strLoggedInUser.equals(strOwner)){
+		    	//mod by zhangshuai 3/21/2017 
+		      if (!stateScheduled.equals(strMeetingStatus) && !stateComplete.equals(strMeetingStatus)) {
+		    	  //end mod
+		        return true;
+		      }else return false;
+		    }else
+		      return false;
+
+	  }catch(Exception e){
+		  m_logger.error(e.getMessage(), e);
+		  throw e;
+	  }
+    
+
+  }
+  
+   public Vector  getAttendeeName(Context context,String[] args)throws Exception{
+	  Vector strName =  new Vector();
+	  String attendeeName = null;
+	  try{
+		    HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		  	MapList objPageList = (MapList)programMap.get("objectList");
+		  	for(int i =0;i<objPageList.size();i++){
+		  		Map mapList = (Map)objPageList.get(i);
+		  		String attendeeId = (String)mapList.get("id");	  		
+		  		DomainObject attendeeObj = DomainObject.newInstance(context,attendeeId); 
+		  	    attendeeName = attendeeObj.getAttributeValue(context, "Last Name");
+		  	    strName.add(attendeeName);
+		  	}		  									
+	  }catch(Exception e){
+		  m_logger.error(e.getMessage(), e);
+		  throw e;
+	  }
+	  return strName ;		
+  }
+  
+   public Map createMeetingObject(Context context,String[]args)throws Exception{
+  	 Map returnMap=null;
+  	 try{
+  		 HashMap programMap = (HashMap)JPO.unpackArgs(args);
+  		 String isCheck = (String)programMap.get("autoNameCheck");
+  		 String strName=(String)programMap.get("Name");	
+  		 long currentTime=new Date().getTime();
+  		 String revision= Long.toString(currentTime);
+  		 DomainObject dom=new DomainObject();
+  		 if("true".equals(isCheck)){
+  			 String objID = FrameworkUtil.autoName(context,"type_Meeting","","policy_Meeting");
+  	   		 returnMap = new HashMap();
+  	   		 returnMap.put("id", objID);
+  		 }else{
+  			dom.createObject(context, "Meeting",strName ,revision, "Meeting", "eService Production");
+  			String projectId =dom.getInfo(context, "id");
+  	   		returnMap = new HashMap();
+  	   		returnMap.put("id", projectId);
+  		 }  		   		   		 
+  	 }catch(Exception e){
+  		 m_logger.error(e.getMessage(), e);
+		 throw new MatrixException(e.getMessage());
+  	 }  	 
+  	 return returnMap;
+   }
+   
+    public void promoteSEMContactOrder(Context context,String[] args)throws Exception{
+   	try{
+   		String strSCOId = args[0];
+		DomainObject scoObj = new DomainObject(strSCOId);
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList mapList=scoObj.getRelatedObjects(context, "SEM Meeting ContactOrder", "Meeting",busList , relList, true, false, (short) 1, null, null);
+		for(int i =0;i<mapList.size();i++){
+	  		Map map = (Map)mapList.get(i);
+	  		String meetId = (String)map.get("id");	  		
+	  		DomainObject meetObj = DomainObject.newInstance(context,meetId);
+	  		MapList mapList1 = meetObj.getRelatedObjects(context, "Decision,Issue", "*",busList , relList, true, false, (short) 1, null, null);	
+	  		for(int j=0;j<mapList1.size();j++){
+	  			Map map1 = (Map)mapList1.get(j);
+		  		String decIssId = (String)map1.get("id");
+		  		DomainObject decIssObj = DomainObject.newInstance(context,decIssId);
+		  		String strCurrent = decIssObj.getInfo(context, "current");
+	  			if("Active".equals(strCurrent)){
+	  				decIssObj.promote(context);
+	  			}
+	  			if("Create".equals(strCurrent)){
+	  				decIssObj.promote(context);
+	  			}
+	  			
+	  		}
+		}
+   	}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw e;
+		}
+		
+   }
+}
+
+
+

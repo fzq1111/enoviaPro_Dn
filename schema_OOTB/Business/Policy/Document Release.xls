@@ -1,0 +1,84 @@
+State	User	Read	Modify	Delete	Checkout	Checkin	Schedule	Lock	Unlock	Execute	Freeze	Thaw	Create	Revise	MajorRevise	Promote	Demote	Grant	Enable	Disable	Override	ChangeName	ChangeType	ChangeOwner	ChangePolicy	Revoke	ChangeVault	FromConnect	ToConnect	FromDisconnect	ToDisconnect	ViewForm	Modifyform	Show	Filter
+PRIVATE	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+PRIVATE	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+PRIVATE	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+PRIVATE	Global User	Y	Y	-	Y	Y	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	,,(((to[Message Attachments].id != '') || (to[Meeting Attachments].id != '')) && ((to[Message Attachments].from.type == 'Message' && to[Message Attachments].from.current.access[read,checkout] ~~ true && (!to[Vaulted Objects].id != '')) ||(to[Meeting Attachments].from.type == 'Meeting Attachments' && to[Meeting Attachments].from.current.access[read,checkout] ~~ true && (!to[Vaulted Objects].id != ''))))
+PRIVATE	Grant	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	-	-	Y	Y	-	-	-	-	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	-	-	Y	
+PRIVATE	Public Compliance Modify	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	to[Reference Document].from[Compliance Enterprise Part,Compliance Plant Specific Part,Compliance Reported Part,Material,Material Declaration].current.access[modify] ~~ true
+PRIVATE	Supplier Modify	Y	Y	-	Y	Y	-	Y	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	(to[Task Deliverable].from.to[Project Access Key].from.from[Project Access List].to.type ~~ 'Part Quality Plan') && (to[Task Deliverable].from.to[Assigned Tasks].from.name ~~ context.user)
+PRIVATE	VPLMAdmin	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+PRIVATE	VPLMCreator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+PRIVATE	VPLMProjectAdministrator	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	,,
+PRIVATE	VPLMProjectLeader	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	Y	Y	Y	Y	-	-	-	
+IN_WORK	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+IN_WORK	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+IN_WORK	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+IN_WORK	Global User	Y	Y	-	Y	Y	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	(((to[Message Attachments].id != '') || (to[Meeting Attachments].id != '')) && ((to[Message Attachments].from.type == 'Message' && to[Message Attachments].from.current.access[read,checkout] ~~ true && (!to[Vaulted Objects].id != '')) ||(to[Meeting Attachments].from.type == 'Meeting Attachments' && to[Meeting Attachments].from.current.access[read,checkout] ~~ true && (!to[Vaulted Objects].id != ''))))
+IN_WORK	Grant	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	-	-	Y	Y	-	-	-	-	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	-	-	Y	
+IN_WORK	Public Compliance Modify	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	to[Reference Document].from[Compliance Enterprise Part,Compliance Plant Specific Part,Compliance Reported Part,Material,Material Declaration].current.access[modify] ~~ true
+IN_WORK	Supplier Modify	Y	Y	-	Y	Y	-	Y	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	(to[Task Deliverable].from.to[Project Access Key].from.from[Project Access List].to.type ~~ 'Part Quality Plan') && (to[Task Deliverable].from.to[Assigned Tasks].from.name ~~ context.user)
+IN_WORK	VPLMCreator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+IN_WORK	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+IN_WORK	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	expression[OrganizationPublicAccess]
+IN_WORK	VPLMProjectAdministrator	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	Y	Y	Y	Y	-	-	-	
+IN_WORK	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+IN_WORK	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+FROZEN	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+FROZEN	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+FROZEN	Grant	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+FROZEN	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+FROZEN	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	expression[OrganizationPublicAccess]
+FROZEN	VPLMProjectAdministrator	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	Y	Y	Y	Y	-	-	-	
+FROZEN	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+FROZEN	VPLMReleaseManager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+FROZEN	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+RELEASED	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+RELEASED	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+RELEASED	Global User	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+RELEASED	Grant	Y	-	-	Y	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+RELEASED	VPLMAdmin	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+RELEASED	VPLMCreator	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+RELEASED	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+RELEASED	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	expression[OrganizationPublicAccess]
+RELEASED	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+RELEASED	VPLMReleaseManager	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+RELEASED	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+OBSOLETE	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+OBSOLETE	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+OBSOLETE	Global User	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+OBSOLETE	Grant	Y	-	-	Y	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+OBSOLETE	VPLMAdmin	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+OBSOLETE	VPLMCreator	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+OBSOLETE	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+OBSOLETE	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	expression[OrganizationPublicAccess]
+OBSOLETE	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+OBSOLETE	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+allstate	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+allstate	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+allstate	Access Grantor	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	Y	-	-	Y	-	Y	-	-	Y	
+allstate	Advanced Quality Engineer	Y	-	-	Y	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	(to[Task Deliverable].from.to[Project Access Key].from.from[Project Access List].to.type ~~ 'Part Quality Plan' ) && (to[Task Deliverable].from.current ~~ 'Active' || to[Task Deliverable].from.current ~~ 'Review' || to[Task Deliverable].from.current ~~ 'Complete' )
+allstate	Buyer	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	context.user.property[Company Key].value == attribute[Primary Key] || context.user.property[Company Key].value ~~ attribute[Secondary Keys]
+allstate	Buyer Administrator	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	context.user.property[Company Key].value == attribute[Primary Key] || context.user.property[Company Key].value ~~ attribute[Secondary Keys]
+allstate	Customer	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	context.user.property[Company Key].value == attribute[Primary Key]
+allstate	Employee	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	program[emxDocument -method isCLCDocument -construct ${OBJECTID}] == true || ((to[Reference Document].from.type == 'Engineering Change') && (to[Reference Document].from.current.access[read] ~~ true))
+allstate	Exchange User	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	to[Vaulted Objects].from[Project Vault].current.access[read] ~~ true
+allstate	Global Template Administrator	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	(to[Reference Document].from.type.kindof[Characteristic] ~~ TRUE)
+allstate	Global User	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	,(((to[Message Attachments].id != '') || (to[Meeting Attachments].id != '')) && ((to[Message Attachments].from.type == 'Message' && to[Message Attachments].from.current.access[read,checkout] ~~ true && (!to[Vaulted Objects].id != '')) ||(to[Meeting Attachments].from.type == 'Meeting' && to[Meeting Attachments].from.current.access[read,checkout] ~~ true && (!to[Vaulted Objects].id != ''))))
+allstate	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[Resolved To].from.owner || context.user == to[Resolved To].from.to[Assigned EC].from.name
+allstate	Public Compliance Read	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	to[Reference Document].from[Compliance Enterprise Part,Compliance Plant Specific Part,Compliance Reported Part,Material,Material Declaration].current.access[read] ~~ true
+allstate	Public Disconnect	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	to[Reference Document,Message Attachments].from.current.access[delete] ~~ TRUE
+allstate	Public Modify	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	current.access[modify] ~~ true
+allstate	Requirement Manager	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	Y	to[Reference Document].from[Requirement].exists ~~ 'TRUE'
+allstate	Sales Engineer	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	context.user.property[Company Key].value == attribute[Primary Key]
+allstate	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+allstate	Specification Manager	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	(to[Reference Document].from.type.kindof[Technical Specification] ~~ TRUE) || (to[Reference Document].from.type.kindof[Characteristic] ~~ TRUE)
+allstate	Specification Restricted User	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	(to[Reference Document].from.type.kindof[Technical Specification] ~~ TRUE) || (to[Reference Document].from.type.kindof[Characteristic] ~~ TRUE)
+allstate	Supplier	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	context.user.property[Company Key].value == attribute[Primary Key] || context.user.property[Company Key].value ~~ attribute[Secondary Keys]
+allstate	Supplier Modify	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	(to[Task Deliverable].from.to[Project Access Key].from.from[Project Access List].to.type ~~ 'Part Quality Plan') && (to[Task Deliverable].from.to[Assigned Tasks].from.name ~~ context.user)
+allstate	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+allstate	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+allstate	Template Administrator	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	(to[Reference Document].from.type.kindof[Characteristic] ~~ TRUE)
+allstate	VPLMAdmin	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	,,
+allstate	VPLMLocalCrossOrgContextAccess	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+allstate	Workspace Lead Grantor	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+

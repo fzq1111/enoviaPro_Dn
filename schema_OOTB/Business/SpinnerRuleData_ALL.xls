@@ -1,0 +1,17 @@
+Rule Name	Registry Name	Description	Programs (use "|" delim)	Attributes (use "|" delim)	Relationships (use "|" delim)	Forms (use "|" delim)	Access (use "|" delim)	Hidden (boolean)	Icon File
+ComponentMaterialRule	ComponentMaterialRule	Rule to govern access on component material relationship			Component Material		Global User | VPLMViewer | Compliance Engineer	FALSE
+SourcingBuyerRule	SourcingBuyerRule	rule for sourcing buyer data		RFQ Header XML | Line Item XML			System Transition Manager | System Conversion Manager | Shadow Agent | Buyer | Customer	FALSE
+ReleasedGBOM	ReleasedGBOM	Rule to govern access on GBOM relationship			GBOM | Custom GBOM		Product Manager | System Engineer | Design Engineer | Employee | Access Grantor | Public Add | VPLMLocalCrossPrjContextAccess | VPLMLocalCrossOrgContextAccess | VPLMSecuredCrossAccess | Grant | VPLMProjectLeader	FALSE
+VPLM_SMB_INSTANCE	VPLM_SMB_INSTANCE	Describes the security of VPLM instances for Team Engineering applications			PLMInstance		Grant | VPLMViewer | VPLMCreator | VPLMCreator | VPLMCreator | VPLMCreator | VPLMCreator | VPLMProjectLeader | VPLMProjectLeader | VPLMProjectLeader | VPLMSecuredCrossAccess | VPLMLocalCrossPrjContextAccess | Grant | Grant | VPLMViewer | VPLMViewer | VPLMExperimenter | VPLMExperimenter | VPLMExperimenter | VPLMExperimenter | VPLMExperimenter | VPLMExperimenter | VPLMExperimenter | VPLMExperimenter | VPLMExperimenter | VPLMExperimenter | VPLMCreator | VPLMCreator | VPLMCreator	FALSE
+VPLM_UNSECURED_REL	VPLM_UNSECURED_REL				VPLMrel/PLMConnection/V_Owner | VPLMrel/PLMPort/V_Owner | VPLMrel/VPMSemanticRelation		VPLMAdmin | Grant | Grant | Grant | VPLMSecuredCrossAccess | VPLMLocalCrossPrjContextAccess	FALSE
+VPLM_SMB_DocumentCheck	VPLM_SMB_DocumentCheck	Describes the security of VPLM document check-in/check-out for Team Engineering applications		V_CheckedOutUser			VPLMCreator | VPLMLocalCrossPrjContextAccess | VPLMProjectLeader | VPLMReleaseManager | VPLMProjectAdministrator | VPLMSecuredCrossAccess	FALSE
+VPLM_SMB_UNSECURED_INSTANCE		Describes the security of VPLM unsecured instances for all applications			PLMRETokenTransferItem | LPPrivateRepInstance | PLMPosResourceInst | XCADAssemblyRepInstance		Grant	FALSE
+VPLM_SMB_ENOSTTaskChildAction	VPLM_SMB_ENOSTTaskChildAction	Describes the security of VPLM Task instances			PLMTaskChildAction | ENOSTTaskChildAction			FALSE
+VPLM_SMB_CATMpgRepInstance		Describes the security of VPLM mapping representation instances for all applications			CATMpgRepInstance		Grant	FALSE
+VPLM_SMB_PLMCCDBriefcaseRepInst		Describes the security of VPLM briefcase representation instances for all applications			PLMCCDBriefcaseRepInst		Grant	FALSE
+VPLM_SMB_RFLPLMReqInstance		Describes the security of VPLM requirement instances for all applications			RFLPLMReqChapterInstance | RFLPLMReqCommentInstance | RFLPLMReqSpecificationInstance | RFLPLMRequirementInstance		Grant	FALSE
+WSLocalReserveRule					WSLocalReserve			FALSE
+WSParentReserveRule					WSParentReserve			FALSE
+SPPRelationRule		Rule needed for SPP Relation			SPPRelation		VPLMLocalCrossPrjContextAccess	FALSE
+VPLM_SMB_ENOWSP_WorkspaceInst		Describes the security of Design Workspace instances for all applications			ENOWSP_WorkspaceInst			FALSE
+

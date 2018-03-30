@@ -1,0 +1,94 @@
+State	User	Read	Modify	Delete	Checkout	Checkin	Schedule	Lock	Unlock	Execute	Freeze	Thaw	Create	Revise	MajorRevise	Promote	Demote	Grant	Enable	Disable	Override	ChangeName	ChangeType	ChangeOwner	ChangePolicy	Revoke	ChangeVault	FromConnect	ToConnect	FromDisconnect	ToDisconnect	ViewForm	Modifyform	Show	Filter
+Propose	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Propose	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Propose	Employee	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	context.user ~~ to[Assigned Test Case].businessobject.name || context.user.assignment ~~ to[Assigned Test Case].businessobject.name || context.user.assignment ~~ to[Assigned Test Case].businessobject.revision
+Propose	Global User	Y	Y	Y	Y	Y	-	-	-	-	-	-	-	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	
+Propose	Grant	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Propose	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Propose	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Resolved To].from.owner || context.user == to[Resolved To].from.to[Assigned EC].from.name || context.user == to[EC Test Case].from.owner || context.user == to[EC Test Case].from.to[Assigned EC].from.name
+Propose	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name
+Propose	Requirement Manager	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Propose	Requirement Viewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Propose	Software Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Propose	Software Engineer Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Propose	System Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Propose	VPLMAdmin	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Propose	VPLMCreator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Propose	VPLMProjectAdministrator	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Propose	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Approve	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Approve	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Approve	Employee	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	context.user ~~ to[Assigned Test Case].businessobject.name || context.user.assignment ~~ to[Assigned Test Case].businessobject.name || context.user.assignment ~~ to[Assigned Test Case].businessobject.revision
+Approve	Global User	Y	Y	Y	Y	Y	-	-	-	-	-	-	Y	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	
+Approve	Grant	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Approve	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Approve	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Resolved To].from.owner || context.user == to[Resolved To].from.to[Assigned EC].from.name || context.user == to[EC Test Case].from.owner || context.user == to[EC Test Case].from.to[Assigned EC].from.name
+Approve	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name
+Approve	Requirement Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Approve	Requirement Viewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Approve	Software Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Approve	Software Engineer Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Approve	System Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Approve	VPLMAdmin	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Approve	VPLMCreator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Approve	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Approve	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Approve	VPLMProjectAdministrator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Approve	VPLMProjectLeader	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Approve	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Validate	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Validate	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Validate	Employee	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	context.user ~~ to[Assigned Test Case].businessobject.name || context.user.assignment ~~ to[Assigned Test Case].businessobject.name || context.user.assignment ~~ to[Assigned Test Case].businessobject.revision
+Validate	Global User	Y	Y	Y	Y	Y	-	-	-	-	-	-	Y	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	
+Validate	Grant	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Validate	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Validate	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Resolved To].from.owner || context.user == to[Resolved To].from.to[Assigned EC].from.name || context.user == to[EC Test Case].from.owner || context.user == to[EC Test Case].from.to[Assigned EC].from.name
+Validate	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name
+Validate	Requirement Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Validate	Requirement Viewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Validate	Software Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Validate	Software Engineer Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Validate	System Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Validate	VPLMAdmin	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Validate	VPLMCreator	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Validate	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Validate	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Validate	VPLMProjectAdministrator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Validate	VPLMProjectLeader	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Validate	VPLMReleaseManager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Validate	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Complete	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	Employee	Y	Y	-	Y	-	-	-	-	Y	-	-	-	-	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Test Case].businessobject.name || context.user.assignment ~~ to[Assigned Test Case].businessobject.name || context.user.assignment ~~ to[Assigned Test Case].businessobject.revision
+Complete	Global User	Y	Y	Y	Y	Y	-	-	-	-	-	-	Y	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	
+Complete	Grant	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	-	-	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Complete	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Resolved To].from.owner || context.user == to[Resolved To].from.to[Assigned EC].from.name || context.user == to[EC Test Case].from.owner || context.user == to[EC Test Case].from.to[Assigned EC].from.name
+Complete	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name
+Complete	Requirement Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	Requirement Viewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Complete	Software Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Complete	Software Engineer Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Complete	System Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Complete	VPLMAdmin	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	VPLMCreator	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Complete	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	VPLMReleaseManager	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Obsolete	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Obsolete	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Obsolete	Grant	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Obsolete	Requirement Viewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Obsolete	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Obsolete	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Obsolete	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+allstate	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+allstate	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+allstate	Global User	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+allstate	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+allstate	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+allstate	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+allstate	VPLMLocalCrossOrgContextAccess	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+

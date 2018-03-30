@@ -1,0 +1,35 @@
+var params = proc.declareParameters(["type"], ["label"]);
+
+var derivedTypeArray = new Array();
+var globalError = null;
+mql.startTransaction(true);
+var next = true;
+var currentType = type;
+while (next) {
+    next = false;
+    var cmd = "print rel " + params.addVar(currentType) + " select derived";
+    cmd += " dump" + params.addVar(",");
+    var mqlResult = mql.execute(null, cmd, params, mql.RETURN_RESULT | mql.SILENT);
+    params.clear();
+    if (mqlResult.success) {
+        var currentType = mqlResult.result.trim();
+        if (next = (currentType.length > 0)) {
+            derivedTypeArray.push(currentType);
+        }
+    }
+    else {
+        globalError = {
+            errorcode: "OPERATION_ERROR",
+            errormsg: mqlResult.error
+        };
+    }
+}
+mql.abortTransaction();
+
+if (null == globalError) {
+    proc.write(label, JSON.stringify(derivedTypeArray), null);
+}
+else {
+    proc.write(label, null, JSON.stringify(globalError));
+}
+

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ds:services xmlns:ds="http://www.3ds.com/enovia/e6wv2"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.3ds.com/enovia/e6wv2 servicesv2.xsd">
+
+    <ds:service name="images">
+        <ds:data>
+            <ds:jpo classname="com.dassault_systemes.enovia.image.ImageService" function="getImages" returnedData="idsAndData"/>
+            <ds:updatejpo classname="com.dassault_systemes.enovia.image.ImageService" function="updateImage"/>
+        </ds:data>
+
+        <ds:field name="primaryImage"><ds:selectable expression="attribute[Primary Image]" type="bus"/></ds:field>
+        <ds:field name="primaryImageURL"><ds:image source="primaryImage" size="thumbnail" expression="id" /></ds:field>
+        <ds:field name="collabspace"><ds:selectable expression="project" type="bus"/></ds:field>
+        <ds:field name="originated"><ds:selectable expression="originated" type="bus" format="utc"/></ds:field>
+        <ds:field name="modified" includeByDefault="no"><ds:selectable expression="modified" type="bus" format="utc"/></ds:field>
+        <ds:field name="hasModifyAccess" includeByDefault="no"><ds:selectable expression="current.access[modify,checkin]" type="bus"/></ds:field>
+        <ds:field name="hasDeleteAccess" includeByDefault="no"><ds:selectable expression="current.access[delete]" type="bus"/></ds:field>
+        <ds:field name="imageNames" includeByDefault="no"><ds:selectable expression="format[generic].file.name" type="bus" multivalue="true"/></ds:field>
+        <ds:field name="imageSizes" includeByDefault="no"><ds:selectable expression="format[generic].file.size" type="bus" multivalue="true"/></ds:field>
+        <ds:field name="parentId" includeByDefault="never"><ds:selectable type="key"/></ds:field>
+        <ds:field name="fcsReceipt" includeByDefault="never"><ds:selectable type="key"/></ds:field>
+        <ds:field name="primaryImageActualFileName" description="used when the file name in the receipt does not correspond to the one wanted in the MCS.
+          This should contain the name of the file checked in to the FCS which will become the primaryImage.
+          The name will then be overwritten." includeByDefault="never" ><ds:selectable type="key" format="transient"/></ds:field>
+        <ds:subservice name="parents" includeByDefault="no">
+            <ds:data>
+                <ds:expand relationshipPattern="Image Holder" getFrom="true"/>
+                <ds:updatejpo classname="com.dassault_systemes.enovia.image.ImageService" function="updateParent"/>
+            </ds:data>
+            <ds:field name="type"><ds:selectable expression="type" type="bus" format="type"/></ds:field>
+            <ds:field name="name"><ds:selectable expression="name" type="bus" /></ds:field>
+        </ds:subservice>
+
+        <ds:subservice name="CheckinTicket" includeByDefault="never">
+            <ds:data csrf="false">
+                <ds:updatejpo classname="com.dassault_systemes.enovia.image.ImageService" function="requestCheckinTicket">
+                    <ds:arg arg-name="action" arg-value="checkin"/>
+                    <ds:arg arg-name="level" arg-value="file-level"/>
+                </ds:updatejpo>
+            </ds:data>
+	          <ds:field name="ticketURL"><ds:selectable type="key"/></ds:field>
+            <ds:field name="ticket"><ds:selectable type="key"/></ds:field>
+            <ds:field name="ticketparamname"><ds:selectable type="key"/></ds:field>
+        </ds:subservice>
+
+    </ds:service>
+
+</ds:services>
+

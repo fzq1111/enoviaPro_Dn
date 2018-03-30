@@ -1,0 +1,62 @@
+/*
+**  ${CLASSNAME}.java
+**
+**  Copyright Dassault Systemes, 1992-2015.
+**  All Rights Reserved.
+**  This program contains proprietary and trade secret information of Dassault Systemes and its 
+**  subsidiaries, Copyright notice is precautionary only
+**  and does not evidence any actual or intended publication of such program
+**	
+**	Whenever the C3DViewable relationship gets deleted then it will trigger a Delete Override trigger,
+**  which will call this program. This JPO will take care of deleting C3DViewable and its connected C3DAutoVueMarkups objects.
+**  This JPO accepts three arguments, From side object ID, To side object ID and 
+**  Relationship ID for the objects connected by C3DViewale relationship.
+*/
+
+import matrix.db.Context;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.ds.enovia.vif.util.ENOVIFUtil;
+
+public class ${CLASSNAME} {
+	
+	//private static final Trace _trace = new Trace();
+	
+    public ${CLASSNAME}() {
+    //System.out.println("[${CLASSNAME}:${CLASSNAME}]Default constructor.");
+    }
+    
+	public ${CLASSNAME} (Context context, String[] args) /*throws Exception*/ {
+	//System.out.println("[${CLASSNAME}:${CLASSNAME}]Args constructor.");
+	}
+	
+	public int deleteConnectedC3DViewableAndAVMarkups(matrix.db.Context context, String[] args) /*throws Exception*/
+    {	
+		int nReturn =0;
+		try
+		{
+			//System.out.println("[${CLASSNAME}:DeleteConnectedC3DViewableAndAVMarkups] Args Length:" + args.length);
+			/*for(int i = 0; i<args.length;i++)
+			{
+				System.out.println("[[${CLASSNAME}:${CLASSNAME}]args: " + i + " " + args[i]);
+			}*/
+			
+			ContextUtil.startTransaction(context, true);
+			
+			//Call util function to take care of deletion of C3DAutoVueMarkups and C3DViewable objects.
+			ENOVIFUtil.deleteConnectedC3DViewableOrMarkups(context, args);
+		
+			ContextUtil.commitTransaction(context);
+		
+			nReturn = 1;
+		}	
+		catch(Exception excp)
+		{
+			System.out.println("[${CLASSNAME}:deleteConnectedC3DViewableAndAVMarkups] Exception occured: " + excp.getMessage());
+			excp.printStackTrace();			
+			ContextUtil.abortTransaction(context);			
+		}
+		return nReturn;
+	}
+}
+
+

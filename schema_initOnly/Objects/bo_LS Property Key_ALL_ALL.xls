@@ -1,0 +1,120 @@
+Type	Name	Rev	New Name	New Rev	Policy	State	Vault	Owner	description	LS Attribute3	LS Attribute5	LS Attribute4	LS Index Key2	LS Index Key1	LS Attribute1	LS Attribute2	LS Index Key3
+LS Property Key	PK-000001	-	PK-000001	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	通用		
+LS Property Key	PK-000002	-	PK-000002	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	F		
+LS Property Key	PK-000003	-	PK-000003	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	PJ		
+LS Property Key	PK-000004	-	PK-000004	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	PL		
+LS Property Key	PK-000005	-	PK-000005	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	PT		
+LS Property Key	PK-000006	-	PK-000006	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	PP		
+LS Property Key	PK-000007	-	PK-000007	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	PJL		
+LS Property Key	PK-000008	-	PK-000008	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	PLT		
+LS Property Key	PK-000009	-	PK-000009	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	F2		
+LS Property Key	PK-000010	-	PK-000010	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	PJ2		
+LS Property Key	PK-000011	-	PK-000011	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	PL2		
+LS Property Key	PK-000012	-	PK-000012	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Phase	PT2		
+LS Property Key	PK-000013	-	PK-000013	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	通用		
+LS Property Key	PK-000014	-	PK-000014	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	市调问题	MR	
+LS Property Key	PK-000015	-	PK-000015	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	SEG造型问题	ST	
+LS Property Key	PK-000016	-	PK-000016	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	SEG工程问题	SE	
+LS Property Key	PK-000017	-	PK-000017	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	构造检讨问题	DD	
+LS Property Key	PK-000018	-	PK-000018	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	试装冲压问题	CY	
+LS Property Key	PK-000019	-	PK-000019	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	试装焊装问题	HZ	
+LS Property Key	PK-000020	-	PK-000020	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	试装涂装问题	TZ	
+LS Property Key	PK-000021	-	PK-000021	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	试装总装问题	ZZ	
+LS Property Key	PK-000022	-	PK-000022	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	车检问题	VI	
+LS Property Key	PK-000023	-	PK-000023	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	评价问题	VA	
+LS Property Key	PK-000024	-	PK-000024	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	车辆测试问题	VT	
+LS Property Key	PK-000025	-	PK-000025	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	性能测试问题	VP	
+LS Property Key	PK-000026	-	PK-000026	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	试乘试驾问题	TD	
+LS Property Key	PK-000027	-	PK-000027	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	专案问题	PM	
+LS Property Key	PK-000028	-	PK-000028	-	LS Property Key	Active	eService Production	Test Everything						SEM Issue Type	投资问题	IC	
+LS Property Key	PK-000029	-	PK-000029	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	通用	Gate资料	
+LS Property Key	PK-000030	-	PK-000030	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	生技	设备治工具图面	
+LS Property Key	PK-000031	-	PK-000031	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生技	生产准备状况	
+LS Property Key	PK-000032	-	PK-000032	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	生技	副料清单	
+LS Property Key	PK-000033	-	PK-000033	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	生技	标准工时	
+LS Property Key	PK-000034	-	PK-000034	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	市研	价量表	
+LS Property Key	PK-000035	-	PK-000035	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	销售	报告书	
+LS Property Key	PK-000036	-	PK-000036	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	销售	行销计划	
+LS Property Key	PK-000037	-	PK-000037	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	销售	定价报告	
+LS Property Key	PK-000038	-	PK-000038	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	研究院	设计构想	
+LS Property Key	PK-000039	-	PK-000039	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	研究院	设计计划	
+LS Property Key	PK-000040	-	PK-000040	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	研究院	设计评审	
+LS Property Key	PK-000041	-	PK-000041	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	研究院	提前发估零件清单	
+LS Property Key	PK-000042	-	PK-000042	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	研究院	EPL	
+LS Property Key	PK-000043	-	PK-000043	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	研究院	DFMEA	
+LS Property Key	PK-000044	-	PK-000044	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	研究院	问题报表	
+LS Property Key	PK-000045	-	PK-000045	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	研究院	技术资料	
+LS Property Key	PK-000046	-	PK-000046	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	造型	CPL	
+LS Property Key	PK-000047	-	PK-000047	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	造型	CG 效果图	
+LS Property Key	PK-000048	-	PK-000048	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	造型	造型数据	
+LS Property Key	PK-000049	-	PK-000049	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	造型	造型报告书	
+LS Property Key	PK-000050	-	PK-000050	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	造型	验收单	
+LS Property Key	PK-000051	-	PK-000051	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	造型	供览记录	
+LS Property Key	PK-000052	-	PK-000052	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	造型	造型计划	
+LS Property Key	PK-000053	-	PK-000053	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	通用	专案会资料	
+LS Property Key	PK-000054	-	PK-000054	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	通用	投资损益	
+LS Property Key	PK-000055	-	PK-000055	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	通用	其他	
+LS Property Key	PK-000056	-	PK-000056	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	采购	零件成本表	
+LS Property Key	PK-000057	-	PK-000057	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	采购	成本低减工作	
+LS Property Key	PK-000058	-	PK-000058	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	服务	精品开发项目管制表	
+LS Property Key	PK-000059	-	PK-000059	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	服务	评价报表	
+LS Property Key	PK-000060	-	PK-000060	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	开发	厂商发估定点状况	
+LS Property Key	PK-000061	-	PK-000061	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	开发	零件开发状况	
+LS Property Key	PK-000062	-	PK-000062	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	开发	开发管制报表	
+LS Property Key	PK-000063	-	PK-000063	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	秘书处	新车型开发大日程(DO)	
+LS Property Key	PK-000064	-	PK-000064	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	秘书处	投资报告	
+LS Property Key	PK-000065	-	PK-000065	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	秘书处	投资状况表	
+LS Property Key	PK-000066	-	PK-000066	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	秘书处	损益表	
+LS Property Key	PK-000067	-	PK-000067	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	品管	检测报告	
+LS Property Key	PK-000068	-	PK-000068	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	品管	ISIR判定状况	
+LS Property Key	PK-000069	-	PK-000069	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	品管	APQP	
+LS Property Key	PK-000070	-	PK-000070	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	品管	单品会检状况	
+LS Property Key	PK-000071	-	PK-000071	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	品管	车检报表	
+LS Property Key	PK-000072	-	PK-000072	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	品管	整车品质目标	
+LS Property Key	PK-000073	-	PK-000073	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	品管	完成车检查基准	
+LS Property Key	PK-000074	-	PK-000074	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	品管	品质玉成TEAM	
+LS Property Key	PK-000075	-	PK-000075	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	品管	品确会资料	
+LS Property Key	PK-000076	-	PK-000076	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	品管	五门一盖精度数据	
+LS Property Key	PK-000077	-	PK-000077	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	商企	市调报告	
+LS Property Key	PK-000078	-	PK-000078	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	商企	商品企划书	
+LS Property Key	PK-000079	-	PK-000079	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	商企	开发目标值	
+LS Property Key	PK-000080	-	PK-000080	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	商企	项目报告书	
+LS Property Key	PK-000081	-	PK-000081	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	商企	仕样需求书	
+LS Property Key	PK-000082	-	PK-000082	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	商企	PPL-仕样配置表	
+LS Property Key	PK-000083	-	PK-000083	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生产	试装细计划	
+LS Property Key	PK-000084	-	PK-000084	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生产	4M+Q资料	
+LS Property Key	PK-000085	-	PK-000085	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生管	生产PPL	
+LS Property Key	PK-000086	-	PK-000086	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生管	试装计划	
+LS Property Key	PK-000087	-	PK-000087	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生管	量产拉升计划	
+LS Property Key	PK-000088	-	PK-000088	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生管	生产PPL	
+LS Property Key	PK-000089	-	PK-000089	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生管	请购清单	
+LS Property Key	PK-000090	-	PK-000090	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生管	物流包装	
+LS Property Key	PK-000091	-	PK-000091	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生技	Sub Assy推动List	
+LS Property Key	PK-000092	-	PK-000092	-	LS Property Key	Active	eService Production	Test Everything		秘密				SEM File Compiled Department	生技	AOS（四大车间）	
+LS Property Key	PK-000093	-	PK-000093	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生技	生产规划	
+LS Property Key	PK-000094	-	PK-000094	-	LS Property Key	Active	eService Production	Test Everything		普通				SEM File Compiled Department	生技	试装报表	
+LS Property Key	PK-000095		PK-000095		LS Property Key	Active	eService Production	Test Everything		机密				SEM File Compiled Department	商企	测试	
+LS Property Key	PK-000096		PK-000096		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	D560		专案问题
+LS Property Key	PK-000097		PK-000097		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	B9F0	D560	试乘试驾问题
+LS Property Key	PK-000098		PK-000098		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	D580		市调问题
+LS Property Key	PK-000099		PK-000099		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	D530		SEG造型问题
+LS Property Key	PK-000100		PK-000100		LS Property Key	Active	eService Production	Test Everything		D130			默认	SEM Issue Authorization	D1B0	D530	SEG工程问题
+LS Property Key	PK-000101		PK-000101		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	D1B0	D130	构造检讨问题
+LS Property Key	PK-000102		PK-000102		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	C160	C290	试装冲压问题
+LS Property Key	PK-000103		PK-000103		LS Property Key	Active	eService Production	Test Everything		C280			默认	SEM Issue Authorization	C120	C270	试装焊装问题
+LS Property Key	PK-000104		PK-000104		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	C130	C220	试装涂装问题
+LS Property Key	PK-000105		PK-000105		LS Property Key	Active	eService Production	Test Everything		C140			默认	SEM Issue Authorization	C2A0	C2B0	试装总装问题
+LS Property Key	PK-000106		PK-000106		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	D320		车检问题
+LS Property Key	PK-000107		PK-000107		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	E180		评价问题
+LS Property Key	PK-000108		PK-000108		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	D150		车辆测试问题
+LS Property Key	PK-000109		PK-000109		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	D180		性能测试问题
+LS Property Key	PK-000110		PK-000110		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Authorization	D570		投资问题
+LS Property Key	PK-000111		PK-000111		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Viewer	D150		车辆测试问题
+LS Property Key	PK-000112		PK-000112		LS Property Key	Active	eService Production	Test Everything					默认	SEM Issue Viewer	D180		性能测试问题
+LS Property Key	PK-000113		PK-000113		LS Property Key	Active	eService Production	Test Everything					项目PX	SEM Issue Viewer			车辆测试问题
+LS Property Key	PK-000114		PK-000114		LS Property Key	Active	eService Production	Test Everything					项目PX	SEM Issue Viewer			性能测试问题
+LS Property Key	PK-000115		PK-000115		LS Property Key	Active	eService Production	Test Everything					部窗口	SEM Issue Viewer	D100		车辆测试问题
+LS Property Key	PK-000116		PK-000116		LS Property Key	Active	eService Production	Test Everything					部窗口	SEM Issue Viewer	D100		性能测试问题
+LS Property Key	PK-000117		PK-000117		LS Property Key	Active	eService Production	Test Everything					设计PM	SEM Issue Viewer			车辆测试问题
+LS Property Key	PK-000118		PK-000118		LS Property Key	Active	eService Production	Test Everything					设计PM	SEM Issue Viewer			性能测试问题
+LS Property Key	PK-000119		PK-000119		LS Property Key	Active	eService Production	Test Everything						SEM DrawingBom Action	D1B0		

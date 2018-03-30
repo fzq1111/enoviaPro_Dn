@@ -1,0 +1,35 @@
+tcl;
+eval {
+	puts "Start MyApps HF2 downgrade"
+
+	mql mod attribute "App Quadrant" rem range = Search rem range = Remote rem range = Profile rem range = Notifications rem range = MultiWidget;
+
+	mql mod type "AppDefinition" rem attribute "App Compatibility";
+ 
+	mql del attribute "App Compatibility" ;
+	
+	mql mod type "AppDefinition" rem attribute "App Error";
+	
+	mql del attribute "App Error" ;
+
+	mql mod type "Computing Environment" rem attribute "Environment OTT";
+
+	mql del attribute "Environment OTT";
+	
+	mql mod type "RoleDefinition" rem attribute "Role Icon Disabled";
+	
+	mql del attribute "Role Icon Disabled" ;
+	
+	mql del prog  MyAppsUpdateOTT ;
+	
+	mql mod type "3DCompass Session" rem attribute "Session PodURL";
+	
+	mql del attribute "Session PodURL";
+	
+	puts "End MyApps HF2 downgrade"
+	exit 0
+}
+
+
+
+

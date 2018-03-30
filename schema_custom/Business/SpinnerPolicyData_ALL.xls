@@ -1,0 +1,22 @@
+Name	Registry Name	Description	Rev Sequence (use 'continue' for '...')	Store	Hidden (boolean)	"Types (use ""|"" delim)"	"Formats (use ""|"" delim)"	Default Format	Locking (boolean)	"State Names (in order-use ""|"" delim)"	"State Registry Names (in order-use ""|"" delim)"	Allstate (boolean)	Icon File
+SEM Approve Order	SEM Approve Order	SEM Approve Order			FALSE	SEM Approve Order			FALSE	Create | Review | Complete | Cancel	Create | Review | Complete | Cancel	FALSE	-
+SEM PrjChange Request	SEM PrjChange Request	SEM PrjChange Request			FALSE	SEM PrjChange Request			FALSE	Create | Review | Implemented | Inform | Complete	Create | Review | Implemented | Inform | Complete	FALSE	-
+SEM BudgetChange Request	SEM BudgetChange Request	SEM BudgetChange Request			FALSE	SEM BudgetChange Request			FALSE	Create | Review | Approved | Complete | Cancel	Create | Review | Approved | Complete | Cancel	FALSE	-
+SEM Part Task	SEM Part Task	SEM Part Task			FALSE	SEM Part Task			FALSE	Create | Assign | Active | Review | Complete	Create | Assign | Active | Review | Complete	FALSE	-
+SEM TestCar Numbers	SEM TestCar Numbers	SEM TestCar Numbers	-		FALSE	SEM TestCar Numbers			FALSE	Exist	Exist	FALSE	
+SEM External Object	SEM External Object	SEM External Object	-		FALSE	SEM External Object			FALSE	Exist	Exist	FALSE	
+SEM Cost Baseline	SEM Cost Baseline	SEM Cost Baseline		STORE	FALSE	SEM Cost Baseline			FALSE	Exist	Exist	FALSE	"1,2,3,continue"
+SEM Cost Request	SEM Cost Request	SEM Cost Request	-		FALSE	SEM Cost Request			FALSE	Exist | Deleted	Exist | Deleted	FALSE	
+Financial Items	Financial Items	Financial Items			FALSE	Financial Item | Cost Item | Benefit Item			FALSE	Create | Plan | Review | Frozen | <<Plan Frozen>> | Archive | <<Exist>>	Create | Plan | Review | Frozen | <<Plan Frozen>> | Archive | <<Exist>>	FALSE	
+LS Property Key	LS Property Key	LS Property Key			FALSE	LS Property Key			FALSE	Active |InActive	Active |InActive	FALSE	
+SEM Secret Document	SEM Secret Document	SEM Secret Document		STORE	FALSE	SEM Meeting Document | SEM Project Document	generic	generic	FALSE	Create | Review | Released | Obsolete	Create | Review | Released | Obsolete	FALSE	"A,B,C,continue"
+SEM Confidential Document	SEM Confidential Document	SEM Confidential Document		CONFIDENTIAL_STORE	FALSE	SEM Meeting Document | SEM Project Document	generic	generic	FALSE	Create | Review | Released | Obsolete	Create | Review | Released | Obsolete	FALSE	"A,B,C,continue"
+SEM TopSecret Document	SEM TopSecret Document	SEM TopSecret Document		TopSECRET_STORE	FALSE	SEM Meeting Document | SEM Project Document	generic	generic	FALSE	Create | Review | Released | Obsolete	Create | Review | Released | Obsolete	FALSE	"A,B,C,continue"
+SEM Document	SEM Document	SEM Document		STORE	FALSE	SEM Meeting Document | SEM Project Document	generic	generic	FALSE	Create | Review | Released | Obsolete	Create | Review | Released | Obsolete	FALSE	"A,B,C,continue"
+LS Notification Request	LS Notification Request	LS Notification Request		STORE	FALSE	LS Notification Request			FALSE	Create | Complete	Create | Complete	FALSE	
+Meeting	Meeting	Policy for creating meeting objects		STORE	FALSE	Meeting	generic	generic	FALSE	Create | Scheduled | <<In Progress>> | Complete | Cancelled	Create | Scheduled | <<In Progress>> | Complete | Cancelled	TRUE	
+SEM Contact Order	SEM Contact Order	SEM Contact Order			FALSE	SEM Contact Order			FALSE	Create | Review | Approved	Create | Review | Approved	FALSE	-
+SEM Task Item	SEM Task Item	SEM Task Item			FALSE	SEM Task Item			FALSE	Active | Inactive	Active | Inactive	FALSE	"000001,000002,000003,continue"
+Issue	Issue	Policy to cover the life cycle of the Issue		STORE	FALSE	Issue	generic	generic	FALSE	Create | Assign | Active | Review | Closed	Create | Assign | Active | Review | Closed	FALSE	-
+eService Object Generator	eService Object Generator	governs eService Object Generator and eService Number Generator			FALSE	eService Object Generator | eService Number Generator			FALSE	Exists	Exists	FALSE	
+Project Task	Project Task				FALSE	Task Management			FALSE	Create | Assign | Active | Review | Complete	Create | Assign | Active | Review | Complete	FALSE	

@@ -1,0 +1,3 @@
+modify policy PLMProfile allstate 
+remove login user "VPLMProjectLeader" key "ExtendedReadAccessForPLMProjectLeader" show any owner;
+

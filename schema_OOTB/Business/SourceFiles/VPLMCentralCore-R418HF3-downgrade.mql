@@ -1,0 +1,11 @@
+tcl;
+eval {
+  source "$env(INSTALL_TCL_PROGRAMS_DIR)/VPLMxCommon-PnOSecurity-MD-Utilities-R418.tcl"
+  removeTriggerProgramParameter "3DShape" "Copy" "check" "CopyCheck" "BlockV53DShapeCloningTrigger"
+  removeTriggerProgramParameter "Drawing" "Copy" "check" "CopyCheck" "BlockV53DShapeCloningTrigger"
+  mql demote businessobject "eService Trigger Program Parameters" "BlockV53DShapeCloningTrigger" "-"
+  mql del businessobject "eService Trigger Program Parameters" "BlockV53DShapeCloningTrigger" "-"
+  mql del program BlockCloneValidationTrigger;
+}
+exit
+

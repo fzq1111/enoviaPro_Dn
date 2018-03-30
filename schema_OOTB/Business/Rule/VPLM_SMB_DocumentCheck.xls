@@ -1,0 +1,10 @@
+Rule	User	Read	Modify	Delete	Checkout	Checkin	Schedule	Lock	Unlock	Execute	Freeze	Thaw	Create	Revise	MajorRevise	Promote	Demote	Grant	Enable	Disable	Override	ChangeName	ChangeType	ChangeOwner	ChangePolicy	Revoke	ChangeVault	FromConnect	ToConnect	FromDisconnect	ToDisconnect	ViewForm	Modifyform	Show	Filter
+VPLM_SMB_DocumentCheck	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+VPLM_SMB_DocumentCheck	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+VPLM_SMB_DocumentCheck	VPLMCreator	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	('$ACCESS' != 'modify') || (attribute[PLMDMTDocument.V_CheckedOutUser] != '') || (current matchlist 'PRIVATE,IN_WORK' ',')
+VPLM_SMB_DocumentCheck	VPLMLocalCrossPrjContextAccess	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+VPLM_SMB_DocumentCheck	VPLMProjectAdministrator	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	('$ACCESS' != 'modify') || (attribute[PLMDMTDocument.V_CheckedOutUser] != '') || (current matchlist 'PRIVATE,IN_WORK,FROZEN' ',')
+VPLM_SMB_DocumentCheck	VPLMProjectLeader	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	('$ACCESS' != 'modify') || (attribute[PLMDMTDocument.V_CheckedOutUser] != '') || (current == 'FROZEN')
+VPLM_SMB_DocumentCheck	VPLMReleaseManager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	('$ACCESS' != 'modify') || (attribute[PLMDMTDocument.V_CheckedOutUser] != '') || (current == 'RELEASED')
+VPLM_SMB_DocumentCheck	VPLMSecuredCrossAccess	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+

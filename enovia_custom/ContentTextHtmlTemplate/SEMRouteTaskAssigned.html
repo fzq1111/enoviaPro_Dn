@@ -1,0 +1,49 @@
+<html>
+  <head>
+  	<META http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Task Assign Notification</title>
+  </head>
+  
+  <body style="font-size: 14px; font-family: times">
+  	<div>
+  		
+  		<p style="text-indent: 1em;">流程任务： '${TaskName}' '${TaskType}' '${TaskTitle}' 发来了，请您处理		</p>
+  		<p style="text-indent: 1em;">该流程任务关联的对象:'${AttachmentName}'		</p>
+		<p style="text-indent: 1em;">流程节点任务的详细信息打开链接为：<a href="${TaskURL}">${TaskName}</a></p>
+	  <p style="text-indent: 1em;">整个<span style="text-indent: 1em;">流程的详细信息打开链接为:<a href="${WorkflowURL}">${WorkflowName}</a></span> </p>
+	  <p style="text-indent: 1em;">此流程任务是 '${WorkflowType}' '${WorkflowName}'('${WorkflowOwner}'所有)的一部分.</p>
+  </div>
+	
+	<div>
+		<p>
+	  <table width="1146" height="70" border = 1>
+				<tr>
+				  <td width="115" height="31"><div align="center">所在项目</div></td>
+				  <td width="90"><div align="center">任务名称</div></td>
+				  <td width="84"><div align="center">任务类型</div></td>
+				  <td width="122"><div align="center">任务描述</div></td>
+				  <td width="126"><div align="center">所在流程名称</div></td><td width="127"><div align="center">流程所有者</div></td>
+				  <td width="128"><div align="center">流程描述</div></td>
+				  <td width="137"><div align="center">流程关联的对象</div></td><td width="136"><div align="center">流程关联的对象描述</div></td>
+				</tr>
+				<tr>
+				  <td height="35"><div align="center">${RouteInProject}</div></td>
+				  <td><div align="center"><a href="${TaskURL}">${TaskName}</a></div></td>
+				  <td><div align="center">${TaskType}</div></td>
+				  <td><div align="center">${TaskDescription}</div></td>
+					<td> <div align="center"><a href="${WorkflowURL}">${WorkflowName}</a> </div></td>
+					<td><div align="center">${WorkflowOwner}</div></td>
+					<td><div align="center">${RouteDescription}</div></td>
+					<td><div align="center">${AttachmentName}</div></td>
+					<td><div align="center">${AttachmentDes}</div></td>
+				</tr>
+	  </table>
+		</p>
+  </div>
+	<div>
+  		<br/>
+  		<div>提醒：本邮件为东南PM系统后台自动发送的邮件，请勿回复。</div></p>
+  	</div>
+	
+  </body>
+</html>

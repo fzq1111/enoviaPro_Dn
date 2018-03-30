@@ -1,0 +1,66 @@
+State	User	Read	Modify	Delete	Checkout	Checkin	Schedule	Lock	Unlock	Execute	Freeze	Thaw	Create	Revise	MajorRevise	Promote	Demote	Grant	Enable	Disable	Override	ChangeName	ChangeType	ChangeOwner	ChangePolicy	Revoke	ChangeVault	FromConnect	ToConnect	FromDisconnect	ToDisconnect	ViewForm	Modifyform	Show	Filter
+Plan	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Plan	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Plan	Employee	Y	-	-	Y	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Plan	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Plan	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Plan	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Plan	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Plan	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Implement	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Implement	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Implement	Employee	Y	-	-	Y	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Implement	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Implement	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Implement	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Implement	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Implement	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Build	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Build	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Build	Employee	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Build	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Build	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Build	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Build	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Build	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Internal Test	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Internal Test	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Internal Test	Employee	Y	-	-	Y	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Internal Test	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Internal Test	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Internal Test	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Internal Test	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Internal Test	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+External Test	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+External Test	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+External Test	Employee	Y	-	-	Y	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+External Test	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+External Test	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+External Test	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+External Test	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+External Test	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	Employee	Y	-	-	Y	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Complete	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Complete	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Complete	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Media	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Media	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Media	Employee	Y	-	-	Y	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Media	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Media	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Media	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Media	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Media	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Supercede	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Supercede	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Supercede	Employee	Y	-	-	Y	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Supercede	Public Add	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Supercede	Public Read	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user == to[EC Affected Item].from.owner || context.user == to[EC Affected Item].from.to[Assigned EC].from.name || context.user == to[EC Implemented Item].from.owner || context.user == to[EC Implemented Item].from.to[Assigned EC].from.name || context.user == to[Reported Against EC].from.owner || context.user == to[Reported Against EC].from.to[Assigned EC].from.name
+Supercede	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Supercede	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Supercede	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+

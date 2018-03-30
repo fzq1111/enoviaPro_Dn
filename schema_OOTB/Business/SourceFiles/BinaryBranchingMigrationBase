@@ -1,0 +1,206 @@
+/*
+ * ${CLASSNAME}.java
+ * program migrates the Effectivity binary data(Non-branching) to branching one
+ * from R2013x or lower releases(Non-branching) to R2013x(Branching enabled) and higher releases
+ * Copyright (c) 1992-2012 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ */
+
+import java.io.FileWriter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import matrix.db.Context;
+import matrix.util.StringList;
+
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.effectivity.EffectivityFramework;
+
+/**
+ * The <code>${CLASSNAME}</code> class contains the utilities
+ * necessary to migrate the stored binary data for Effectiviy expression to new format. It must be run on all CFF data
+ * created prior to V6R2013x.
+ */
+  public class ${CLASSNAME} extends ${CLASS:emxCommonMigration}
+  {
+       
+      /**
+      * Default constructor.
+      * @param context the eMatrix <code>Context</code> object
+      * @param args String array containing program arguments
+      * @throws Exception if the operation fails
+      */
+      public ${CLASSNAME} (Context context, String[] args)
+              throws Exception
+      {
+
+          super(context, args);
+          this.warningLog = new FileWriter(documentDirectory + "migration.log", true);
+
+      }
+
+      /**
+       * Main migration method to handle migrating Features, GBOM and Rules.
+       *
+       * @param context the eMatrix <code>Context</code> object
+       * @param objectIdList StringList holds list objectids to migrate
+       * @returns nothing
+       * @throws Exception if the operation fails
+       */
+      public void  migrateObjects(Context context, StringList objectIdList)
+      throws Exception
+      {
+          int migrationStatus = getAdminMigrationStatus(context);
+          //warningLog = new FileWriter(documentDirectory + "migrateObjects.log", true);
+          String logString = null;
+          
+          if(migrationStatus > 2)
+          {
+        	  mqlLogRequiredInformationWriter("Pre-migration is not complete.Please complete Pre-migration before running CFF Binary Upgrade migration. \n");
+        	  return;
+          }
+          try
+          {
+        	  //STEP 1 - turn triggers off
+    		  String strMqlCommand = "trigger off";
+    		  MqlUtil.mqlCommand(context,strMqlCommand,true);
+    		  mqlLogRequiredInformationWriter("CFF Binary Branching Migration is in Process \n");
+    		  setAdminMigrationStatus(context,"MigrationInProgress");
+
+              String[] oidsArray = new String[objectIdList.size()];
+              oidsArray = (String[])objectIdList.toArray(oidsArray);
+              mqlLogRequiredInformationWriter("Convert Effectivity Data...\n");
+
+              Map errMap = EffectivityFramework.convertEffectivityToBranching(context, oidsArray);
+			 
+			if(errMap.size() != 0)
+			{
+				mqlLogRequiredInformationWriter("Some objects are unmigrated/Skipped .... Check logs below for more details \n");				
+				for(Iterator errlItr = errMap.keySet().iterator(); errlItr.hasNext();)
+				{
+					String keyID = (String)errlItr.next();
+					mqlLogRequiredInformationWriter("The Effectivity " + keyID + " failed with below error");
+					mqlLogRequiredInformationWriter("\n " + (String)errMap.get(keyID) + "\n");
+					writeUnconvertedOID( (String)errMap.get(keyID), keyID);		
+				}
+			}
+ 
+              mqlLogRequiredInformationWriter("...Conversion Complete.\n");
+              for (int i = 0; i < objectIdList.size(); i++)
+              {
+				String oid = (String)objectIdList.get(i);
+				if(!errMap.containsKey(oid))
+					loadMigratedOids(oid);
+              }
+              
+        	  //STEP 3 - turn triggers on
+    		  strMqlCommand = "trigger on";
+    		  MqlUtil.mqlCommand(context,strMqlCommand,true);
+    		  
+    		  //See if we have processed through all the records and set status accordingly
+    		  int totalObjs = getUpgradeCounterProperty(context);
+    		  totalObjs = totalObjs - objectIdList.size();
+    		  if (totalObjs < 0)
+    			  totalObjs = 0;
+    		  setUpgradeCounterProperty(context, Integer.toString(totalObjs));
+    		  
+    		  if (totalObjs <= 0)
+    		  {
+    			  mqlLogRequiredInformationWriter("Binary Migration for Branching Complete \n");
+    			  setAdminMigrationStatus(context,"MigrationComplete");
+    		  }
+         }
+          catch(Exception ex)
+          {
+              ex.printStackTrace();
+              for (int i = 0; i < objectIdList.size(); i++)
+              {
+            	  logString = "" + ","+(String)objectIdList.get(i)+",,";
+            	  writeUnconvertedOID(logString+ex.getMessage()+"\n", (String)objectIdList.get(i));
+              }
+              
+              throw ex;
+          }
+      }
+      /**
+  	 * Gets the migration status as an integer value.  Used to enforce an order of migration.
+       * @param context the eMatrix <code>Context</code> object
+   	 * @return integer representing the status
+  	 * @throws Exception
+  	 */
+  	public int getAdminMigrationStatus(Context context) throws Exception
+  	{
+
+  		String cmd = "print program eServiceSystemInformation.tcl select property[MigrationBranchingBinary].value dump";
+  	    String result =	MqlUtil.mqlCommand(context, mqlCommand, cmd);
+  	   
+  	    if(result.equalsIgnoreCase("PreMigrationFindObjectInProgress"))
+  		{
+  			return 3;  			
+  		}
+  	    else if(result.equalsIgnoreCase("PreMigrationFindObjectCompleted"))
+  		{
+  			return 2;
+  		}
+  		else if(result.equalsIgnoreCase("MigrationInProgress"))
+  		{
+  			return 1;
+  		}
+  	    return 0;
+
+  	}
+	/**
+	 * Sets the migration status as a property setting.
+     * @param context the eMatrix <code>Context</code> object
+ 	 * @param strStatus String containing the status setting
+	 * @throws Exception
+	 */
+	public void setAdminMigrationStatus(Context context,String strStatus) throws Exception
+	{
+		String cmd = "modify program eServiceSystemInformation.tcl property MigrationBranchingBinary value "+strStatus;
+		MqlUtil.mqlCommand(context, mqlCommand,  cmd);
+	}
+	
+    /**
+  	 * Gets the total number of ids.Used to enforce an order of migration.
+     * @param context the eMatrix <code>Context</code> object
+   	 * @return integer representing the status
+  	 * @throws Exception
+  	 */
+  	public int getUpgradeCounterProperty(Context context) throws Exception
+  	{
+  		String cmd 			= "print program eServiceSystemInformation.tcl select property[MigrationBranchingBinaryCounter].value dump";
+  		String result	    = "";
+  	    result		 	    = MqlUtil.mqlCommand(context, mqlCommand, cmd);
+		if(result== null || result.equals("")) return 0;
+  	    return Integer.parseInt(result);
+
+  	}
+	/**
+	 * Sets a property value to the total rel/object ids
+     * @param context the eMatrix <code>Context</code> object
+ 	 * @param strStatus String containing the status setting
+	 * @throws Exception
+	 */
+	public void setUpgradeCounterProperty(Context context,String counter) throws Exception
+	{
+		String cmd = "modify program eServiceSystemInformation.tcl property MigrationBranchingBinaryCounter value "+counter;
+		MqlUtil.mqlCommand(context, mqlCommand,  cmd);
+	}
+		
+}
+

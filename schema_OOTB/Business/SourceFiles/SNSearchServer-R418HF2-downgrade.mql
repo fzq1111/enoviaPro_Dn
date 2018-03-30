@@ -1,0 +1,20 @@
+tcl;
+
+eval {
+    puts {Executing SNSearchServer-R418HF2-downgrade.mql...}
+
+    puts {SNSearchServerR418.mql - Registering schema }
+    eval "mql mod prog eServiceSchemaVariableMapping.tcl  remove property attribute_searchstring to attribute searchstring"
+    eval "mql mod prog eServiceSchemaVariableMapping.tcl  remove property attribute_taggerstring to attribute taggerstring"
+    eval "mql mod prog eServiceSchemaVariableMapping.tcl  remove property type_SavedSearch to type SavedSearch"
+    eval "mql mod prog eServiceSchemaVariableMapping.tcl  remove property policy_SavedSearch to policy SavedSearch"
+    
+    eval "mql mod type SavedSearch  remove property CustomerExposition"
+    
+    puts {SNSearchServer-R418HF2-downgrade.mql - Completed}
+        
+    exit 0;
+    
+
+}
+

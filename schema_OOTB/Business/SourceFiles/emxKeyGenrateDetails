@@ -1,0 +1,44 @@
+/*
+ * emxKeyGenrateDetails
+ *
+ * Copyright (c) 1992-2010 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ *
+ */
+import com.ds.License.LicenseKeyGenerate;
+import com.matrixone.apps.domain.util.MqlUtil;
+
+import matrix.db.Context;
+import matrix.db.MatrixWriter;
+import matrix.db.MatrixLogWriter;
+
+ public class ${CLASSNAME} 
+ {
+	public int mxMain(Context context, String[] args)
+	    throws Exception
+	    {		    
+				return 0;
+			
+	    }
+    public String getKeyDetails(Context context, String[] args)throws Exception
+	{
+		MatrixWriter writer = new MatrixWriter(context);
+		try{	
+			LicenseKeyGenerate ObjLiKey = new LicenseKeyGenerate ();
+			String abc = LicenseKeyGenerate.genrateLicenseKey(context,"aaaccc","1");
+			writer.write(abc);
+			return abc;
+		
+		}catch (Exception e) {
+			e.printStackTrace();
+			return "Exception in getKeyDetails";
+		}
+			
+	}
+ 
+  }

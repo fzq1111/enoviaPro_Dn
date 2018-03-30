@@ -1,0 +1,242 @@
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import com.matrixone.apps.common.CommonDocument;
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PersonUtil;
+
+import matrix.db.*;
+import matrix.util.StringList;
+import org.apache.log4j.Logger;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import org.apache.log4j.Logger;
+/**
+ * The <code>emxProjectTemplate</code> class represents the Project Template JPO
+ * functionality for the AEF type.
+ *
+ * @version AEF 10.0.SP4 - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} 
+{
+
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF 10.0.SP4
+     * @grade 0
+     */
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      //super(context, args);
+    }
+    //MQL???? ???????
+	public void testMyfunction(Context context, String[] args) throws Exception{
+		
+		String strLeaderUserId = args[0];
+		String strOriginatorId = args[1];
+		isOrganizationLeader(context, strLeaderUserId, strOriginatorId);
+	}
+
+    public boolean  isOrganizationLeader(Context context, String strLeaderUserId, String strOriginatorId)throws Exception{
+    	boolean bResult = false;
+    	try{	
+	    	DomainObject prtidObj=DomainObject.newInstance(context,strLeaderUserId);
+	        MapList DepMemberList = new MapList();
+	        MapList depPersonList = new MapList();
+	    	StringList busList = new StringList();
+	    	String strDepartmentId="";
+	    	busList.add("id");
+	    	busList.add("name");
+	        StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	        DepMemberList = prtidObj.getRelatedObjects(context,"Member","Department",busList,relList,true,false,(short)1,"","");	   
+	        
+	        if(DepMemberList.size()>0){
+	            Map ListId=(Map)DepMemberList.get(0);
+	     	    strDepartmentId=(String)ListId.get("id");	    
+	     	    DomainObject DepartmentObj=DomainObject.newInstance(context,strDepartmentId);	
+	     	    depPersonList = DepartmentObj.getRelatedObjects(context,"Company Department,Member","*",busList,relList,false,true,(short)0,"","");
+	     	
+	     	    Iterator objectListItr = depPersonList.iterator();
+	     	    StringList busSelect = new StringList();
+	     	    Map objectMap = new HashMap();
+	     	    while (objectListItr.hasNext())
+	            {
+	                objectMap = (Map) objectListItr.next();
+	                String allMemberUserType = (String) objectMap.get("type");
+	                String allMemberUserId = (String) objectMap.get("id");
+	                if(allMemberUserType.equals("Person")){
+	                	 busSelect.add(allMemberUserId);
+	                }	                
+	            }
+	     	    if(!busSelect.contains(strOriginatorId)){
+	     	    	bResult=false;
+	     		}
+	     		else{
+	     			bResult=true;
+	     		}	
+	        }else{
+	        	bResult=true;
+	        }
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    		throw e;
+    	}
+	   return bResult;
+    	
+    }
+    
+    public void test1Myfunction(Context context, String[] args) throws Exception{
+		
+		String strLeaderUserId = args[0];
+		String strDocumentId = args[1];
+		isProjectLeader(context, strLeaderUserId, strDocumentId);
+	}
+    public boolean  isProjectLeader(Context context, String strLeaderUserId, String strDocumentId)throws Exception{
+    	boolean proResult = false;
+    	try{
+    		
+    		DomainObject prtidObj=DomainObject.newInstance(context,strDocumentId);
+	        MapList ResultList = new MapList();
+	    	StringList busList = new StringList();
+	    	busList.add("id");
+	    	busList.add("name");
+	        StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	        ResultList = prtidObj.getRelatedObjects(context,"Data Vaults,Sub Vaults,Vaulted Documents Rev2","*",busList,relList,true,false,(short)0,"","");
+	        StringList selects = new StringList();
+	        selects.add("id");	
+			selects.add("attribute[Originator]");			
+			Map objectSelectMap = prtidObj.getInfo(context,selects);
+	        String originatorName = (String)objectSelectMap.get("attribute[Originator]");
+	        
+	      
+    		if(ResultList.size()>0){
+    			Iterator objectListItr = ResultList.iterator();
+ 	     	    StringList busSelect = new StringList();
+ 	     	    Map objectMap = new HashMap();
+ 	     	    while (objectListItr.hasNext())
+ 	            {
+ 	                objectMap = (Map) objectListItr.next();
+ 	                String allType = (String) objectMap.get("type");
+ 	                String allId = (String) objectMap.get("id");
+ 	                if(allType.equals("Project Space")){
+ 	                	 busSelect.add(allId);
+ 	                }	                
+ 	            }
+ 	     	    if(busSelect.size()>0){
+ 	     	    	Iterator busSelectItr = busSelect.iterator();
+ 	    			String projectId = busSelectItr.next().toString();
+ 	    			DomainObject projectObj=DomainObject.newInstance(context,projectId);
+ 	    			StringList busList1 = new StringList();
+ 	    			busList1.add("id");
+ 	    			busList1.add("name");
+ 	    			StringList relList1 = new StringList(DomainRelationship.SELECT_ID);
+ 	    			relList1.add("attribute[SEM PrjMemberStruct]"); 	    			
+ 	    			String strBusWhere = "id=="+strLeaderUserId;
+ 	    			String strRelWhere = ""; 	    			
+ 	    			MapList ResultUserList = new MapList();
+ 	    			ResultUserList = projectObj.getRelatedObjects(context, "Member", "Person", busList1, relList1, false, true, (short)1, strBusWhere, strRelWhere); 			
+ 	    			if(ResultUserList.size()>0){	
+ 	    				
+ 	 	    			Iterator resultListItr = ResultUserList.iterator();
+ 	 	    			String idConnection = "";
+ 	 		     	    Map tMap = new HashMap();
+ 	 		     	    while (resultListItr.hasNext())
+ 		 	            {
+ 			     	    	tMap = (Map) resultListItr.next();
+ 		 	                 idConnection = (String) tMap.get("attribute[SEM PrjMemberStruct]");		 	               
+ 	 	 	            }
+ 	 		
+		    			String strBusWhere2 = "";
+		    			String strRelWhere2 = "";
+	 	 	    	    MapList ResultUserList2 = new MapList();
+	 	 	    	   
+	 	 	    	    ResultUserList2 = projectObj.getRelatedObjects(context, "Member", "Person", busList1, relList1, false, true, (short)1, strBusWhere2, strRelWhere2);
+	 	 	    	    String idConnection2 = "";
+	 	 	    		Iterator resultListItr2 = ResultUserList2.iterator();
+	 	 		     	Map tMap2 = new HashMap();
+ 	 		     	    while (resultListItr2.hasNext())
+ 		 	            {
+ 			     	    	tMap2 = (Map) resultListItr2.next();
+ 			     	    	String allName = (String) tMap2.get("name");
+ 		 	                if(allName.equals(originatorName)){
+ 		 	                	  idConnection2 = (String) tMap2.get("attribute[SEM PrjMemberStruct]");
+ 		 	                }	 
+ 	 	 	            }
+ 	 		     	    System.out.println(idConnection);//1.1
+ 	 		     	    System.out.println(idConnection2);//1
+ 	 		     	    if(idConnection.endsWith(".0")){
+ 	 		     		idConnection=idConnection.substring(0, idConnection.length()-2);
+ 	 		     	    }
+ 	 		     	    if(idConnection2.startsWith(idConnection)){
+ 	 		     	    	proResult=true;
+ 	 		     	    }else{
+ 	 		     	    	proResult=false;
+ 	 		     	    }
+ 	 		     	 System.out.println(proResult);
+ 	    			}else{
+ 	    				proResult=false;
+ 	    			}
+ 	    			
+ 	     	    }else{
+ 	     	    	proResult=false;
+ 	     	    }
+    			
+    		}else{
+    			proResult=false;
+    		}
+
+    		
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    		throw e;
+    	}
+    	return proResult;
+    }
+    
+    public String SEMHasCheckoutAccess(Context context, String[] args) throws Exception
+    {
+    	String strRes = "false";
+    	try
+    	{
+    		String strDocId = args[0];
+    		DomainObject docObj = DomainObject.newInstance(context, strDocId);
+    		String strOriginatorName = docObj.getAttributeValue(context, "Originator");
+    		StringList personSelect = new StringList("id");
+			String strWhereClause = "name == \"" + strOriginatorName + "\"";
+			MapList personList = DomainObject.findObjects(context, "Person", "*", strWhereClause, personSelect);
+			String strOriginatorId = (String)((Map)personList.get(0)).get("id");
+    		String strLoginUserId = PersonUtil.getPersonObjectID(context);
+    		
+    		if(isProjectLeader(context, strLoginUserId, strDocId))
+    		{
+    			return "true";
+    		}
+    		
+    		Person personLogin = new Person(strLoginUserId);
+    		StringList currentRoleList = personLogin.getRoleAssignments(context);
+    		if(currentRoleList.contains("role_SEM_Dep_Director"))
+    		{
+    			if(isOrganizationLeader(context, strLoginUserId, strOriginatorId))
+    			{
+    				return "true";
+    			}
+    		}
+    	}catch(Exception e)
+    	{
+    		m_logger.error(e.getMessage(), e);
+    		throw e;
+    	}
+    	
+    	return strRes;
+    }
+}

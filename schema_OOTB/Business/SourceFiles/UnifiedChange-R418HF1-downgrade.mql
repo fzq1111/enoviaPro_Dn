@@ -1,0 +1,23 @@
+#################################################################################
+#                                                                               #
+#    Copyright (c) 2004-2015 Dassault Systemes.  All Rights Reserved.           #
+#    This program contains proprietary and trade secret information of          #
+#    Matrix One, Inc.  Copyright notice is precautionary only and does not      #
+#    evidence any actual or intended publication of such program.               #
+#                                                                               #
+#################################################################################
+
+# Call the TCL Prompt
+tcl;
+
+eval { 
+	puts "downgrading ECM Triggers HF 1"
+	
+    #################################################################################
+    # Mod Trigger To forbid promotion to Obsolete Release of VPM Objects
+    #################################################################################
+    		
+	#mql mod bus "eService Trigger Program Parameters" "PolicyToStateReleaseObsoleteChangePromoteCheck"  "ECMUnifiedCheckForObjectChangeStatus" "eService Program Argument 2" "" ;
+}
+
+

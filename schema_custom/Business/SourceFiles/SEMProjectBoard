@@ -1,0 +1,3247 @@
+import java.util.HashMap;
+
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+import com.matrixone.apps.domain.util.MapList;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.State;
+import matrix.util.StringList;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Vector;
+import java.util.Date;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.TimeZone;
+
+import org.apache.log4j.Logger;
+
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.apps.program.ProgramCentralConstants;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.apps.program.Task;
+
+import com.matrixone.apps.common.Person;
+import matrix.db.*;
+import matrix.util.MatrixException;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import com.matrixone.apps.program.GateReport;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.program.RiskRPNRelationship;
+
+public class ${CLASSNAME} {
+	private static Logger m_logger = Logger.getLogger(${CLASS:emxMeeting}.class);
+	static StringList busList = new StringList("id");
+	static StringList relList = new StringList(DomainRelationship.SELECT_ID);
+
+	// Task status constants
+    //
+    public static final String GATE_HOLD = "hold";
+    public static final String GATE_CANCELED = "canceled";
+    public static final String GATE_CONDITIONAL = "conditional";
+    public static final String GATE_APPROVED = "approved";
+    public static final String TASK_COMPLETE = "completed";
+    public static final String TASK_LATE = "late";
+    public static final String TASK_DELAYED = "delayed";
+    public static final String TASK_INACTIVE = "inactive";
+	
+	public ${CLASSNAME}(Context context, String[] args)
+			throws Exception {
+	}
+	public String formatDateZH(String date){
+		String temp[]=date.split(" ");
+		String rq[]=temp[0].split("/");
+		String fininshDate=rq[2]+"\u5E74"+rq[0]+"\u6708"+rq[1]+"\u65E5";
+		return fininshDate;
+	}
+	/*
+	 * get Status
+	 */
+	private String getGateStatus(String decisionName) throws MatrixException, Exception {
+        String gateStatus = "";
+
+        try{
+            String APPROVE = EnoviaResourceBundle.getProperty(ProgramCentralUtil.getAnonymousContext(), "ProgramCentral", "emxProgramCentral.Common.Gate.Approve", "en");
+            String CONDITIONALLYAPPROVE = EnoviaResourceBundle.getProperty(ProgramCentralUtil.getAnonymousContext(), "ProgramCentral", "emxProgramCentral.Common.Gate.ConditionallyApprove", "en");
+            String HOLD = EnoviaResourceBundle.getProperty(ProgramCentralUtil.getAnonymousContext(), "ProgramCentral", "emxProgramCentral.Common.Gate.Hold", "en");
+            String CANCEL = EnoviaResourceBundle.getProperty(ProgramCentralUtil.getAnonymousContext(), "ProgramCentral", "emxProgramCentral.Common.Gate.Cancel", "en");
+            String REACTIVATE = EnoviaResourceBundle.getProperty(ProgramCentralUtil.getAnonymousContext(), "ProgramCentral", "emxProgramCentral.Common.Gate.Reactivate", "en");
+            // Gate status is dependent on last decision made for that Gate
+            //
+            if((APPROVE).equals(decisionName) || (REACTIVATE).equals(decisionName)){
+                gateStatus = GATE_APPROVED;
+            }
+            else if((CONDITIONALLYAPPROVE).equals(decisionName)){
+                gateStatus = GATE_CONDITIONAL;
+            }
+            else if((HOLD).equals(decisionName)){
+                gateStatus = GATE_HOLD;
+            }
+            else if ((CANCEL).equals(decisionName)){
+                gateStatus = GATE_CANCELED;
+            }
+            else{
+                gateStatus = ""; //Even if no Decision is connected to this gate.
+            }
+        }
+        catch(Exception e){
+        	m_logger.error(e.getMessage(), e);
+            throw new MatrixException(e);
+        }
+        return gateStatus;
+    }
+	private String getLastDecision(Context context,String gateId) throws MatrixException{
+	        String decisionName = "";
+	        try{
+	            GateReport grBean = new GateReport();
+	            decisionName = grBean.getLastDecision(context,gateId);
+	        }
+	        catch(Exception e){
+	        	m_logger.error(e.getMessage(), e);
+	            throw new MatrixException(e);
+	        }
+	        return decisionName;
+	}
+    //gate
+	public MapList getGates(Context context, String[] args){
+		MapList returnMapList=new MapList();
+		try{
+		HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+		String sOID = (String) paramMap.get("objectId");
+		String sLanguage = (String) paramMap.get("languageStr");
+	
+		DomainObject projectSpaceObj = DomainObject.newInstance(context,
+				sOID);
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("current");
+		busList1.add("attribute[Task Estimated Finish Date]");
+		MapList mapList = projectSpaceObj.getRelatedObjects(context,
+				"Subtask", "Task,Milestone,Gate,Phase", busList1, relList,
+				false, true, (short) 3, "", null);
+		mapList.addSortKey("attribute[Task Estimated Finish Date]", "ascending", "date");
+		mapList.sortStructure();
+		Iterator items=mapList.iterator();
+        while(items.hasNext()){
+        	Map map=(Map) items.next();
+        	String type=(String) map.get("type");
+        	if(type.equals("Gate")){
+        		String baseURL="";
+        		String id=(String) map.get("id");
+        		String name=(String) map.get("name");
+				String decisionName = getLastDecision(context,id);
+        		String status=getGateStatus(decisionName);
+        		String strFininshDate=(String) map.get("attribute[Task Estimated Finish Date]");
+        		String fininshDate=formatDateZH(strFininshDate);
+        		String current=(String) map.get("current");
+        		String color="#808080";
+        		String decisionURL="";
+        		if(status.equals("conditional")){
+        			color="#FFA500";
+        			decisionURL ="../common/emxPortal.jsp?portal=PMCDecisionPowerView&showPageHeader=false&objectId="+id;
+        		}else if(status.equals("approved")){
+        			color="#009C00";
+        			decisionURL = "../common/emxPortal.jsp?portal=PMCDecisionPowerView&showPageHeader=false&objectId="+id;
+        		}
+        		if(current.equals("Complete")){
+        			baseURL="emxNavigator.jsp?objectId="+id;
+        		}
+        		String zhcurrent=i18nNow.getStateI18NString("Project Review",current,sLanguage);
+        		Map chartMap=new HashMap();
+        		chartMap.put("Header",name);
+        		chartMap.put("Url",baseURL);
+        		chartMap.put("Body",fininshDate);
+        		chartMap.put("Footer",zhcurrent);
+        		chartMap.put("Colorcode",color);
+				chartMap.put("DecisionURL",decisionURL);
+        		returnMapList.add(chartMap);
+        	}
+        }}catch(Exception e){
+        	m_logger.error(e.getMessage(), e);
+        }
+		
+		return returnMapList;
+		
+	}
+	//get SEM Project Progress
+	public String getProjectProgress(Context context, String[] args) {
+		StringBuffer res=new StringBuffer();
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,sOID);
+			String progress=projectSpaceObj.getAttributeValue(context,"SEM Project Progress");
+			String[] content=progress.split("\n");
+			for(int i=0;i<content.length-1;i++){
+				res.append(content[i]+"</br>");				
+			}
+			if(content.length-1>=0){
+			    res.append(content[content.length-1]);
+			}					
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return res.toString();
+	}
+	
+	public String getProjectProgressHeader(Context context, String[] args){
+		String projectProgress = new String();
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);			
+			String sLanguage = (String) paramMap.get("languageStr");
+		    projectProgress = EnoviaResourceBundle.getProperty(context, "Framework",
+					"emxFramework.Head.ProjectProgress", sLanguage);
+			
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return projectProgress;
+	}
+	
+	// get Department Data
+	public MapList findPTMTask(Context context, String[] args,
+			String projectId, String busWhere) throws Exception {
+		MapList returnMapList = new MapList();
+		Set<String> set = new HashSet<String>();
+		Set<String> taskIdsSet = new HashSet<String>();
+		String personName = context.getUser();
+		DomainObject Obj = new DomainObject(projectId);
+		MapList taskmapList = Obj.getRelatedObjects(context, "Subtask",
+				"Task,Milestone,Gate,Phase", busList, relList, false, true,
+				(short) 3, null, "");
+		Iterator taskitems = taskmapList.iterator();
+		while (taskitems.hasNext()) {
+			Map taskmap = (Map) taskitems.next();
+			taskIdsSet.add((String) taskmap.get("id"));
+		}
+		String where = "name=='" + personName + "'";
+		MapList mapList = Obj.getRelatedObjects(context, "Member", "Person",
+				busList, relList, false, true, (short) 1, where, "");
+		String parentPMS = "";
+		if (mapList.size() > 0) {
+			Map map = (Map) mapList.get(0);
+			String relId = (String) map.get("id[connection]");
+			DomainRelationship relObj = new DomainRelationship(relId);
+			parentPMS = relObj
+					.getAttributeValue(context, "SEM PrjMemberStruct");
+		}
+		MapList mapList1 = Obj.getRelatedObjects(context, "Member", "Person",
+				busList, relList, false, true, (short) 1, "", "");
+		Iterator it = mapList1.iterator();
+		while (it.hasNext()) {
+			Map map1 = (Map) it.next();
+			String relId1 = (String) map1.get("id[connection]");
+			String objId = (String) map1.get("id");
+			DomainRelationship relObj = new DomainRelationship(relId1);
+			String onePMS = relObj.getAttributeValue(context,
+					"SEM PrjMemberStruct").trim();
+			if (!parentPMS.equals("") && onePMS.startsWith(parentPMS)) {
+				DomainObject obj = new DomainObject(objId);
+				MapList mapList2 = obj.getRelatedObjects(context,
+						"Assigned Tasks", "Task,Milestone,Gate,Phase", busList,
+						relList, false, true, (short) 1, busWhere, "");
+				Iterator items = mapList2.iterator();
+				while (items.hasNext()) {
+					Map map2 = (Map) items.next();
+					String id = (String) map2.get("id");
+					if (taskIdsSet.contains(id) && !set.contains(id)) {
+						set.add(id);
+						returnMapList.add(map2);
+					}
+				}
+			}
+		}
+		return returnMapList;
+	}
+
+	// eary warining Task
+	public MapList getEaryWariningTask(Context context, String[] args) {
+		MapList returnMapList = new MapList();
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,
+					sOID);
+			String setDay=FrameworkProperties.getProperty(context,"emxFramework.SetDay");      
+			MapList mapList = projectSpaceObj.getRelatedObjects(context,
+					"Subtask", "Task,Milestone,Gate,Phase", busList, relList,
+					false, true, (short) 3, "", null);
+			int daysDiff = Integer.parseInt(setDay.trim());
+			Date todayDate = new Date();
+			long currentTime = todayDate.getTime();
+			Iterator items = mapList.iterator();
+			while (items.hasNext()) {
+				Map map = (Map) items.next();
+				String id = (String) map.get("id");
+				DomainObject taskObj = new DomainObject(id);
+				State currentState = taskObj.getCurrentState(context);
+				if (!currentState.getName().equals("Complete")) {
+					String estimatedFinshDate = taskObj.getAttributeValue(
+							context, "Task Estimated Finish Date");
+					Date dueDate = eMatrixDateFormat
+							.getJavaDate(estimatedFinshDate);
+					long notifyTime = dueDate.getTime();
+					long day = daysDiff * 86400000;
+					if (notifyTime - currentTime >= 0
+							&& notifyTime - currentTime < day) {
+						returnMapList.add(map);
+					}
+				}
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return returnMapList;
+	}
+	public MapList getDEaryWariningTask(Context context, String[] args) {
+		MapList returnMapList = new MapList();
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,
+					sOID);
+			MapList mapList =findPTMTask(context,args, sOID,"current!='Complete'");
+			String setDay=FrameworkProperties.getProperty(context,"emxFramework.SetDay"); 
+			int daysDiff = Integer.parseInt(setDay.trim());
+			Date todayDate = new Date();
+			long currentTime = todayDate.getTime();
+			Iterator items = mapList.iterator();
+			while (items.hasNext()) {
+				Map map = (Map) items.next();
+				String id = (String) map.get("id");
+				DomainObject taskObj = new DomainObject(id);
+				State currentState = taskObj.getCurrentState(context);
+				if (!currentState.getName().equals("Complete")) {
+					String estimatedFinshDate = taskObj.getAttributeValue(
+							context, "Task Estimated Finish Date");
+					Date dueDate = eMatrixDateFormat
+							.getJavaDate(estimatedFinshDate);
+					long notifyTime = dueDate.getTime();
+					long day = daysDiff * 86400000;
+					if (notifyTime - currentTime >= 0
+							&& notifyTime - currentTime < day) {
+						returnMapList.add(map);
+					}
+				}
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return returnMapList;
+	}
+
+	// OverdueTask
+	public MapList getOverdueTask(Context context, String[] args) {
+		MapList returnMapList = new MapList();
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,
+					sOID);
+			MapList mapList = projectSpaceObj.getRelatedObjects(context,
+					"Subtask", "Task,Milestone,Gate,Phase", busList, relList,
+					false, true, (short) 3, "", null);
+			Date todayDate = new Date();
+			long currentTime = todayDate.getTime();
+			Iterator items = mapList.iterator();
+			while (items.hasNext()) {
+				Map map = (Map) items.next();
+				String id = (String) map.get("id");
+				DomainObject taskObj = new DomainObject(id);
+				State currentState = taskObj.getCurrentState(context);
+				if (!currentState.getName().equals("Complete")) {
+					String estimatedFinshDate = taskObj.getAttributeValue(
+							context, "Task Estimated Finish Date");
+					Date dueDate = eMatrixDateFormat
+							.getJavaDate(estimatedFinshDate);
+					long notifyTime = dueDate.getTime();
+					if (notifyTime - currentTime < 0) {
+						returnMapList.add(map);
+					}
+				}
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return returnMapList;
+	}
+	public MapList getDOverdueTask(Context context, String[] args) {
+		MapList returnMapList = new MapList();
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,
+					sOID);
+			MapList mapList = findPTMTask(context,args, sOID,"current!='Complete'");
+			Date todayDate = new Date();
+			long currentTime = todayDate.getTime();
+			Iterator items = mapList.iterator();
+			while (items.hasNext()) {
+				Map map = (Map) items.next();
+				String id = (String) map.get("id");
+				DomainObject taskObj = new DomainObject(id);
+				State currentState = taskObj.getCurrentState(context);
+				if (!currentState.getName().equals("Complete")) {
+					String estimatedFinshDate = taskObj.getAttributeValue(
+							context, "Task Estimated Finish Date");
+					Date dueDate = eMatrixDateFormat
+							.getJavaDate(estimatedFinshDate);
+					long notifyTime = dueDate.getTime();
+					if (notifyTime - currentTime < 0) {
+						returnMapList.add(map);
+					}
+				}
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return returnMapList;
+	}
+	/*
+	 * project space aResults[0] head label aResults[1]-aResults[5] company data
+	 * aResults[6]-aResults[10] Depart data
+	 */
+	public String[] getProjectTaskDashboardData(Context context, String[] args)	throws Exception 
+	{
+		String[] aResults = new String[11];
+		try
+		{
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			boolean isCompanyLevel = (boolean) paramMap.get("companyLevel");//add by ryan 2017-05-25
+			aResults[0] = EnoviaResourceBundle.getProperty(context, "Framework",
+					"emxFramework.Head.ProjectTask", sLanguage);
+			DomainObject projectSpaceObj = DomainObject.newInstance(context, sOID);
+			StringList busSelects = new StringList("id");
+			//modi by ryan 2017-05-24
+			busSelects.addElement("name");
+			busSelects.addElement("current");
+			busSelects.addElement("attribute[Task Estimated Finish Date]");
+			
+			String setDay=FrameworkProperties.getProperty(context,"emxFramework.SetDay");      
+			int daysDiff = Integer.parseInt(setDay.trim());
+			Date todayDate = new Date();
+			long currentTime = todayDate.getTime();
+			
+			if(isCompanyLevel)
+			{
+				MapList mapList = projectSpaceObj.getRelatedObjects(context, "Subtask",
+						"Task,Milestone,Gate,Phase", busSelects, relList, false, true,
+						(short) 3, "", null);
+			//modi end
+				StringBuilder sbCounter = new StringBuilder();
+				sbCounter.append("<td ");
+				sbCounter.append("style='width:110px'");
+				sbCounter.append(" class='counterCell ");
+				sbCounter.append("grayBright");
+				sbCounter.append("'><span class='counterText ");
+				sbCounter.append("grayBright");
+				sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+				sbCounter.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.AllTask", sLanguage)).append(
+						"</td>");
+				aResults[1] = sbCounter.toString();
+		
+				int count1 = 0, count2 = 0;
+				Iterator items = mapList.iterator();
+				while (items.hasNext()) {
+					Map map = (Map) items.next();
+					String id = (String) map.get("id");
+					//modi by ryan 2017-05-24
+					String strCurrState = (String)map.get("current");
+					/*
+					DomainObject taskObj = new DomainObject(id);
+					State currentState = taskObj.getCurrentState(context);
+					if (currentState.getName().equals("Complete"))*/
+					if(strCurrState.equals("Complete"))
+					//modi end
+					{
+						count1++;
+					} else {
+						count2++;
+					}
+				}
+				StringBuilder sbCounter1 = new StringBuilder();
+				sbCounter1.append("<td ");
+				sbCounter1.append("style='width:110px'");
+				sbCounter1.append(" class='counterCell ");
+				if (count1 == 0) {
+					sbCounter1.append("grayBright");
+				} else {
+					sbCounter1.append("green");
+				}
+				sbCounter1.append("'><span class='counterText ");
+				if (count1 == 0) {
+					sbCounter1.append("grayBright");
+				} else {
+					sbCounter1.append("green");
+				}
+				sbCounter1.append("'>").append(count1).append("</span><br/>");
+				sbCounter1.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.CompleteTask", sLanguage)).append(
+						"</td>");
+				aResults[2] = sbCounter1.toString();
+		
+				StringBuilder sbCounter2 = new StringBuilder();
+				sbCounter2.append("<td ");
+				sbCounter2.append("style='width:110px'");
+				sbCounter2.append(" class='counterCell ");
+				if (count2 == 0) {
+					sbCounter2.append("grayBright");
+				} else {
+					sbCounter2.append("blue");
+				}
+				sbCounter2.append("'><span class='counterText ");
+				if (count2 == 0) {
+					sbCounter1.append("grayBright");
+				} else {
+					sbCounter2.append("blue");
+				}
+				sbCounter2.append("'>").append(count2).append("</span><br/>");
+				sbCounter2.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.UndoneTask", sLanguage)).append(
+						"</td>");
+				aResults[3] = sbCounter2.toString();
+		
+				//modi by ryan 2017-05-24
+				//MapList EarlyWarningList = getEaryWariningTask(context, args);
+				int nEarlyWarningListSize = 0;
+				int nOverdueTaskListSize = 0;
+				/*
+				String setDay=FrameworkProperties.getProperty(context,"emxFramework.SetDay");      
+				int daysDiff = Integer.parseInt(setDay.trim());
+				Date todayDate = new Date();
+				long currentTime = todayDate.getTime();
+				items = mapList.iterator();
+				*/
+				while (items.hasNext()) 
+				{
+					Map map = (Map) items.next();
+					String id = (String) map.get("id");
+					String strCurrState = (String)map.get("current");
+					String estimatedFinshDate = (String)map.get("attribute[Task Estimated Finish Date]");
+					if (!strCurrState.equals("Complete")) 
+					{
+						Date dueDate = eMatrixDateFormat.getJavaDate(estimatedFinshDate);
+						long notifyTime = dueDate.getTime();
+						long day = daysDiff * 86400000;
+						
+						if (notifyTime - currentTime < 0) 
+						{
+							nOverdueTaskListSize ++;
+						}
+						
+						if (notifyTime - currentTime >= 0 && notifyTime - currentTime < day)
+						{
+							nEarlyWarningListSize ++;
+						}
+					}
+				}
+				//modi end
+				StringBuilder sbCounter3 = new StringBuilder();
+				sbCounter3.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getEaryWariningTask&table=PMCWBSViewTable&sortColumnName=EstFinishDate&sortDirection=ascending&Export=true&HelpMarker=emxhelpassignmentsummary&freezePane=WBSTaskName&objectId=");
+				sbCounter3.append(sOID + "\")'");
+				sbCounter3.append("style='width:110px'");
+				sbCounter3.append(" class='counterCell ");
+				//modi by ryan 2017-05-24
+				if (nEarlyWarningListSize == 0) {
+				//if (EarlyWarningList.size() == 0) {
+				//modi end
+					sbCounter3.append("grayBright");
+				} else {
+					sbCounter3.append("yellow");
+				}
+				sbCounter3.append("'><span class='counterText ");
+				//modi by ryan 2017-05-24
+				if (nEarlyWarningListSize == 0) {
+				//if (EarlyWarningList.size() == 0) {
+				//modi end
+					sbCounter3.append("grayBright");
+				} else {
+					sbCounter3.append("yellow");
+				}
+				//modi by ryan 2017-05-24
+				//sbCounter3.append("' style=\"text-decoration:underline\">").append(nEarlyWarningListSize.size())
+				sbCounter3.append("' style=\"text-decoration:underline\">").append(nEarlyWarningListSize)
+				//modi end
+						.append("</span><br/>");
+				sbCounter3.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.EarlyWarningTask", sLanguage))
+						.append("</td>");
+				aResults[4] = sbCounter3.toString();
+				
+				//modi by ryan 2017-05-24
+				//MapList OverdueTaskList = getOverdueTask(context, args);
+				StringBuilder sbCounter4 = new StringBuilder();
+				sbCounter4.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getOverdueTask&table=PMCWBSViewTable&sortColumnName=EstFinishDate&sortDirection=ascending&Export=true&HelpMarker=emxhelpassignmentsummary&freezePane=WBSTaskName&objectId=");
+				sbCounter4.append(sOID + "\")'");
+				sbCounter4.append("style='width:110px'");
+				sbCounter4.append(" class='counterCell ");
+				if (nOverdueTaskListSize == 0) {
+				//if (OverdueTaskList.size() == 0) {
+					sbCounter4.append("grayBright");
+				} else {
+					sbCounter4.append("red");
+				}
+				sbCounter4.append("'><span class='counterText ");
+				//if (OverdueTaskList.size() == 0) {
+				if (nOverdueTaskListSize == 0) {
+					sbCounter4.append("grayBright");
+				} else {
+					sbCounter4.append("red");
+				}
+				//sbCounter4.append("' style=\"text-decoration:underline\">").append(OverdueTaskList.size())
+				sbCounter4.append("' style=\"text-decoration:underline\">").append(nOverdueTaskListSize)
+				//modi end
+						.append("</span><br/>");
+				sbCounter4.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.OverdueTask", sLanguage))
+						.append("</td>");
+				aResults[5] = sbCounter4.toString();
+			//add by ryan 2017-05-25
+			}
+			else
+			{
+				// deapartment data
+				//MapList DAllList = findPTMTask(context, args, sOID,"");
+				int nDAllListSize = 0;
+				int nDCompleteListSize = 0;
+				int nDUncompleteListSize = 0;
+				int nDEarlyWarningListSize = 0;
+				int nDOverdueTaskListSize = 0;
+				
+				
+				Set<String> set = new HashSet<String>();
+				Set<String> taskIdsSet = new HashSet<String>();
+				String personName = context.getUser();
+	
+				MapList taskmapList = projectSpaceObj.getRelatedObjects(context, "Subtask",
+						"Task,Milestone,Gate,Phase", busSelects, relList, false, true,
+						(short) 3, null, "");
+				Iterator taskitems = taskmapList.iterator();
+				while (taskitems.hasNext()) {
+					Map taskmap = (Map) taskitems.next();
+					taskIdsSet.add((String) taskmap.get("id"));
+				}
+
+				MapList mapList = projectSpaceObj.getRelatedObjects(context, "Member", "Person",
+						busSelects, new StringList("attribute[SEM PrjMemberStruct]"), false, true, (short) 1, "", "");
+				String parentPMS = "";
+	
+				Iterator it = mapList.iterator();
+				while (it.hasNext()) {
+					Map map1 = (Map) it.next();
+					String strCurrName = (String)map1.get("name");
+					if(strCurrName.equals(personName))
+					{
+						parentPMS = (String)map1.get("attribute[SEM PrjMemberStruct]");
+						break;
+					}
+				}
+				
+				it = mapList.iterator();
+				while (it.hasNext()) {
+					Map map1 = (Map) it.next();
+					String objId = (String) map1.get("id");
+					String onePMS = (String)map1.get("attribute[SEM PrjMemberStruct]");
+					if (!parentPMS.equals("") && onePMS.startsWith(parentPMS)) {
+						DomainObject obj = new DomainObject(objId);
+						MapList mapList2 = obj.getRelatedObjects(context,
+								"Assigned Tasks", "Task,Milestone,Gate,Phase", busSelects,
+								relList, false, true, (short) 1, "", "");
+						Iterator items = mapList2.iterator();
+						while (items.hasNext()) 
+						{
+							Map map2 = (Map) items.next();
+							String id = (String) map2.get("id");
+							if (taskIdsSet.contains(id) && !set.contains(id)) 
+							{
+								set.add(id);
+								nDAllListSize ++;
+								
+								String strCurrState = (String)map2.get("current");
+								String estimatedFinshDate = (String)map2.get("attribute[Task Estimated Finish Date]");
+								if (!strCurrState.equals("Complete")) 
+								{
+									nDUncompleteListSize ++;
+									
+									Date dueDate = eMatrixDateFormat.getJavaDate(estimatedFinshDate);
+									long notifyTime = dueDate.getTime();
+									long day = daysDiff * 86400000;
+									
+									if (notifyTime - currentTime < 0) 
+									{
+										nDOverdueTaskListSize ++;
+									}
+									
+									if (notifyTime - currentTime >= 0 && notifyTime - currentTime < day)
+									{
+										nDEarlyWarningListSize ++;
+									}
+								}
+								else
+								{
+									nDCompleteListSize ++;
+								}
+							}
+						}
+					}
+				}
+			//add end
+				StringBuilder sbCounter5 = new StringBuilder();
+				sbCounter5.append("<td ");
+				sbCounter5.append("style='width:160px'");
+				sbCounter5.append(" class='counterCell ");
+			    sbCounter5.append("grayBright");
+				sbCounter5.append("'><span class='counterText ");
+			    sbCounter5.append("grayBright");
+			    //modi by ryan 2017-05-25
+				//sbCounter5.append("'>").append(DAllList.size()).append("</span><br/>");
+				sbCounter5.append("'>").append(nDAllListSize).append("</span><br/>");
+				
+				sbCounter5.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.AllTask", sLanguage)).append(
+						"</td>");
+				aResults[6] = sbCounter5.toString();
+		
+				//MapList DCompleteList = findPTMTask(context, args, sOID,
+				//		"current=='Complete'");
+				StringBuilder sbCounter6 = new StringBuilder();
+				sbCounter6.append("<td ");
+				sbCounter6.append("style='width:160px'");
+				sbCounter6.append(" class='counterCell ");
+				if (nDCompleteListSize == 0) {
+				//if (nDCompleteList.size()== 0) {
+					sbCounter6.append("grayBright");
+				} else {
+					sbCounter6.append("green");
+				}
+				sbCounter6.append("'><span class='counterText ");
+				if (nDCompleteListSize == 0) {
+				//if (DCompleteList.size() == 0) {
+					sbCounter6.append("grayBright");
+				} else {
+					sbCounter6.append("green");
+				}
+				sbCounter6.append("'>").append(nDCompleteListSize)
+				//sbCounter6.append("'>").append(DCompleteList.size())
+						.append("</span><br/>");
+				sbCounter6.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.CompleteTask", sLanguage)).append(
+						"</td>");
+				aResults[7] = sbCounter6.toString();
+		
+				//MapList DUncompleteList = findPTMTask(context, args, sOID,
+				//		"current!='Complete'");
+				StringBuilder sbCounter7 = new StringBuilder();
+				sbCounter7.append("<td ");
+				sbCounter7.append("style='width:160px'");
+				sbCounter7.append(" class='counterCell ");
+				if (nDUncompleteListSize == 0) {
+				//if (DUncompleteList.size() == 0) {
+					sbCounter7.append("grayBright");
+				} else {
+					sbCounter7.append("blue");
+				}
+				sbCounter7.append("'><span class='counterText ");
+				if (nDUncompleteListSize == 0) {
+				//if (DUncompleteList.size() == 0) {
+					sbCounter7.append("grayBright");
+				} else {
+					sbCounter7.append("blue");
+				}
+				sbCounter7.append("'>").append(nDUncompleteListSize)
+				//sbCounter7.append("'>").append(DUncompleteList.size())
+						.append("</span><br/>");
+				sbCounter7.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.UndoneTask", sLanguage)).append(
+						"</td>");
+				aResults[8] = sbCounter7.toString();
+				
+				//MapList DEarlyWarningList = getDEaryWariningTask(context, args);
+				StringBuilder sbCounter8 = new StringBuilder();
+				sbCounter8.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getDEaryWariningTask&table=PMCWBSViewTable&sortColumnName=EstFinishDate&sortDirection=ascending&Export=true&HelpMarker=emxhelpassignmentsummary&freezePane=WBSTaskName&objectId=");
+				sbCounter8.append(sOID + "\")'");
+				sbCounter8.append("style='width:160px'");
+				sbCounter8.append(" class='counterCell ");
+				if (nDEarlyWarningListSize == 0) {
+				//if (DEarlyWarningList.size() == 0) {
+					sbCounter8.append("grayBright");
+				} else {
+					sbCounter8.append("yellow");
+				}
+				sbCounter8.append("'><span class='counterText ");
+				if (nDEarlyWarningListSize == 0) {
+				//if (DEarlyWarningList.size() == 0) {
+					sbCounter8.append("grayBright");
+				} else {
+					sbCounter8.append("yellow");
+				}
+				sbCounter8.append("' style=\"text-decoration:underline\">").append(nDEarlyWarningListSize).append("</span><br/>");
+				//sbCounter8.append("' style=\"text-decoration:underline\">").append(DEarlyWarningList.size()).append("</span><br/>");
+				sbCounter8.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.EarlyWarningTask", sLanguage))
+						.append("</td>");
+				aResults[9] = sbCounter8.toString();
+				
+				//MapList DOverdueTaskList = getDOverdueTask(context, args);
+				StringBuilder sbCounter9 = new StringBuilder();
+				sbCounter9.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getDOverdueTask&table=PMCWBSViewTable&sortColumnName=EstFinishDate&sortDirection=ascending&Export=true&HelpMarker=emxhelpassignmentsummary&freezePane=WBSTaskName&objectId=");
+				sbCounter9.append(sOID + "\")'");
+				sbCounter9.append("style='width:160px'");
+				sbCounter9.append(" class='counterCell ");
+				if (nDOverdueTaskListSize == 0) {
+				//if (DOverdueTaskList.size() == 0) {
+					sbCounter9.append("grayBright");
+				} else {
+					sbCounter9.append("red");
+				}
+				sbCounter9.append("'><span class='counterText ");
+				if (nDOverdueTaskListSize == 0) {
+				//if (DOverdueTaskList.size() == 0) {
+					sbCounter9.append("grayBright");
+				} else {
+					sbCounter9.append("red");
+				}
+				sbCounter9.append("' style=\"text-decoration:underline\">").append(nDOverdueTaskListSize)
+				//sbCounter9.append("' style=\"text-decoration:underline\">").append(DOverdueTaskList.size())
+						.append("</span><br/>");
+				//end modi
+				sbCounter9.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.OverdueTask", sLanguage))
+						.append("</td>");
+				aResults[10] = sbCounter9.toString();
+			}
+		}catch(Exception ex)
+		{
+			m_logger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+
+		return aResults;
+	}//
+	
+	
+	//KeyTask
+	public MapList getEaryWariningKeyTask(Context context, String[] args) {
+		MapList returnMapList = new MapList();
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,
+					sOID);
+			String setDay=FrameworkProperties.getProperty(context,"emxFramework.SetDay");      
+			MapList mapList = projectSpaceObj.getRelatedObjects(context,
+					"Subtask", "Task,Milestone,Gate,Phase", busList, relList,
+					false, true, (short) 3, "", null);
+			int daysDiff = Integer.parseInt(setDay.trim());
+			Date todayDate = new Date();
+			long currentTime = todayDate.getTime();
+			Iterator items = mapList.iterator();
+			while (items.hasNext()) {
+				Map map = (Map) items.next();
+				String id = (String) map.get("id");
+				DomainObject taskObj = new DomainObject(id);
+				State currentState = taskObj.getCurrentState(context);
+				String type=taskObj.getType(context);
+	        	String isKeyTask=taskObj.getAttributeValue(context,"SEM Is Keytask");
+	        	if(type.equals("Milestone")||(type.equals("Task")&&isKeyTask.equals("YES"))){
+				   if (!currentState.getName().equals("Complete")) {
+					 String estimatedFinshDate = taskObj.getAttributeValue(
+							context, "Task Estimated Finish Date");
+					 Date dueDate = eMatrixDateFormat.getJavaDate(estimatedFinshDate);
+					 long notifyTime = dueDate.getTime();
+					 long day = daysDiff * 86400000;
+					 if (notifyTime - currentTime >=0&&notifyTime - currentTime<day) {
+					     map.remove("level");
+						returnMapList.add(map);
+					 }
+				 }
+	           }
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return returnMapList;
+	}
+	public MapList getOverdueKeyTask(Context context, String[] args) {
+		MapList returnMapList = new MapList();
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,
+					sOID);
+			MapList mapList = projectSpaceObj.getRelatedObjects(context,
+					"Subtask", "Task,Milestone,Gate,Phase", busList, relList,
+					false, true, (short) 3, "", null);
+			Date todayDate = new Date();
+			long currentTime = todayDate.getTime();
+			Iterator items = mapList.iterator();
+			while (items.hasNext()) {
+				Map map = (Map) items.next();
+				String id = (String) map.get("id");
+				DomainObject taskObj = new DomainObject(id);
+				State currentState = taskObj.getCurrentState(context);
+				String type=taskObj.getType(context);
+	        	String isKeyTask=taskObj.getAttributeValue(context,"SEM Is Keytask");
+	        	if(type.equals("Milestone")||(type.equals("Task")&&isKeyTask.equals("YES"))){
+				  if (!currentState.getName().equals("Complete")) {
+					  String estimatedFinshDate = taskObj.getAttributeValue(
+							context, "Task Estimated Finish Date");
+					  Date dueDate = eMatrixDateFormat
+							.getJavaDate(estimatedFinshDate);
+					  long notifyTime = dueDate.getTime();
+					  if (notifyTime-currentTime < 0) {
+					    map.remove("level");
+						returnMapList.add(map);
+					  }
+				   }
+	           }
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return returnMapList;
+	}
+	public String[] getKeyTaskDashboardData(Context context, String[] args)
+			throws Exception {
+		String[] aResults = new String[6];
+		int count1=0,count2=0,count3=0;
+		//add by ryan 2017-05-27
+		int nEarlyWarningListSize = 0;
+		int nOverdueTaskListSize = 0;
+		//add end
+		try{
+		HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+		String sOID = (String) paramMap.get("objectId");
+		String sLanguage = (String) paramMap.get("languageStr");
+		aResults[0] = EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Head.KeyTask", sLanguage);
+		DomainObject projectSpaceObj = DomainObject.newInstance(context, sOID);
+		//modi by ryan 2017-05-26
+		StringList busSelects = new StringList("id");
+		busSelects.addElement("name");
+		busSelects.addElement("current");
+		busSelects.addElement("type");
+		busSelects.addElement("attribute[Task Estimated Finish Date]");
+		busSelects.addElement("attribute[SEM Is Keytask]");
+		MapList mapList = projectSpaceObj.getRelatedObjects(context, "Subtask",
+				"Task,Milestone,Gate,Phase", busSelects, relList, false, true,
+				(short) 3, "", null);
+		
+		String setDay=FrameworkProperties.getProperty(context,"emxFramework.SetDay");      
+		int daysDiff = Integer.parseInt(setDay.trim());
+		Date todayDate = new Date();
+		long currentTime = todayDate.getTime();
+		//modi end
+		Iterator items=mapList.iterator();
+        while(items.hasNext()){
+        	Map map=(Map) items.next();
+        	//modi by ryan 2017-05026
+        	//String id=(String) map.get("id");
+        	//DomainObject taskObj = DomainObject.newInstance(context,id);
+        	//String type=taskObj.getType(context);
+        	//String isKeyTask=taskObj.getAttributeValue(context,"SEM Is Keytask");
+        	String type = (String)map.get("type");
+        	String isKeyTask = (String)map.get("attribute[SEM Is Keytask]");
+        	String stateName = (String)map.get("current");
+			String estimatedFinshDate = (String)map.get("attribute[Task Estimated Finish Date]");
+        	
+        	if(type.equals("Milestone")||(type.equals("Task")&&isKeyTask.equals("YES"))){
+        		count1++;
+        		//String stateName=taskObj.getCurrentState(context).getName();
+        	//modi end
+                if(stateName.equals("Complete")){
+                	count2++;
+                }
+                //add by ryan 2017-05-26
+                else
+                {
+                	Date dueDate = eMatrixDateFormat.getJavaDate(estimatedFinshDate);
+					long notifyTime = dueDate.getTime();
+					long day = daysDiff * 86400000;
+					
+					if (notifyTime - currentTime < 0) 
+					{
+						nOverdueTaskListSize ++;
+					}
+					
+					if (notifyTime - currentTime >= 0 && notifyTime - currentTime < day)
+					{
+						nEarlyWarningListSize ++;
+					}
+                }
+                //add end
+        		
+        	}
+        }
+		count3=count1-count2;
+		StringBuilder sbCounter = new StringBuilder();
+		sbCounter.append("<td ");
+		sbCounter.append("style='width:110px'");
+		sbCounter.append(" class='counterCell ");
+	    sbCounter.append("grayBright");
+		sbCounter.append("'><span class='counterText ");
+		sbCounter.append("grayBright");
+		sbCounter.append("'>").append(count1).append("</span><br/>");
+		sbCounter.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.AllTask", sLanguage)).append(
+				"</td>");
+		aResults[1] = sbCounter.toString();
+		
+		StringBuilder sbCounter1 = new StringBuilder();
+		sbCounter1.append("<td ");
+		sbCounter1.append("style='width:110px'");
+		sbCounter1.append(" class='counterCell ");
+		if (count2 == 0) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("green");
+		}
+		sbCounter1.append("'><span class='counterText ");
+		if (count2 == 0) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("green");
+		}
+		sbCounter1.append("'>").append(count2).append("</span><br/>");
+		sbCounter1.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.CompleteTask", sLanguage)).append(
+				"</td>");
+		aResults[2] = sbCounter1.toString();
+
+		StringBuilder sbCounter2 = new StringBuilder();
+		sbCounter2.append("<td ");
+		sbCounter2.append("style='width:110px'");
+		sbCounter2.append(" class='counterCell ");
+		if (count3 == 0) {
+			sbCounter2.append("grayBright");
+		} else {
+			sbCounter2.append("blue");
+		}
+		sbCounter2.append("'><span class='counterText ");
+		if (count3 == 0) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter2.append("blue");
+		}
+		sbCounter2.append("'>").append(count3).append("</span><br/>");
+		sbCounter2.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.UndoneTask", sLanguage)).append(
+				"</td>");
+		aResults[3] = sbCounter2.toString();
+		
+		//modi by ryan 2017-05-26
+		//MapList EarlyWarningList = getEaryWariningKeyTask(context, args);
+		StringBuilder sbCounter3 = new StringBuilder();
+		sbCounter3.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getEaryWariningKeyTask&table=PMCWBSViewTable&sortColumnName=EstFinishDate&sortDirection=ascending&Export=true&HelpMarker=emxhelpassignmentsummary&freezePane=WBSTaskName&objectId=");
+		sbCounter3.append(sOID + "\")'");
+		sbCounter3.append("style='width:110px'");
+		sbCounter3.append(" class='counterCell ");
+		if (nEarlyWarningListSize == 0) {
+		//if (EarlyWarningList.size() == 0) {
+			sbCounter3.append("grayBright");
+		} else {
+			sbCounter3.append("yellow");
+		}
+		sbCounter3.append("'><span class='counterText ");
+		if (nEarlyWarningListSize == 0) {
+		//if (EarlyWarningList.size() == 0) {
+			sbCounter3.append("grayBright");
+		} else {
+			sbCounter3.append("yellow");
+		}
+		
+		sbCounter3.append("' style=\"text-decoration:underline\">").append(nEarlyWarningListSize)
+		//sbCounter3.append("' style=\"text-decoration:underline\">").append(EarlyWarningList.size())
+		//modi end
+				.append("</span><br/>");
+		sbCounter3.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.EarlyWarningTask", sLanguage))
+				.append("</td>");
+		aResults[4] = sbCounter3.toString();
+		
+		//modi by ryan 2017-05-26
+		//MapList OverdueTaskList = getOverdueKeyTask(context, args);
+		StringBuilder sbCounter4 = new StringBuilder();
+		sbCounter4.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getOverdueKeyTask&table=PMCWBSViewTable&sortColumnName=EstFinishDate&sortDirection=ascending&Export=true&HelpMarker=emxhelpassignmentsummary&freezePane=WBSTaskName&objectId=");
+		sbCounter4.append(sOID + "\")'");
+		sbCounter4.append("style='width:110px'");
+		sbCounter4.append(" class='counterCell ");
+		if (nOverdueTaskListSize == 0) {
+		//if (OverdueTaskList.size() == 0) {
+			sbCounter4.append("grayBright");
+		} else {
+			sbCounter4.append("red");
+		}
+		sbCounter4.append("'><span class='counterText ");
+		if (nOverdueTaskListSize == 0) {
+		//if (OverdueTaskList.size() == 0) {
+			sbCounter4.append("grayBright");
+		} else {
+			sbCounter4.append("red");
+		}
+		sbCounter4.append("' style=\"text-decoration:underline\">").append(nOverdueTaskListSize)
+		//sbCounter4.append("' style=\"text-decoration:underline\">").append(OverdueTaskList.size())
+		//modi end
+				.append("</span><br/>");
+		sbCounter4.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.OverdueTask", sLanguage))
+				.append("</td>");
+		aResults[5] = sbCounter4.toString();
+		
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw e;//add by ryan 2017-05-26
+		}	
+		return aResults;	
+	}
+	
+	//Risk
+	public MapList getActiveRisk(Context context, String[] args)
+			throws Exception {
+		MapList returnMapList=null;
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,
+					sOID);
+			String where="current=='Assign'||current=='Active'";
+			returnMapList=projectSpaceObj.getRelatedObjects(context,
+					"Risk", "Risk", busList, relList,
+					false, true, (short) 3,where, null);
+			
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return returnMapList;
+	}
+	public MapList getHightRisk(Context context, String[] args){
+		MapList returnMapList=new MapList();
+    	busList.add(DomainConstants.SELECT_CURRENT);
+    	StringList relList1 = new StringList(DomainRelationship.SELECT_ID);
+    	relList1.add(RiskRPNRelationship.SELECT_NAME);
+		relList1.add(RiskRPNRelationship.SELECT_RISK_RPN_VALUE);
+		relList1.add(RiskRPNRelationship.SELECT_ORIGINATED);
+		try {
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,
+					sOID);
+			String where="current!='Complete'";
+			MapList mapList=projectSpaceObj.getRelatedObjects(context,
+					"Risk", "Risk",busList, relList,
+					false, true, (short)3,where, null);
+			Iterator items=mapList.iterator();
+			while(items.hasNext()){
+				Map map=(Map)items.next();
+				String id=(String)map.get("id");
+				DomainObject riskObj = DomainObject.newInstance(context,id);
+				MapList mapList1=riskObj.getRelatedObjects(context,
+						"Risk RPN","RPN", busList,relList1,
+						false, true,(short)1,where, null);
+				if(mapList1.size()>0){
+					mapList1.sort(RiskRPNRelationship.SELECT_ORIGINATED,"descending", "date");
+					Map map1=(Map)mapList1.get(0);
+					String PRNValue=(String)map1.get(RiskRPNRelationship.SELECT_RISK_RPN_VALUE);
+					if(Double.parseDouble(PRNValue)>15){
+						returnMapList.add(map);
+					}
+				}
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return returnMapList;
+	}
+	public MapList getExpandRNPList(Context context, String[] args){
+		MapList res=new MapList();
+		String SELECT_RISK_TO_REL = "to["+DomainConstants.RELATIONSHIP_RISK_RPN+"].from.id";
+    	String SELECT_RISK_FROM_REL = "from["+DomainConstants.RELATIONSHIP_RISK_RPN+"].to.id";
+		StringList busSelectList = new StringList (6);
+    	busSelectList.add(DomainConstants.SELECT_ID);
+    	busSelectList.add(DomainConstants.SELECT_CURRENT);
+    	busSelectList.add(DomainConstants.SELECT_TYPE);
+    	busSelectList.add(DomainConstants.SELECT_NAME);
+    	busSelectList.add(SELECT_RISK_TO_REL);
+    	busSelectList.add(SELECT_RISK_FROM_REL);
+    	
+    	StringList relSelectList = new StringList();
+    	relSelectList.add(RiskRPNRelationship.SELECT_ID);
+		relSelectList.add(RiskRPNRelationship.SELECT_NAME);
+		relSelectList.add(RiskRPNRelationship.SELECT_EFFECTIVE_DATE);
+		relSelectList.add(RiskRPNRelationship.SELECT_RISK_IMPACT);
+		relSelectList.add(RiskRPNRelationship.SELECT_RISK_PROBABILITY);
+		relSelectList.add(RiskRPNRelationship.SELECT_RISK_RPN_VALUE);
+		relSelectList.add(RiskRPNRelationship.SELECT_ORIGINATED);
+		try {
+		    HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+ 		    String objectId     = (String) programMap.get("objectId");
+ 		    DomainObject riskObj = DomainObject.newInstance(context,objectId);
+			res=riskObj.getRelatedObjects(context,
+					"Risk RPN","RPN",busSelectList,relSelectList,
+					false, true,(short)1,"", null);  
+			res.sort(RiskRPNRelationship.SELECT_ORIGINATED,"descending", "date");
+		}catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return res;
+	}
+	public String[] getRiskDashboardData(Context context, String[] args)
+			throws Exception {
+		String[] aResults = new String[4];
+		try{
+		HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+		String sOID = (String) paramMap.get("objectId");
+		String sLanguage = (String) paramMap.get("languageStr");
+		aResults[0] = EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Head.Risk", sLanguage);
+		DomainObject projectSpaceObj = DomainObject.newInstance(context, sOID);
+		MapList mapList = projectSpaceObj.getRelatedObjects(context, "Risk",
+				"Risk", busList, relList, false, true,
+				(short)1, "", null);
+		StringBuilder sbCounter = new StringBuilder();
+		sbCounter.append("<td ");
+		sbCounter.append("style='width:110px'");
+		sbCounter.append(" class='counterCell ");
+		sbCounter.append("grayBright");
+		sbCounter.append("'><span class='counterText ");
+		sbCounter.append("grayBright");
+		sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+		sbCounter.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.All", sLanguage)).append(
+				"</td>");
+		aResults[1] = sbCounter.toString();
+		
+		MapList activeRiskList= getActiveRisk(context, args);
+		StringBuilder sbCounter1 = new StringBuilder();
+		sbCounter1.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getActiveRisk&table=PMCRisksSummary&expandProgram=SEMProjectBoard:getExpandRNPList&header=emxProgramCentral.ProgramTop.RisksProject&HelpMarker=emxhelprisksummary&freezePane=Name&suiteKey=ProgramCentral&objectId=");
+		sbCounter1.append(sOID + "\")'");
+		sbCounter1.append("style='width:110px'");
+		sbCounter1.append(" class='counterCell ");
+		if (activeRiskList.size() == 0) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("red");
+		}
+		sbCounter1.append("'><span class='counterText ");
+		if (activeRiskList.size() == 0) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("red");
+		}
+		sbCounter1.append("' style=\"text-decoration:underline\">").append(activeRiskList.size()).append("</span><br/>");
+		sbCounter1.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.Active", sLanguage)).append("</td>");
+		aResults[2] = sbCounter1.toString();
+		
+		MapList hightRiskList=getHightRisk(context, args);
+		StringBuilder sbCounter2 = new StringBuilder();
+		sbCounter2.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getHightRisk&table=PMCRisksSummary&expandProgram=SEMProjectBoard:getExpandRNPList&header=emxProgramCentral.ProgramTop.RisksProject&HelpMarker=emxhelprisksummary&freezePane=Name&suiteKey=ProgramCentral&objectId=");
+		sbCounter2.append(sOID+"\")'");
+		sbCounter2.append("style='width:110px'");
+		sbCounter2.append(" class='counterCell ");
+		if (hightRiskList.size() == 0) {
+			sbCounter2.append("grayBright");
+		} else {
+			sbCounter2.append("red");
+		}
+		sbCounter2.append("'><span class='counterText ");
+		if (hightRiskList.size() == 0) {
+			sbCounter2.append("grayBright");
+		} else {
+			sbCounter2.append("red");
+		}
+		sbCounter2.append("' style=\"text-decoration:underline\">").append(hightRiskList.size()).append("</span><br/>");
+		sbCounter2.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.hightRisk", sLanguage)).append("</td>");
+		aResults[3] = sbCounter2.toString();
+
+	   }catch(Exception e){
+		   m_logger.error(e.getMessage(), e);
+	   }
+	   return aResults;
+	}
+	// Order
+	public String[] getPrjChangeRequestDashboardData(Context context, String[] args)
+			throws Exception {
+		String[] aResults = new String[2];
+		try{
+		HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+		String sOID = (String) paramMap.get("objectId");
+		String sLanguage = (String) paramMap.get("languageStr");
+		aResults[0] = EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Head.PlanChange", sLanguage);
+		DomainObject projectSpaceObj = DomainObject.newInstance(context, sOID);
+		MapList mapList = projectSpaceObj.getRelatedObjects(context,"SEM Project Change",
+				"SEM PrjChange Request", busList, relList, false, true,
+				(short)1, "", null);
+		StringBuilder sbCounter = new StringBuilder();
+		sbCounter.append("<td ");
+		sbCounter.append("style='width:110px'");
+		sbCounter.append(" class='counterCell ");
+		sbCounter.append("grayBright");
+		sbCounter.append("'><span class='counterText ");
+		sbCounter.append("grayBright");
+		sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+		sbCounter.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.All", sLanguage)).append(
+				"</td>");
+		aResults[1] = sbCounter.toString();
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return aResults;
+	}
+	//Issue
+	public MapList getIssue(Context context, String[] args,String where) throws Exception{
+		MapList res=null;
+		try{
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context, sOID);
+			res = projectSpaceObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw e;//add by ryan 2017-05-26
+		}
+		return res;
+	}
+	public MapList getIssueC(Context context, String[] args){
+		MapList res=null;
+		String where="attribute[SEM Issue SolutionProgress]=='C'";
+		try{
+			res =getIssue(context,args,where);
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return res;
+	}
+	public MapList getIssueD(Context context, String[] args){
+		MapList res=null;
+		String where="attribute[SEM Issue SolutionProgress]=='D'";
+		try{
+			res =getIssue(context,args,where);
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return res;
+	}
+	//department
+	public MapList findPIMIssue(Context context, String[] args,String projectId,String busWhere)throws Exception {
+    	MapList returnMapList=new MapList();
+    	Set<String> set=new HashSet<String>();
+    	Set<String> issueIdsSet=new HashSet<String>();
+    	String personName=context.getUser();
+    	DomainObject  Obj=new DomainObject(projectId);
+    	MapList issuemapList=Obj.getRelatedObjects(context,"Issue","Issue", busList,relList,false,
+				true, (short)1,null,"");
+    	Iterator issueitems=issuemapList.iterator();
+    	while(issueitems.hasNext()){
+    		Map issuemap=(Map)issueitems.next();
+    		issueIdsSet.add((String)issuemap.get("id"));
+    	}
+    
+    	String where="name=='"+personName+"'";
+    	MapList mapList=Obj.getRelatedObjects(context,"Member","Person", busList,relList,false,
+				true, (short)1,where,"");
+    	String parentPMS="";
+    	if(mapList.size()>0){
+    		Map map=(Map) mapList.get(0);
+    		String relId=(String) map.get("id[connection]");
+    		DomainRelationship relObj=new DomainRelationship(relId);
+    		parentPMS=relObj.getAttributeValue(context,"SEM PrjMemberStruct");
+    	}
+    	MapList mapList1=Obj.getRelatedObjects(context,"Member","Person", busList,relList,false,
+				true, (short)1,"","");
+    	Iterator it=mapList1.iterator();
+ 	    while(it.hasNext())
+ 		{
+ 			Map map1=(Map)it.next();
+ 			String relId1=(String)map1.get("id[connection]");
+ 			String objId=(String)map1.get("id");
+    		DomainRelationship relObj=new DomainRelationship(relId1);
+    		String onePMS=relObj.getAttributeValue(context,"SEM PrjMemberStruct").trim();
+    	    if(!parentPMS.equals("")&&onePMS.startsWith(parentPMS)){
+    	    	DomainObject obj=new DomainObject(objId);   
+    	    	MapList mapList2=obj.getRelatedObjects(context,"Assigned Issue","Issue", busList, relList,false,true, (short)1,busWhere,"");
+    	    	Iterator items=mapList2.iterator();
+    	        while(items.hasNext())
+    	 		{
+    	        	Map map2=(Map)items.next();
+    	        	String id=(String) map2.get("id");
+    	        	if(issueIdsSet.contains(id)&&!set.contains(id)){
+    	        		 set.add(id);
+    	        		 returnMapList.add(map2);   
+    	        	}	
+    	 		}
+    	    }
+ 		}
+    	return  returnMapList;
+    }
+	public MapList getDIssueC(Context context, String[] args){
+		MapList res=null;
+		String where="attribute[SEM Issue SolutionProgress]=='C'";
+		try{
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			res=findPIMIssue(context,args,sOID,where);
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return res;
+	}
+	public MapList getDIssueD(Context context, String[] args){
+		MapList res=null;
+		String where="attribute[SEM Issue SolutionProgress]=='D'";
+		try{
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			res=findPIMIssue(context,args,sOID,where);
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return res;
+	}//
+	
+	public String[] getProjectIssueDashboardData(Context context, String[] args)
+			throws Exception {
+		String[] aResults = new String[11];
+		try
+		{
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			boolean isCompanyLevel = (boolean) paramMap.get("companyLevel");//add by ryan 2017-05-25
+			aResults[0] = EnoviaResourceBundle.getProperty(context, "Framework",
+					"emxFramework.Head.Issue", sLanguage);
+			
+			//modi by ryan 2017-05-26
+			//MapList mapList =getIssue(context,args,"");
+			StringList busSelects = new StringList("id");
+			busSelects.addElement("attribute[SEM Issue SolutionProgress]");
+			DomainObject projectSpaceObj = DomainObject.newInstance(context, sOID);
+			
+			if(isCompanyLevel)
+			{
+				int nSizeA = 0;
+				int nSizeB = 0;
+				int nSizeC = 0;
+				int nSizeD = 0;
+				MapList mapList = projectSpaceObj.getRelatedObjects(context,
+						"Issue", "Issue", busSelects, relList,false,true,
+						(short)1,null, null);
+				for(int i = 0; i < mapList.size(); i ++)
+				{
+					Map map = (Map)mapList.get(i);
+					String strSEMIssueSolutionProgress = (String)map.get("attribute[SEM Issue SolutionProgress]");
+					if(strSEMIssueSolutionProgress.equals("A"))
+					{
+						nSizeA ++;
+					}
+					else if(strSEMIssueSolutionProgress.equals("B"))
+					{
+						nSizeB ++;
+					}
+					else if(strSEMIssueSolutionProgress.equals("C"))
+					{
+						nSizeC ++;
+					}
+					else if(strSEMIssueSolutionProgress.equals("D"))
+					{
+						nSizeD ++;
+					}
+					else
+					{
+						//no op
+					}
+				}
+				
+				StringBuilder sbCounter = new StringBuilder();
+				sbCounter.append("<td ");
+				sbCounter.append("style='width:160px'");
+				sbCounter.append(" class='counterCell ");
+				if (mapList.size()== 0) {
+					sbCounter.append("grayBright");
+				} else {
+					sbCounter.append("orange");
+				}
+				sbCounter.append("'><span class='counterText ");
+				if (mapList.size()== 0) {
+					sbCounter.append("grayBright");
+				} else {
+					sbCounter.append("orange");
+				}
+				sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+				sbCounter.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.Total", sLanguage)).append(
+						"</td>");
+				aResults[1] = sbCounter.toString();
+		
+				//MapList mapList1=getIssue(context,args,"attribute[SEM Issue SolutionProgress]=='A'");
+				StringBuilder sbCounter1 = new StringBuilder();
+				sbCounter1.append("<td ");
+				sbCounter1.append("style='width:160px'");
+				sbCounter1.append(" class='counterCell ");
+				if (nSizeA == 0) {
+				//if (mapList1.size()== 0) {
+					sbCounter1.append("grayBright");
+				} else {
+					sbCounter1.append("green");
+				}
+				sbCounter1.append("'><span class='counterText ");
+				if (nSizeA == 0) {
+				//if (mapList1.size() == 0) {
+					sbCounter1.append("grayBright");
+				} else {
+					sbCounter1.append("green");
+				}
+				sbCounter1.append("'>").append(nSizeA).append("</span><br/>");
+				//sbCounter1.append("'>").append(mapList1.size()).append("</span><br/>");
+				sbCounter1.append("A").append(
+						"</td>");
+				aResults[2] = sbCounter1.toString();
+		        
+				//MapList mapList2=getIssue(context,args,"attribute[SEM Issue SolutionProgress]=='B'");
+				StringBuilder sbCounter2 = new StringBuilder();
+				sbCounter2.append("<td ");
+				sbCounter2.append("style='width:160px'");
+				sbCounter2.append(" class='counterCell ");
+				if (nSizeB == 0) {
+				//if (mapList2.size()== 0) {
+					sbCounter2.append("grayBright");
+				} else {
+					sbCounter2.append("blue");
+				}
+				sbCounter2.append("'><span class='counterText ");
+				if (nSizeB == 0) {
+				//if (mapList2.size()== 0) {
+					sbCounter2.append("grayBright");
+				} else {
+					sbCounter2.append("blue");
+				}
+				sbCounter2.append("'>").append(nSizeB).append("</span><br/>");
+				//sbCounter2.append("'>").append(mapList2.size()).append("</span><br/>");
+				sbCounter2.append("B").append("</td>");
+				aResults[3] = sbCounter2.toString();
+		
+				//MapList mapList3=getIssueC(context,args);
+				StringBuilder sbCounter3 = new StringBuilder();
+				sbCounter3.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getIssueC&suiteKey=ProgramCentral&table=SEMIssueSummary&objectId=");
+				sbCounter3.append(sOID + "\")'");
+				sbCounter3.append("style='width:160px'");
+				sbCounter3.append(" class='counterCell ");
+				if (nSizeC == 0) {
+				//if (mapList3.size() == 0) {
+					sbCounter3.append("grayBright");
+				} else {
+					sbCounter3.append("yellow");
+				}
+				sbCounter3.append("'><span class='counterText ");
+				if (nSizeC == 0) {
+				//if (mapList3.size() == 0) {
+					sbCounter3.append("grayBright");
+				} else {
+					sbCounter3.append("yellow");
+				}
+				sbCounter3.append("' style=\"text-decoration:underline\">").append(nSizeC)
+				//sbCounter3.append("' style=\"text-decoration:underline\">").append(mapList3.size())
+						.append("</span><br/>");
+				sbCounter3.append("C").append("</td>");
+				aResults[4] = sbCounter3.toString();
+				
+		        //MapList mapList4=getIssueD(context,args);
+				StringBuilder sbCounter4 = new StringBuilder();
+				sbCounter4.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getIssueD&suiteKey=ProgramCentral&table=SEMIssueSummary&objectId=");
+				sbCounter4.append(sOID + "\")'");
+				sbCounter4.append("style='width:160px'");
+				sbCounter4.append(" class='counterCell ");
+				if (nSizeD == 0) {
+				//if(mapList4.size() == 0) {
+					sbCounter4.append("grayBright");
+				} else {
+					sbCounter4.append("red");
+				}
+				sbCounter4.append("'><span class='counterText ");
+				if (nSizeD == 0) {
+				//if (mapList4.size() == 0) {
+					sbCounter4.append("grayBright");
+				} else {
+					sbCounter4.append("red");
+				}
+				sbCounter4.append("' style=\"text-decoration:underline\">").append(nSizeD)
+				//sbCounter4.append("' style=\"text-decoration:underline\">").append(mapList4.size())
+						.append("</span><br/>");
+				sbCounter4.append("D").append("</td>");
+				aResults[5] = sbCounter4.toString();
+			}
+			else
+			{
+				//department
+				//MapList mapList5=findPIMIssue(context,args,sOID,"");
+				Set<String> set=new HashSet<String>();
+		    	Set<String> issueIdsSet=new HashSet<String>();
+		    	String personName=context.getUser();
+		    	
+		    	int nSizeAll = 0;
+		    	int nSizeA = 0;
+				int nSizeB = 0;
+				int nSizeC = 0;
+				int nSizeD = 0;
+		    	
+		    	MapList issuemapList=projectSpaceObj.getRelatedObjects(context,"Issue","Issue", busList,relList,false,
+						true, (short)1,null,"");
+		    	Iterator issueitems=issuemapList.iterator();
+		    	while(issueitems.hasNext()){
+		    		Map issuemap=(Map)issueitems.next();
+		    		issueIdsSet.add((String)issuemap.get("id"));
+		    	}
+		    
+		    	String parentPMS="";
+		    	MapList mapList = projectSpaceObj.getRelatedObjects(context,"Member","Person", busSelects, new StringList("attribute[SEM PrjMemberStruct]"),false,
+						true, (short)1,"","");
+		    	Iterator it = mapList.iterator();
+		    	while (it.hasNext()) {
+					Map map1 = (Map) it.next();
+					String strCurrName = (String)map1.get("name");
+					if(strCurrName.equals(personName))
+					{
+						parentPMS = ((String)map1.get("attribute[SEM PrjMemberStruct]")).trim();
+						break;
+					}
+				}
+		    	
+		    	it = mapList.iterator();
+		 	    while(it.hasNext())
+		 		{
+		 			Map map1=(Map)it.next();
+		 			String objId=(String)map1.get("id");
+		    		String onePMS=((String)map1.get("attribute[SEM PrjMemberStruct]")).trim();
+		    	    if(!parentPMS.equals("")&&onePMS.startsWith(parentPMS)){
+		    	    	DomainObject obj=new DomainObject(objId);   
+		    	    	MapList mapList2=obj.getRelatedObjects(context,"Assigned Issue","Issue", busList, relList,false,true, (short)1,"","");
+		    	    	Iterator items=mapList2.iterator();
+		    	        while(items.hasNext())
+		    	 		{
+		    	        	Map map2=(Map)items.next();
+		    	        	String id=(String) map2.get("id");
+		    	        	if(issueIdsSet.contains(id)&&!set.contains(id))
+		    	        	{
+		    	        		set.add(id);
+
+		    	        		nSizeAll ++;
+		    	        		String strSEMIssueSolutionProgress = (String)map2.get("attribute[SEM Issue SolutionProgress]");
+	    						if(strSEMIssueSolutionProgress.equals("A"))
+	    						{
+	    							nSizeA ++;
+	    						}
+	    						else if(strSEMIssueSolutionProgress.equals("B"))
+	    						{
+	    							nSizeB ++;
+	    						}
+	    						else if(strSEMIssueSolutionProgress.equals("C"))
+	    						{
+	    							nSizeC ++;
+	    						}
+	    						else if(strSEMIssueSolutionProgress.equals("D"))
+	    						{
+	    							nSizeD ++;
+	    						}
+	    						else
+	    						{
+	    							//no op
+	    						}
+		    	        	}	
+		    	 		}
+		    	    }
+		 		}				
+				
+				StringBuilder sbCounter5 = new StringBuilder();
+				sbCounter5.append("<td ");
+				sbCounter5.append("style='width:160px'");
+				sbCounter5.append(" class='counterCell ");
+				if (nSizeAll == 0) {
+				//if (mapList5.size()== 0) {
+					sbCounter5.append("grayBright");
+				} else {
+					sbCounter5.append("orange");
+				}
+				sbCounter5.append("'><span class='counterText ");
+				if (nSizeAll == 0) {
+				//if (mapList5.size()== 0) {
+					sbCounter5.append("grayBright");
+				} else {
+					sbCounter5.append("orange");
+				}
+				sbCounter5.append("'>").append(nSizeAll).append("</span><br/>");
+				//sbCounter5.append("'>").append(mapList5.size()).append("</span><br/>");
+				sbCounter5.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.Total", sLanguage)).append(
+						"</td>");
+				aResults[6] = sbCounter5.toString();
+		
+				//MapList mapList6=findPIMIssue(context,args,sOID,"attribute[SEM Issue SolutionProgress]=='A'");
+				StringBuilder sbCounter6 = new StringBuilder();
+				sbCounter6.append("<td ");
+				sbCounter6.append("style='width:160px'");
+				sbCounter6.append(" class='counterCell ");
+				if (nSizeA == 0) {
+				//if (mapList6.size()== 0) {
+					sbCounter6.append("grayBright");
+				} else {
+					sbCounter6.append("green");
+				}
+				sbCounter6.append("'><span class='counterText ");
+				if (nSizeA == 0) {
+				//if (mapList6.size() == 0) {
+					sbCounter6.append("grayBright");
+				} else {
+					sbCounter6.append("green");
+				}
+				sbCounter6.append("'>").append(nSizeA).append("</span><br/>");
+				//sbCounter6.append("'>").append(mapList6.size()).append("</span><br/>");
+				sbCounter6.append("A").append(
+						"</td>");
+				aResults[7] = sbCounter6.toString();
+		        
+				//MapList mapList7=findPIMIssue(context,args,sOID,"attribute[SEM Issue SolutionProgress]=='B'");
+				StringBuilder sbCounter7= new StringBuilder();
+				sbCounter7.append("<td ");
+				sbCounter7.append("style='width:160px'");
+				sbCounter7.append(" class='counterCell ");
+				if (nSizeB == 0) {
+				//if (mapList7.size()== 0) {
+					sbCounter7.append("grayBright");
+				} else {
+					sbCounter7.append("blue");
+				}
+				sbCounter7.append("'><span class='counterText ");
+				if (nSizeB == 0) {
+				//if (mapList7.size()== 0) {
+					sbCounter7.append("grayBright");
+				} else {
+					sbCounter7.append("blue");
+				}
+				sbCounter7.append("'>").append(nSizeB).append("</span><br/>");
+				//sbCounter7.append("'>").append(mapList7.size()).append("</span><br/>");
+				sbCounter7.append("B").append("</td>");
+				aResults[8] = sbCounter7.toString();
+				
+				//MapList mapList8=getDIssueC(context,args);
+				StringBuilder sbCounter8 = new StringBuilder();
+				sbCounter8.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getDIssueC&suiteKey=ProgramCentral&table=SEMIssueSummary&objectId=");
+				sbCounter8.append(sOID + "\")'");
+				sbCounter8.append("style='width:160px'");
+				sbCounter8.append(" class='counterCell ");
+				if (nSizeC == 0) {
+				//if (mapList8.size() == 0) {
+					sbCounter8.append("grayBright");
+				} else {
+					sbCounter8.append("yellow");
+				}
+				sbCounter8.append("'><span class='counterText ");
+				if (nSizeC == 0) {
+				//if (mapList8.size() == 0) {
+					sbCounter8.append("grayBright");
+				} else {
+					sbCounter8.append("yellow");
+				}
+				sbCounter8.append("' style=\"text-decoration:underline\">").append(nSizeC)
+				//sbCounter8.append("' style=\"text-decoration:underline\">").append(mapList8.size())
+						.append("</span><br/>");
+				sbCounter8.append("C").append("</td>");
+				aResults[9] = sbCounter8.toString();
+				
+		        //MapList mapList9=getDIssueD(context,args);
+				StringBuilder sbCounter9 = new StringBuilder();
+				sbCounter9.append("<td onclick='showModalDialog(\"../common/emxIndentedTable.jsp?program=SEMProjectBoard:getDIssueD&suiteKey=ProgramCentral&table=SEMIssueSummary&objectId=");
+				sbCounter9.append(sOID + "\")'");
+				sbCounter9.append("style='width:160px'");
+				sbCounter9.append(" class='counterCell ");
+				if (nSizeD == 0) {
+				//if(mapList9.size() == 0) {
+					sbCounter9.append("grayBright");
+				} else {
+					sbCounter9.append("red");
+				}
+				sbCounter9.append("'><span class='counterText ");
+				if (nSizeD == 0) {
+				//if (mapList9.size() == 0) {
+					sbCounter9.append("grayBright");
+				} else {
+					sbCounter9.append("red");
+				}
+				sbCounter9.append("' style=\"text-decoration:underline\">").append(nSizeD)
+				//sbCounter9.append("' style=\"text-decoration:underline\">").append(mapList9.size())
+						.append("</span><br/>");
+				sbCounter9.append("D").append("</td>");
+				aResults[10] = sbCounter9.toString();
+			}
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw e;
+	    }
+		//modi end
+		return aResults;
+	}
+	//current gate about Task delivery
+	public String[] getGateAboutInformation(Context context, String[] args){
+		String[] res=new String[3];
+		try{
+		HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+		String sOID = (String) paramMap.get("objectId");
+		String sLanguage = (String) paramMap.get("languageStr");
+
+		DomainObject projectSpaceObj = DomainObject.newInstance(context,
+				sOID);
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("current");
+		busList1.add("attribute[Task Estimated Finish Date]");
+		MapList mapList = projectSpaceObj.getRelatedObjects(context,
+				"Subtask", "Task,Milestone,Gate,Phase", busList1, relList,
+				false, true, (short) 3, "", null);
+		mapList.addSortKey("attribute[Task Estimated Finish Date]", "ascending", "date");
+		mapList.sortStructure();
+	    boolean wcflag=false,wwcflag=false;
+	    int count=0;
+	    MapList tempList=new MapList();
+		Iterator items=mapList.iterator();
+        while(items.hasNext()){
+        	Map map=(Map)items.next();
+        	String type=(String) map.get("type");
+        	if(type.equals("Gate")){
+        		String name=(String) map.get("name");
+        		String strFininshDate=(String) map.get("attribute[Task Estimated Finish Date]");
+        		String current=(String) map.get("current");
+        		tempList.add(map);
+        		count++;
+        		if(!current.equals("Complete")){
+        			wwcflag=true;
+        		}else{
+        			wcflag=true;
+        		}
+        	}
+        	if(wcflag&&wwcflag){
+        		break;
+        	}
+        }
+        if(wcflag&&wwcflag){
+        	Map map1=(Map)tempList.get(count-1);
+        	res[0]=(String)map1.get("name");
+        	res[2]=(String)map1.get("attribute[Task Estimated Finish Date]");
+        	Map map2=(Map)tempList.get(count-2);
+        	res[1]=(String)map2.get("attribute[Task Estimated Finish Date]");
+        }else if(!wcflag&&wwcflag){
+            Map map1=(Map)tempList.get(0);
+        	res[0]=(String)map1.get("name");
+        	res[1]="";
+        	res[2]="";
+        }else{
+        	res[0]="";
+        	res[1]="";
+        	res[2]="";
+        }
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+        }
+		return res;
+	}
+	public MapList getTask(Context context,String projectId,String start,String end)
+			throws Exception {
+		MapList returnMapList=new MapList();
+		Date startDate=eMatrixDateFormat.getJavaDate(start);
+		Date endDate=eMatrixDateFormat.getJavaDate(end);
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("current");
+		busList1.add("attribute[Task Estimated Finish Date]");
+		DomainObject projectSpaceObj = DomainObject.newInstance(context,projectId);
+		MapList mapList = projectSpaceObj.getRelatedObjects(context, "Subtask",
+				"Task,Milestone,Gate,Phase", busList1, relList, false, true,
+				(short)3,"", null);
+		Iterator items=mapList.iterator();
+        while(items.hasNext()){
+        	Map map=(Map) items.next();
+        	String StrFinishDate=(String) map.get("attribute[Task Estimated Finish Date]");
+        	Date finshDate=eMatrixDateFormat.getJavaDate(StrFinishDate);
+        	int m=finshDate.compareTo(startDate);
+        	int n=finshDate.compareTo(endDate);
+        	if(m>=0&&n<=0){
+        		returnMapList.add(map);
+        		String name=(String) map.get("name");
+        	}	
+        }
+		return returnMapList;
+	}
+	//department data
+	public MapList DfindPTMTask(Context context, String[] args,
+			String projectId, String start,String end) throws Exception {
+		Date startDate=eMatrixDateFormat.getJavaDate(start);
+		Date endDate=eMatrixDateFormat.getJavaDate(end);
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("current");
+		busList1.add("attribute[Task Estimated Finish Date]");
+		MapList returnMapList = new MapList();
+		Set<String> set = new HashSet<String>();
+		Set<String> taskIdsSet = new HashSet<String>();
+		String personName = context.getUser();
+		DomainObject Obj = new DomainObject(projectId);
+		MapList taskmapList = Obj.getRelatedObjects(context, "Subtask",
+				"Task,Milestone,Gate,Phase", busList, relList, false, true,
+				(short)3, null, "");
+		Iterator taskitems = taskmapList.iterator();
+		while (taskitems.hasNext()) {
+			Map taskmap = (Map) taskitems.next();
+			taskIdsSet.add((String) taskmap.get("id"));
+		}
+		String where = "name=='" + personName + "'";
+		MapList mapList = Obj.getRelatedObjects(context, "Member", "Person",
+				busList, relList, false, true, (short) 1, where, "");
+		String parentPMS = "";
+		if (mapList.size() > 0) {
+			Map map = (Map) mapList.get(0);
+			String relId = (String) map.get("id[connection]");
+			DomainRelationship relObj = new DomainRelationship(relId);
+			parentPMS = relObj
+					.getAttributeValue(context, "SEM PrjMemberStruct");
+		}
+		MapList mapList1 = Obj.getRelatedObjects(context, "Member", "Person",
+				busList, relList, false, true, (short) 1, "", "");
+		Iterator it = mapList1.iterator();
+		while (it.hasNext()) {
+			Map map1 = (Map) it.next();
+			String relId1 = (String) map1.get("id[connection]");
+			String objId = (String) map1.get("id");
+			DomainRelationship relObj = new DomainRelationship(relId1);
+			String onePMS = relObj.getAttributeValue(context,
+					"SEM PrjMemberStruct").trim();
+			if (!parentPMS.equals("") && onePMS.startsWith(parentPMS)) {
+				DomainObject obj = new DomainObject(objId);
+				MapList mapList2 = obj.getRelatedObjects(context,
+						"Assigned Tasks", "Task,Milestone,Gate,Phase", busList1,
+						relList, false, true, (short) 1,"", "");
+				Iterator items = mapList2.iterator();
+				while (items.hasNext()) {
+					Map map2 = (Map) items.next();
+					String id = (String) map2.get("id");
+					String StrFinishDate=(String)map2.get("attribute[Task Estimated Finish Date]");
+		        	Date finshDate=eMatrixDateFormat.getJavaDate(StrFinishDate);
+		        	int m=finshDate.compareTo(startDate);
+		        	int n=finshDate.compareTo(endDate);
+		        	if(m>=0&&n<=0){
+					    if (taskIdsSet.contains(id) && !set.contains(id)) {
+						    set.add(id);
+						    returnMapList.add(map2);
+					     }
+		        	}
+				}
+			}
+		}
+		return returnMapList;
+	}
+	//
+	public int getTaskDelivery(Context context,String taskId,String where) throws Exception {
+		DomainObject taskObj = DomainObject.newInstance(context,taskId);
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("current");
+		MapList mapList =taskObj.getRelatedObjects(context, "Task Deliverable",
+				"*", busList1, relList, false, true,
+				(short)1,where, null);
+		return mapList.size();
+	}
+	public String[] getTaskDeliveryDashboardData(Context context, String[] args)
+			throws Exception {
+		String[] aResults = new String[9];
+		try{
+		HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+		String sOID = (String) paramMap.get("objectId");
+		String sLanguage = (String) paramMap.get("languageStr");
+		int count=0,count1=0,count2=0,count3=0;
+		int count4=0,count5=0,count6=0,count7=0;
+		String where1="current=='Create'";
+		String where2="current=='Review'";
+		String where3="current=='Release'";
+		String informations[]=getGateAboutInformation(context,args);
+		if(!informations[0].equals("")){
+			MapList mapList=null,mapList1=null;
+			if(informations[1].equals("")){
+				DomainObject projectSpaceObj = DomainObject.newInstance(context,sOID);
+				mapList = projectSpaceObj.getRelatedObjects(context, "Subtask",
+						"Task,Milestone,Gate,Phase",busList, relList, false, true,
+						(short)3,"", null);
+				mapList1=findPTMTask(context,args,sOID,"");
+			}else{	
+			    mapList=getTask(context,sOID,informations[1],informations[2]);	
+			    mapList1=DfindPTMTask(context,args,sOID,informations[1],informations[2]);	
+			}
+			Iterator items=mapList.iterator();
+			while(items.hasNext()){
+				Map map=(Map) items.next();
+				String id=(String)map.get("id");
+				count1+=getTaskDelivery(context,id,where1);
+				count2+=getTaskDelivery(context,id,where2);
+				count3+=getTaskDelivery(context,id,where3);
+			}
+			Iterator items1=mapList1.iterator();
+			while(items1.hasNext()){
+				Map map1=(Map) items1.next();
+				String id=(String)map1.get("id");
+				count5+=getTaskDelivery(context,id,where1);
+				count6+=getTaskDelivery(context,id,where2);
+				count7+=getTaskDelivery(context,id,where3);
+			}
+		}
+		count=count1+count2+count3;
+		count4=count5+count6+count7;
+		aResults[0]=informations[0]+"   "+EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Head.TaskDelivery", sLanguage);
+
+		StringBuilder sbCounter = new StringBuilder();
+		sbCounter.append("<td ");
+		sbCounter.append("style='width:110px'");
+		sbCounter.append(" class='counterCell ");
+	    sbCounter.append("grayBright");
+		sbCounter.append("'><span class='counterText ");
+	    sbCounter.append("grayBright");
+		sbCounter.append("'>").append(count).append("</span><br/>");
+		sbCounter.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.All", sLanguage)).append(
+				"</td>");
+		aResults[1] = sbCounter.toString();
+
+		StringBuilder sbCounter1 = new StringBuilder();
+		sbCounter1.append("<td ");
+		sbCounter1.append("style='width:110px'");
+		sbCounter1.append(" class='counterCell ");
+		if (count1== 0) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("blue");
+		}
+		sbCounter1.append("'><span class='counterText ");
+		if (count1 == 0) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("blue");
+		}
+		sbCounter1.append("'>").append(count1).append("</span><br/>");
+		sbCounter1.append(EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Label.Create", sLanguage)).append(
+				"</td>");
+		aResults[2] = sbCounter1.toString();
+        
+		StringBuilder sbCounter2 = new StringBuilder();
+		sbCounter2.append("<td ");
+		sbCounter2.append("style='width:110px'");
+		sbCounter2.append(" class='counterCell ");
+		if (count2== 0) {
+			sbCounter2.append("grayBright");
+		} else {
+			sbCounter2.append("yellow");
+		}
+		sbCounter2.append("'><span class='counterText ");
+		if (count2==0) {
+			sbCounter2.append("grayBright");
+		} else {
+			sbCounter2.append("yellow");
+		}
+		sbCounter2.append("'>").append(count2).append("</span><br/>");
+		sbCounter2.append(EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Label.Review", sLanguage)).append("</td>");
+		aResults[3] = sbCounter2.toString();
+		
+		StringBuilder sbCounter3 = new StringBuilder();
+		sbCounter3.append("<td ");
+		sbCounter3.append("style='width:110px'");
+		sbCounter3.append(" class='counterCell ");
+		if (count3 == 0) {
+			sbCounter3.append("grayBright");
+		} else {
+			sbCounter3.append("green");
+		}
+		sbCounter3.append("'><span class='counterText ");
+		if (count3 == 0) {
+			sbCounter3.append("grayBright");
+		} else {
+			sbCounter3.append("green");
+		}
+		sbCounter3.append("'>").append(count3).append("</span><br/>");
+		sbCounter3.append(EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Label.Release", sLanguage)).append("</td>");
+		aResults[4] = sbCounter3.toString();
+		//department
+		StringBuilder sbCounter4 = new StringBuilder();
+		sbCounter4.append("<td ");
+		sbCounter4.append("style='width:110px'");
+		sbCounter4.append(" class='counterCell ");
+	    sbCounter4.append("grayBright");
+		sbCounter4.append("'><span class='counterText ");
+	    sbCounter4.append("grayBright");
+		sbCounter4.append("'>").append(count4).append("</span><br/>");
+		sbCounter4.append(EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.All", sLanguage)).append(
+				"</td>");
+		aResults[5] = sbCounter4.toString();
+
+		StringBuilder sbCounter5 = new StringBuilder();
+		sbCounter5.append("<td ");
+		sbCounter5.append("style='width:110px'");
+		sbCounter5.append(" class='counterCell ");
+		if (count5== 0) {
+			sbCounter5.append("grayBright");
+		} else {
+			sbCounter5.append("blue");
+		}
+		sbCounter5.append("'><span class='counterText ");
+		if (count5== 0) {
+			sbCounter5.append("grayBright");
+		} else {
+			sbCounter5.append("blue");
+		}
+		sbCounter5.append("'>").append(count5).append("</span><br/>");
+		sbCounter5.append(EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Label.Create", sLanguage)).append(
+				"</td>");
+		aResults[6] = sbCounter5.toString();
+        
+		StringBuilder sbCounter6 = new StringBuilder();
+		sbCounter6.append("<td ");
+		sbCounter6.append("style='width:110px'");
+		sbCounter6.append(" class='counterCell ");
+		if (count6== 0) {
+			sbCounter6.append("grayBright");
+		} else {
+			sbCounter6.append("yellow");
+		}
+		sbCounter6.append("'><span class='counterText ");
+		if (count6==0) {
+			sbCounter6.append("grayBright");
+		} else {
+			sbCounter6.append("yellow");
+		}
+		sbCounter6.append("'>").append(count6).append("</span><br/>");
+		sbCounter6.append(EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Label.Review", sLanguage)).append("</td>");
+		aResults[7] = sbCounter6.toString();
+		
+		StringBuilder sbCounter7= new StringBuilder();
+		sbCounter7.append("<td ");
+		sbCounter7.append("style='width:110px'");
+		sbCounter7.append(" class='counterCell ");
+		if (count7 == 0) {
+			sbCounter7.append("grayBright");
+		} else {
+			sbCounter7.append("green");
+		}
+		sbCounter7.append("'><span class='counterText ");
+		if (count7 == 0) {
+			sbCounter7.append("grayBright");
+		} else {
+			sbCounter7.append("green");
+		}
+		sbCounter7.append("'>").append(count7).append("</span><br/>");
+		sbCounter7.append(EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Label.Release", sLanguage)).append("</td>");
+		aResults[8] = sbCounter7.toString();
+		
+		
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+	    }
+		return aResults;
+	}//
+	
+	//add by ryan 2017-05-26
+	public String[] getTaskDeliveryDashboardData1(Context context, String[] args) throws Exception 
+	{
+		String[] aResults = new String[9];
+		try
+		{
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			boolean isCompanyLevel = (boolean) paramMap.get("companyLevel");
+			
+			int count = 0, count1 = 0, count2 = 0, count3 = 0;
+			int count4 = 0, count5 = 0, count6 = 0, count7 = 0;
+			DomainObject projectSpaceObj = DomainObject.newInstance(context,sOID);
+			String informations[]=getGateAboutInformation(context,args);
+			if(!informations[0].equals("")){
+				MapList mapList=null,mapList1=null;
+				if(informations[1].equals("")){
+					if(isCompanyLevel)
+					{
+						mapList = projectSpaceObj.getRelatedObjects(context, "Subtask",
+								"Task,Milestone,Gate,Phase",busList, relList, false, true,
+								(short)3,"", null);
+					}
+					else
+					{
+						mapList1=findPTMTask(context,args,sOID,"");
+					}
+				}else{	
+					if(isCompanyLevel)
+					{
+						mapList=getTask(context,sOID,informations[1],informations[2]);	
+					}
+					else
+					{
+						mapList1=DfindPTMTask(context,args,sOID,informations[1],informations[2]);	
+					}
+				}
+
+				if(isCompanyLevel)
+				{
+					String[] taskIdArray = new String[mapList.size()];
+					Iterator items=mapList.iterator();
+					int index = 0;
+					while(items.hasNext()){
+						Map map=(Map) items.next();
+						String id=(String)map.get("id");
+						taskIdArray[index] = id;
+						index ++;
+						DomainObject taskObj = DomainObject.newInstance(context,id);
+						StringList busList1 = new StringList("id");
+						busList1.add("name");
+						busList1.add("type");
+						busList1.add("current");
+						MapList deliverableList =taskObj.getRelatedObjects(context, "Task Deliverable",
+								"*", busList1, relList, false, true,
+								(short)1,null, null);
+						for(int i = 0; i < deliverableList.size(); i ++)
+						{
+							Map deliverableMap = (Map)deliverableList.get(i);
+							String strCurrent = (String)deliverableMap.get("current");
+							if(strCurrent.equals("Create"))
+							{
+								count1 ++;
+							}
+							else if(strCurrent.equals("Review"))
+							{
+								count2 ++;
+							}
+							else if(strCurrent.equals("Release"))
+							{
+								count3 ++;
+							}
+							else
+							{
+								//no op
+							}
+						}
+					}
+					
+				/*	MapList deliverableList = DomainObject.getInfo(context, taskIdArray, new StringList("from[Task Deliverable].to.current"));
+					for(int i = 0; i < deliverableList.size(); i ++)
+					{
+						Map deliverableMap = (Map)deliverableList.get(i);
+						StringList currentList = (StringList)deliverableMap.get("from[Task Deliverable].to.current");
+						Iterator iter = currentList.iterator();
+						while(iter.hasNext())
+						{
+							String strCurrent = (String)iter.next();
+							if(strCurrent.equals("Create"))
+							{
+								count1 ++;
+							}
+							else if(strCurrent.equals("Review"))
+							{
+								count2 ++;
+							}
+							else if(strCurrent.equals("Release"))
+							{
+								count3 ++;
+							}
+							else
+							{
+								//no op
+							}
+						}
+					}*/
+				}
+				else
+				{
+					Iterator items1=mapList1.iterator();
+					while(items1.hasNext()){
+						Map map1=(Map) items1.next();
+						String id=(String)map1.get("id");
+						DomainObject taskObj = DomainObject.newInstance(context,id);
+						StringList busList1 = new StringList("id");
+						busList1.add("name");
+						busList1.add("type");
+						busList1.add("current");
+						MapList deliverableList =taskObj.getRelatedObjects(context, "Task Deliverable",
+								"*", busList1, relList, false, true,
+								(short)1,null, null);
+						for(int i = 0; i < deliverableList.size(); i ++)
+						{
+							Map deliverableMap = (Map)deliverableList.get(i);
+							String strCurrent = (String)deliverableMap.get("current");
+							if(strCurrent.equals("Create"))
+							{
+								count1 ++;
+							}
+							else if(strCurrent.equals("Review"))
+							{
+								count2 ++;
+							}
+							else if(strCurrent.equals("Release"))
+							{
+								count3 ++;
+							}
+							else
+							{
+								//no op
+							}
+						}
+					}
+				}
+			}
+			
+			count=count1+count2+count3;
+			count4=count5+count6+count7;
+			
+			if(isCompanyLevel)
+			{
+				aResults[0]=informations[0]+"   "+EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Head.TaskDelivery", sLanguage);
+		
+				StringBuilder sbCounter = new StringBuilder();
+				sbCounter.append("<td ");
+				sbCounter.append("style='width:110px'");
+				sbCounter.append(" class='counterCell ");
+			    sbCounter.append("grayBright");
+				sbCounter.append("'><span class='counterText ");
+			    sbCounter.append("grayBright");
+				sbCounter.append("'>").append(count).append("</span><br/>");
+				sbCounter.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.All", sLanguage)).append(
+						"</td>");
+				aResults[1] = sbCounter.toString();
+		
+				StringBuilder sbCounter1 = new StringBuilder();
+				sbCounter1.append("<td ");
+				sbCounter1.append("style='width:110px'");
+				sbCounter1.append(" class='counterCell ");
+				if (count1== 0) {
+					sbCounter1.append("grayBright");
+				} else {
+					sbCounter1.append("blue");
+				}
+				sbCounter1.append("'><span class='counterText ");
+				if (count1 == 0) {
+					sbCounter1.append("grayBright");
+				} else {
+					sbCounter1.append("blue");
+				}
+				sbCounter1.append("'>").append(count1).append("</span><br/>");
+				sbCounter1.append(EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.Create", sLanguage)).append(
+						"</td>");
+				aResults[2] = sbCounter1.toString();
+		        
+				StringBuilder sbCounter2 = new StringBuilder();
+				sbCounter2.append("<td ");
+				sbCounter2.append("style='width:110px'");
+				sbCounter2.append(" class='counterCell ");
+				if (count2== 0) {
+					sbCounter2.append("grayBright");
+				} else {
+					sbCounter2.append("yellow");
+				}
+				sbCounter2.append("'><span class='counterText ");
+				if (count2==0) {
+					sbCounter2.append("grayBright");
+				} else {
+					sbCounter2.append("yellow");
+				}
+				sbCounter2.append("'>").append(count2).append("</span><br/>");
+				sbCounter2.append(EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.Review", sLanguage)).append("</td>");
+				aResults[3] = sbCounter2.toString();
+				
+				StringBuilder sbCounter3 = new StringBuilder();
+				sbCounter3.append("<td ");
+				sbCounter3.append("style='width:110px'");
+				sbCounter3.append(" class='counterCell ");
+				if (count3 == 0) {
+					sbCounter3.append("grayBright");
+				} else {
+					sbCounter3.append("green");
+				}
+				sbCounter3.append("'><span class='counterText ");
+				if (count3 == 0) {
+					sbCounter3.append("grayBright");
+				} else {
+					sbCounter3.append("green");
+				}
+				sbCounter3.append("'>").append(count3).append("</span><br/>");
+				sbCounter3.append(EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.Release", sLanguage)).append("</td>");
+				aResults[4] = sbCounter3.toString();
+			}
+			else
+			{
+				//department
+				StringBuilder sbCounter4 = new StringBuilder();
+				sbCounter4.append("<td ");
+				sbCounter4.append("style='width:110px'");
+				sbCounter4.append(" class='counterCell ");
+			    sbCounter4.append("grayBright");
+				sbCounter4.append("'><span class='counterText ");
+			    sbCounter4.append("grayBright");
+				sbCounter4.append("'>").append(count4).append("</span><br/>");
+				sbCounter4.append(EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.All", sLanguage)).append(
+						"</td>");
+				aResults[5] = sbCounter4.toString();
+		
+				StringBuilder sbCounter5 = new StringBuilder();
+				sbCounter5.append("<td ");
+				sbCounter5.append("style='width:110px'");
+				sbCounter5.append(" class='counterCell ");
+				if (count5== 0) {
+					sbCounter5.append("grayBright");
+				} else {
+					sbCounter5.append("blue");
+				}
+				sbCounter5.append("'><span class='counterText ");
+				if (count5== 0) {
+					sbCounter5.append("grayBright");
+				} else {
+					sbCounter5.append("blue");
+				}
+				sbCounter5.append("'>").append(count5).append("</span><br/>");
+				sbCounter5.append(EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.Create", sLanguage)).append(
+						"</td>");
+				aResults[6] = sbCounter5.toString();
+		        
+				StringBuilder sbCounter6 = new StringBuilder();
+				sbCounter6.append("<td ");
+				sbCounter6.append("style='width:110px'");
+				sbCounter6.append(" class='counterCell ");
+				if (count6== 0) {
+					sbCounter6.append("grayBright");
+				} else {
+					sbCounter6.append("yellow");
+				}
+				sbCounter6.append("'><span class='counterText ");
+				if (count6==0) {
+					sbCounter6.append("grayBright");
+				} else {
+					sbCounter6.append("yellow");
+				}
+				sbCounter6.append("'>").append(count6).append("</span><br/>");
+				sbCounter6.append(EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.Review", sLanguage)).append("</td>");
+				aResults[7] = sbCounter6.toString();
+				
+				StringBuilder sbCounter7= new StringBuilder();
+				sbCounter7.append("<td ");
+				sbCounter7.append("style='width:110px'");
+				sbCounter7.append(" class='counterCell ");
+				if (count7 == 0) {
+					sbCounter7.append("grayBright");
+				} else {
+					sbCounter7.append("green");
+				}
+				sbCounter7.append("'><span class='counterText ");
+				if (count7 == 0) {
+					sbCounter7.append("grayBright");
+				} else {
+					sbCounter7.append("green");
+				}
+				sbCounter7.append("'>").append(count7).append("</span><br/>");
+				sbCounter7.append(EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.Release", sLanguage)).append("</td>");
+				aResults[8] = sbCounter7.toString();
+			}
+		}catch(Exception e)
+		{
+			m_logger.error(e.getMessage(), e);
+			throw e;
+	    }
+		return aResults;
+	}
+	//add end
+	
+	//perfit and lost
+	public String[] getPerfitAndLostDashboardData(Context context, String[] args)
+			throws Exception {
+		String[] aResults = new String[2];
+		try{
+		HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+		String sOID = (String) paramMap.get("objectId");
+		String sLanguage = (String) paramMap.get("languageStr");
+		aResults[0] = EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Head.ProfitAndLoss", sLanguage);
+		
+		DomainObject projectSpaceObj = DomainObject.newInstance(context,
+				sOID);
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("current");
+		busList1.add("attribute[Task Estimated Finish Date]");
+		busList1.add("attribute[SEM Profit Task]");
+		String taskId="";
+		MapList mapList = projectSpaceObj.getRelatedObjects(context,
+				"Subtask", "Task,Milestone,Gate,Phase", busList1, relList,
+				false, true, (short) 3, "", null);
+		mapList.addSortKey("attribute[Task Estimated Finish Date]", "descending", "String");
+		mapList.sortStructure();
+		Iterator items=mapList.iterator();
+        while(items.hasNext()){
+        	Map map=(Map)items.next();
+        	String current=(String) map.get("current");
+        	String isProfitTask=(String) map.get("attribute[SEM Profit Task]");
+        	if(current.equals("Complete")&&isProfitTask.equals("YES")){
+        		taskId=(String) map.get("id");
+        		break;
+        	}
+        }
+        String objectId="";
+		if(!taskId.equals("")){
+			DomainObject taskObj = DomainObject.newInstance(context,taskId);
+			MapList mapList1=taskObj.getRelatedObjects(context, "Task Deliverable",
+					"DOCUMENTS", busList, relList, false, true,
+					(short)1,"", null);
+			if(mapList1.size()>0){
+				Map map1=(Map) mapList1.get(0);
+				objectId=(String)map1.get("id");
+			}
+		}
+		StringBuilder sbCounter1 = new StringBuilder();
+		if(!objectId.equals("")){
+		  sbCounter1.append("<td onclick='showModalDialog(\"../common/emxNavigator.jsp?objectId=");
+		  sbCounter1.append(objectId + "\")'");
+		}else{
+		  sbCounter1.append("<td ");
+		}
+		sbCounter1.append(" class='counterCell ");
+		if (objectId.equals("")) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("blue");
+		}
+		sbCounter1.append("'><br/><p class='counterText ");
+	
+		sbCounter1.append("' style=\"text-decoration:underline;text-align:left;padding-left:24px;font-size:24px;color:");
+		if (objectId.equals("")) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("#2980b9");
+		}
+		sbCounter1.append(";\">");
+		sbCounter1.append(EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Label.CurrentProfitAndLossTable", sLanguage))
+				.append("</p><br/>");
+		sbCounter1.append("</td>");
+		aResults[1] = sbCounter1.toString();
+		
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return aResults;
+	}
+	//Budget  
+	public MapList getCostItem(Context context,String projectId)throws Exception{
+		MapList returnMapList=new MapList();
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("current");
+		DomainObject projectSpaceObj = DomainObject.newInstance(context,projectId);
+		MapList mapList = projectSpaceObj.getRelatedObjects(context, "Project Financial Item,SEM Sub Budget,Financial Items",
+				"Budget,Cost Item", busList1, relList, false, true,
+				(short)3,"", null);
+		Iterator items=mapList.iterator();
+        while(items.hasNext()){
+        	Map map=(Map) items.next();
+        	String type=(String) map.get("type");
+        	if(type.equals("Cost Item")){
+        		returnMapList.add(map);
+        	}
+        }
+		return returnMapList;
+	}
+	public Double[] getCostInformation(Context context,String costItemId){
+		Double[] res=new Double[5];
+		res[0]=0.0;res[1]=0.0;res[2]=0.0;res[3]=0.0;res[4]=0.0;
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("current");
+		busList1.add("attribute[SEM Request Amount]");
+		busList1.add("attribute[SEM Contract Amount]");
+		busList1.add("attribute[SEM Pay Amount]");
+		try{
+		DomainObject costObj = DomainObject.newInstance(context,costItemId);
+		String plannedCost=costObj.getAttributeValue(context,"Planned Cost");
+		if(!plannedCost.equals("")){
+			res[0]=Double.parseDouble(plannedCost);
+		}
+		MapList mapList = costObj.getRelatedObjects(context, "SEM CostRequest Budget",
+				"SEM Cost Request", busList1, relList, false, true,
+				(short)1,"", null);
+		Iterator items=mapList.iterator();
+        while(items.hasNext()){
+        	Map map=(Map) items.next();
+        	String applyCost=(String) map.get("attribute[SEM Request Amount]");
+        	String contractCost=(String) map.get("attribute[SEM Contract Amount]");
+        	String payCost=(String) map.get("attribute[SEM Pay Amount]");
+        	if(!applyCost.equals("")){
+        		res[1]+=Double.parseDouble(applyCost);
+        	}
+        	if(!contractCost.equals("")){
+        		res[2]+=Double.parseDouble(contractCost);
+        	}
+        	if(!payCost.equals("")){
+        		res[3]+=Double.parseDouble(payCost);
+        	}
+        	if(contractCost.equals("0.0")||contractCost.equals("")){
+        		res[4]+=Double.parseDouble(applyCost);
+        	}else{
+        		res[4]+=Double.parseDouble(contractCost);
+        	}	
+        }
+		res[4]=res[0]-res[4];
+		}catch(Exception e){
+        	m_logger.error(e.getMessage(), e);
+        }
+		return res;	
+	}
+	//Department data
+	public String getDepartmentID(Context context, String[] args){
+		String ID="";
+		try{
+		Person person=Person.getPerson(context);
+		StringList busList1= new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("attribute[Organization ID]");
+		MapList mapList=person.getRelatedObjects(context, "Member","Department", busList1, relList,true,false,(short)1,"", null);
+		if(mapList.size()>0){
+			Map map=(Map) mapList.get(0);
+			ID=(String) map.get("attribute[Organization ID]");
+		}
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return ID;
+	}
+	public MapList getDCostItem(Context context,String projectId,String departmentID)throws Exception{
+		MapList returnMapList=new MapList();
+		try{
+		String where="attribute[SEM DepCode]=='"+departmentID+"'";
+		DomainObject projectSpaceObj = DomainObject.newInstance(context,projectId);
+		MapList mapList = projectSpaceObj.getRelatedObjects(context, "Project Financial Item,SEM Sub Budget",
+				"Budget", busList, relList, false, true,(short)2,where, null);
+		Iterator items=mapList.iterator();
+        while(items.hasNext()){
+        	Map map=(Map) items.next();
+        	String id=(String) map.get("id");
+        	DomainObject budgetObj= DomainObject.newInstance(context,id);
+        	MapList mapList1=budgetObj.getRelatedObjects(context, "Financial Items",
+    				"Cost Item", busList, relList, false, true,(short)1,"", null);
+        	Iterator items1=mapList1.iterator();
+            while(items1.hasNext()){
+            	Map map1=(Map) items1.next();
+            	returnMapList.add(map1);
+            }
+        }}catch(Exception e){
+        	m_logger.error(e.getMessage(), e);
+		}
+        return returnMapList;
+	}//
+	public String[] getBudgetDashboardData(Context context, String[] args)
+			throws Exception{
+		String[] aResults = new String[11];
+		try{
+		HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+		String sOID = (String) paramMap.get("objectId");
+		String sLanguage = (String) paramMap.get("languageStr");
+		aResults[0] = EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Head.Budget", sLanguage);
+		
+		double temp=0.0,temp1=0.0,temp2=0.0,temp3=0.0,temp4=0.0;
+		
+		MapList mapList=getCostItem(context,sOID );
+		Iterator items=mapList.iterator();
+		while(items.hasNext()){
+			Map map=(Map) items.next();
+			String id=(String) map.get("id");
+			Double costs[]=getCostInformation(context,id);
+			temp+=costs[0];temp1+=costs[1];
+			temp2+=costs[2];temp3+=costs[3];
+			temp4+=costs[4];	
+		}
+		
+		 double a = temp/10000.00;
+		 String count = String.format("%.2f", a);
+	
+		double b = temp1/10000.00;
+		String count1 = String.format("%.2f", b);
+		
+		double c = temp2/10000.00;
+		String count2 = String.format("%.2f", c);
+		
+		double d = temp3/10000.00;
+		String count3 = String.format("%.2f", d);
+		
+		double e = temp4/10000.00;
+		String count4 = String.format("%.2f", e);
+		//department data
+
+		Double temp5=0.0,temp6=0.0,temp7=0.0,temp8=0.0,temp9=0.0;
+		String departID=getDepartmentID(context,args);
+		MapList mapList1=getDCostItem(context,sOID,departID);
+		Iterator items1=mapList1.iterator();
+		while(items1.hasNext()){
+			Map map1=(Map) items1.next();
+			String id1=(String) map1.get("id");
+			Double costs1[]=getCostInformation(context,id1);
+			temp5+=costs1[0];temp6+=costs1[1];
+			temp7+=costs1[2];temp8+=costs1[3];
+			temp9+=costs1[4];			
+		}
+		double f = temp5/10000.00;
+		String count5 = String.format("%.2f", f);
+		
+		double g = temp6/10000.00;
+		String count6 = String.format("%.2f", g);
+		
+		double h = temp7/10000.00;
+		String count7 = String.format("%.2f", h);
+		
+		double i = temp8/10000.00;
+		String count8 = String.format("%.2f", i);
+		
+		double j = temp9/10000.00;
+		String count9 = String.format("%.2f", j);
+		
+		//
+		StringBuilder sbCounter = new StringBuilder();
+		sbCounter.append("<td ");
+		sbCounter.append("style='width:160px;'");
+		sbCounter.append(" class='counterCell ");
+		sbCounter.append("grayBright");
+		sbCounter.append("'><span class='counterText ");
+		sbCounter.append("grayBright");
+		sbCounter.append("'>").append(count).append("</span><br/>");
+		sbCounter.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.AllocationCost", sLanguage)).append(
+				"</td>");
+		aResults[1] = sbCounter.toString();
+
+		StringBuilder sbCounter1 = new StringBuilder();
+		sbCounter1.append("<td ");
+		sbCounter1.append("style='width:160px'");
+		sbCounter1.append(" class='counterCell ");
+		if (temp1== 0) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("green");
+		}
+		sbCounter1.append("'><span class='counterText ");
+		if (temp1 == 0) {
+			sbCounter1.append("grayBright");
+		} else {
+			sbCounter1.append("green");
+		}
+		sbCounter1.append("'>").append(count1).append("</span><br/>");
+		sbCounter1.append(EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Label.ApplyCost", sLanguage)).append(
+				"</td>");
+		aResults[2] = sbCounter1.toString();
+        
+
+		StringBuilder sbCounter2 = new StringBuilder();
+		sbCounter2.append("<td ");
+		sbCounter2.append("style='width:160px'");
+		sbCounter2.append(" class='counterCell ");
+		if (temp2== 0) {
+			sbCounter2.append("grayBright");
+		} else {
+			sbCounter2.append("blue");
+		}
+		sbCounter2.append("'><span class='counterText ");
+		if (temp2== 0) {
+			sbCounter2.append("grayBright");
+		} else {
+			sbCounter2.append("blue");
+		}
+		sbCounter2.append("'>").append(count2).append("</span><br/>");
+		sbCounter2.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.ContractCost", sLanguage)).append("</td>");
+		aResults[3] = sbCounter2.toString();
+
+		StringBuilder sbCounter3 = new StringBuilder();
+		sbCounter3.append("<td ");
+		sbCounter3.append("style='width:160px'");
+		sbCounter3.append(" class='counterCell ");
+		if (temp3 == 0) {
+			sbCounter3.append("grayBright");
+		} else {
+			sbCounter3.append("orange");
+		}
+		sbCounter3.append("'><span class='counterText ");
+		if (temp3 == 0) {
+			sbCounter3.append("grayBright");
+		} else {
+			sbCounter3.append("orange");
+		}
+		sbCounter3.append("' >").append(count3)
+				.append("</span><br/>");
+		sbCounter3.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.PaymentCost", sLanguage)).append("</td>");
+		aResults[4] = sbCounter3.toString();
+		
+		StringBuilder sbCounter4 = new StringBuilder();
+		sbCounter4.append("<td ");
+		sbCounter4.append("style='width:160px'");
+		sbCounter4.append(" class='counterCell ");
+		if(temp4 == 0) {
+			sbCounter4.append("grayBright");
+		} else {
+			sbCounter4.append("greenBright");
+		}
+		sbCounter4.append("'><span class='counterText ");
+		if (temp4== 0) {
+			sbCounter4.append("grayBright");
+		} else {
+			sbCounter4.append("greenBright");
+		}
+		sbCounter4.append("' >").append(count4)
+				.append("</span><br/>");
+		sbCounter4.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.AvailableBalance", sLanguage)).append("</td>");
+		aResults[5] = sbCounter4.toString();
+		
+		StringBuilder sbCounter5 = new StringBuilder();
+		sbCounter5.append("<td ");
+		sbCounter5.append("style='width:160px'");
+		sbCounter5.append(" class='counterCell ");
+		sbCounter5.append("grayBright");
+		sbCounter5.append("'><span class='counterText ");
+		sbCounter5.append("grayBright");
+		sbCounter5.append("'>").append(count5).append("</span><br/>");
+		sbCounter5.append(
+				EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.AllocationCost", sLanguage)).append(
+				"</td>");
+		aResults[6] = sbCounter5.toString();
+
+		
+		StringBuilder sbCounter6 = new StringBuilder();
+		sbCounter6.append("<td ");
+		sbCounter6.append("style='width:160px'");
+		sbCounter6.append(" class='counterCell ");
+		if (temp6== 0) {
+			sbCounter6.append("grayBright");
+		} else {
+			sbCounter6.append("green");
+		}
+		sbCounter6.append("'><span class='counterText ");
+		if (temp6== 0) {
+			sbCounter6.append("grayBright");
+		} else {
+			sbCounter6.append("green");
+		}
+		sbCounter6.append("'>").append(count6).append("</span><br/>");
+		sbCounter6.append(EnoviaResourceBundle.getProperty(context, "Framework",
+				"emxFramework.Label.ApplyCost", sLanguage)).append(
+				"</td>");
+		aResults[7] = sbCounter6.toString();
+        
+		StringBuilder sbCounter7 = new StringBuilder();
+		sbCounter7.append("<td ");
+		sbCounter7.append("style='width:160px'");
+		sbCounter7.append(" class='counterCell ");
+		if (temp7== 0) {
+			sbCounter7.append("grayBright");
+		} else {
+			sbCounter7.append("blue");
+		}
+		sbCounter7.append("'><span class='counterText ");
+		if (temp7== 0) {
+			sbCounter7.append("grayBright");
+		} else {
+			sbCounter7.append("blue");
+		}
+		sbCounter7.append("'>").append(count7).append("</span><br/>");
+		sbCounter7.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.ContractCost", sLanguage)).append("</td>");
+		aResults[8] = sbCounter7.toString();
+		
+		StringBuilder sbCounter8= new StringBuilder();
+		sbCounter8.append("<td ");
+		sbCounter8.append("style='width:160px'");
+		sbCounter8.append(" class='counterCell ");
+		if (temp8 == 0) {
+			sbCounter8.append("grayBright");
+		} else {
+			sbCounter8.append("orange");
+		}
+		sbCounter8.append("'><span class='counterText ");
+		if (temp8== 0) {
+			sbCounter8.append("grayBright");
+		} else {
+			sbCounter8.append("orange");
+		}
+		sbCounter8.append("' >").append(count8)
+				.append("</span><br/>");
+		sbCounter8.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.PaymentCost", sLanguage)).append("</td>");
+		aResults[9] = sbCounter8.toString();
+		
+		StringBuilder sbCounter9= new StringBuilder();
+		sbCounter9.append("<td ");
+		sbCounter9.append("style='width:160px'");
+		sbCounter9.append(" class='counterCell ");
+		if(temp9== 0) {
+			sbCounter9.append("grayBright");
+		} else {
+			sbCounter9.append("greenBright");
+		}
+		sbCounter9.append("'><span class='counterText ");
+		if (temp9== 0) {
+			sbCounter9.append("grayBright");
+		} else {
+			sbCounter9.append("greenBright");
+		}
+		sbCounter9.append("' >").append(count9)
+				.append("</span><br/>");
+		sbCounter9.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.AvailableBalance", sLanguage)).append("</td>");
+		aResults[10] = sbCounter9.toString();
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+	    }
+		return aResults;
+	}
+	
+	//add by ryan 2017-05-27
+	public String[] getBudgetDashboardData1(Context context, String[] args)	throws Exception
+	{
+		String[] aResults = new String[11];
+		try
+		{
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			String sOID = (String) paramMap.get("objectId");
+			String sLanguage = (String) paramMap.get("languageStr");
+			boolean isCompanyLevel = (boolean) paramMap.get("companyLevel");
+			aResults[0] = EnoviaResourceBundle.getProperty(context, "Framework",
+					"emxFramework.Head.Budget", sLanguage);
+			
+			if(isCompanyLevel)
+			{
+				double temp=0.0,temp1=0.0,temp2=0.0,temp3=0.0,temp4=0.0;
+				
+				MapList mapList=getCostItem(context,sOID );
+				Iterator items=mapList.iterator();
+				while(items.hasNext()){
+					Map map=(Map) items.next();
+					String id=(String) map.get("id");
+					Double costs[]=getCostInformation(context,id);
+					temp+=costs[0];temp1+=costs[1];
+					temp2+=costs[2];temp3+=costs[3];
+					temp4+=costs[4];	
+				}
+				
+				 double a = temp/10000.00;
+				 String count = String.format("%.2f", a);
+			
+				double b = temp1/10000.00;
+				String count1 = String.format("%.2f", b);
+				
+				double c = temp2/10000.00;
+				String count2 = String.format("%.2f", c);
+				
+				double d = temp3/10000.00;
+				String count3 = String.format("%.2f", d);
+				
+				double e = temp4/10000.00;
+				String count4 = String.format("%.2f", e);
+				
+				//
+				StringBuilder sbCounter = new StringBuilder();
+				sbCounter.append("<td ");
+				sbCounter.append("style='width:160px;'");
+				sbCounter.append(" class='counterCell ");
+				sbCounter.append("grayBright");
+				sbCounter.append("'><span class='counterText ");
+				sbCounter.append("grayBright");
+				sbCounter.append("'>").append(count).append("</span><br/>");
+				sbCounter.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.AllocationCost", sLanguage)).append(
+						"</td>");
+				aResults[1] = sbCounter.toString();
+		
+				StringBuilder sbCounter1 = new StringBuilder();
+				sbCounter1.append("<td ");
+				sbCounter1.append("style='width:160px'");
+				sbCounter1.append(" class='counterCell ");
+				if (temp1== 0) {
+					sbCounter1.append("grayBright");
+				} else {
+					sbCounter1.append("green");
+				}
+				sbCounter1.append("'><span class='counterText ");
+				if (temp1 == 0) {
+					sbCounter1.append("grayBright");
+				} else {
+					sbCounter1.append("green");
+				}
+				sbCounter1.append("'>").append(count1).append("</span><br/>");
+				sbCounter1.append(EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.ApplyCost", sLanguage)).append(
+						"</td>");
+				aResults[2] = sbCounter1.toString();
+		        
+		
+				StringBuilder sbCounter2 = new StringBuilder();
+				sbCounter2.append("<td ");
+				sbCounter2.append("style='width:160px'");
+				sbCounter2.append(" class='counterCell ");
+				if (temp2== 0) {
+					sbCounter2.append("grayBright");
+				} else {
+					sbCounter2.append("blue");
+				}
+				sbCounter2.append("'><span class='counterText ");
+				if (temp2== 0) {
+					sbCounter2.append("grayBright");
+				} else {
+					sbCounter2.append("blue");
+				}
+				sbCounter2.append("'>").append(count2).append("</span><br/>");
+				sbCounter2.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.ContractCost", sLanguage)).append("</td>");
+				aResults[3] = sbCounter2.toString();
+		
+				StringBuilder sbCounter3 = new StringBuilder();
+				sbCounter3.append("<td ");
+				sbCounter3.append("style='width:160px'");
+				sbCounter3.append(" class='counterCell ");
+				if (temp3 == 0) {
+					sbCounter3.append("grayBright");
+				} else {
+					sbCounter3.append("orange");
+				}
+				sbCounter3.append("'><span class='counterText ");
+				if (temp3 == 0) {
+					sbCounter3.append("grayBright");
+				} else {
+					sbCounter3.append("orange");
+				}
+				sbCounter3.append("' >").append(count3)
+						.append("</span><br/>");
+				sbCounter3.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.PaymentCost", sLanguage)).append("</td>");
+				aResults[4] = sbCounter3.toString();
+				
+				StringBuilder sbCounter4 = new StringBuilder();
+				sbCounter4.append("<td ");
+				sbCounter4.append("style='width:160px'");
+				sbCounter4.append(" class='counterCell ");
+				if(temp4 == 0) {
+					sbCounter4.append("grayBright");
+				} else {
+					sbCounter4.append("greenBright");
+				}
+				sbCounter4.append("'><span class='counterText ");
+				if (temp4== 0) {
+					sbCounter4.append("grayBright");
+				} else {
+					sbCounter4.append("greenBright");
+				}
+				sbCounter4.append("' >").append(count4)
+						.append("</span><br/>");
+				sbCounter4.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.AvailableBalance", sLanguage)).append("</td>");
+				aResults[5] = sbCounter4.toString();
+			}
+			else
+			{
+				//department data
+				Double temp5=0.0,temp6=0.0,temp7=0.0,temp8=0.0,temp9=0.0;
+				String departID=getDepartmentID(context,args);
+				MapList mapList1=getDCostItem(context,sOID,departID);
+				Iterator items1=mapList1.iterator();
+				while(items1.hasNext()){
+					Map map1=(Map) items1.next();
+					String id1=(String) map1.get("id");
+					Double costs1[]=getCostInformation(context,id1);
+					temp5+=costs1[0];temp6+=costs1[1];
+					temp7+=costs1[2];temp8+=costs1[3];
+					temp9+=costs1[4];			
+				}
+				double f = temp5/10000.00;
+				String count5 = String.format("%.2f", f);
+				
+				double g = temp6/10000.00;
+				String count6 = String.format("%.2f", g);
+				
+				double h = temp7/10000.00;
+				String count7 = String.format("%.2f", h);
+				
+				double i = temp8/10000.00;
+				String count8 = String.format("%.2f", i);
+				
+				double j = temp9/10000.00;
+				String count9 = String.format("%.2f", j);
+				
+				
+				
+				StringBuilder sbCounter5 = new StringBuilder();
+				sbCounter5.append("<td ");
+				sbCounter5.append("style='width:160px'");
+				sbCounter5.append(" class='counterCell ");
+				sbCounter5.append("grayBright");
+				sbCounter5.append("'><span class='counterText ");
+				sbCounter5.append("grayBright");
+				sbCounter5.append("'>").append(count5).append("</span><br/>");
+				sbCounter5.append(
+						EnoviaResourceBundle.getProperty(context, "Framework",
+								"emxFramework.Label.AllocationCost", sLanguage)).append(
+						"</td>");
+				aResults[6] = sbCounter5.toString();
+		
+				
+				StringBuilder sbCounter6 = new StringBuilder();
+				sbCounter6.append("<td ");
+				sbCounter6.append("style='width:160px'");
+				sbCounter6.append(" class='counterCell ");
+				if (temp6== 0) {
+					sbCounter6.append("grayBright");
+				} else {
+					sbCounter6.append("green");
+				}
+				sbCounter6.append("'><span class='counterText ");
+				if (temp6== 0) {
+					sbCounter6.append("grayBright");
+				} else {
+					sbCounter6.append("green");
+				}
+				sbCounter6.append("'>").append(count6).append("</span><br/>");
+				sbCounter6.append(EnoviaResourceBundle.getProperty(context, "Framework",
+						"emxFramework.Label.ApplyCost", sLanguage)).append(
+						"</td>");
+				aResults[7] = sbCounter6.toString();
+		        
+				StringBuilder sbCounter7 = new StringBuilder();
+				sbCounter7.append("<td ");
+				sbCounter7.append("style='width:160px'");
+				sbCounter7.append(" class='counterCell ");
+				if (temp7== 0) {
+					sbCounter7.append("grayBright");
+				} else {
+					sbCounter7.append("blue");
+				}
+				sbCounter7.append("'><span class='counterText ");
+				if (temp7== 0) {
+					sbCounter7.append("grayBright");
+				} else {
+					sbCounter7.append("blue");
+				}
+				sbCounter7.append("'>").append(count7).append("</span><br/>");
+				sbCounter7.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.ContractCost", sLanguage)).append("</td>");
+				aResults[8] = sbCounter7.toString();
+				
+				StringBuilder sbCounter8= new StringBuilder();
+				sbCounter8.append("<td ");
+				sbCounter8.append("style='width:160px'");
+				sbCounter8.append(" class='counterCell ");
+				if (temp8 == 0) {
+					sbCounter8.append("grayBright");
+				} else {
+					sbCounter8.append("orange");
+				}
+				sbCounter8.append("'><span class='counterText ");
+				if (temp8== 0) {
+					sbCounter8.append("grayBright");
+				} else {
+					sbCounter8.append("orange");
+				}
+				sbCounter8.append("' >").append(count8)
+						.append("</span><br/>");
+				sbCounter8.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.PaymentCost", sLanguage)).append("</td>");
+				aResults[9] = sbCounter8.toString();
+				
+				StringBuilder sbCounter9= new StringBuilder();
+				sbCounter9.append("<td ");
+				sbCounter9.append("style='width:160px'");
+				sbCounter9.append(" class='counterCell ");
+				if(temp9== 0) {
+					sbCounter9.append("grayBright");
+				} else {
+					sbCounter9.append("greenBright");
+				}
+				sbCounter9.append("'><span class='counterText ");
+				if (temp9== 0) {
+					sbCounter9.append("grayBright");
+				} else {
+					sbCounter9.append("greenBright");
+				}
+				sbCounter9.append("' >").append(count9)
+						.append("</span><br/>");
+				sbCounter9.append(EnoviaResourceBundle.getProperty(context, "Framework","emxFramework.Label.AvailableBalance", sLanguage)).append("</td>");
+				aResults[10] = sbCounter9.toString();
+			}
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+	    }
+		return aResults;
+	}
+	//add end
+	
+}

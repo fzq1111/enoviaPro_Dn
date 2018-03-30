@@ -1,0 +1,295 @@
+// (c) Dassault Systemes, 1993-2011. All Rights Reserved.
+
+/**
+ *
+ *   This JPO contains the code for the "MBOMPart" business type.
+ *
+ */
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
+import org.apache.log4j.Logger;
+
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.domain.util.mxType;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.jdom.Attribute;
+import com.matrixone.jdom.Element;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+
+/**
+ * The <code>emxMBOMPart</code> class contains code for the "MBOMPart" business type.
+ *
+ * @version X3 - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME}
+{
+    /**
+     * Constructor.
+     *
+     * @param context the eMatrix <code>Context</code> object.
+     * @param args holds no arguments.
+     * @throws Exception if the operation fails.
+     * @since X3.
+     */
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+        
+    }
+    
+    public HashMap getAttributesFromType(Context context, String[] args) throws Exception 
+    {
+    	HashMap resMap = new HashMap();
+    	try
+    	{
+			HashMap progMap = (HashMap) JPO.unpackArgs(args);
+			HashMap requestMap = (HashMap) progMap.get("requestMap");
+			String strType = (String)requestMap.get("selectedType");
+			String strLanguage = (String)requestMap.get("languageStr");
+
+
+			MapList attributeList = mxType.getAttributes(context, strType);
+			StringList valueList = new StringList();
+			StringList displayList = new StringList();
+			for(int i = 0; i < attributeList.size(); i ++)
+			{
+				Map map = (Map)attributeList.get(i);
+				String strAttrName = (String)map.get("name");
+				valueList.addElement(strAttrName);
+				displayList.addElement(i18nNow.getAttributeI18NString(strAttrName, strLanguage));
+			}
+			
+			resMap.put("field_choices", valueList);
+			resMap.put("field_display_choices", displayList);
+    	}catch(Exception ex)
+    	{
+    		m_logger.error(ex.getMessage(), ex);
+    		throw ex;
+    	}
+		return resMap;
+		
+    }
+    
+    public MapList getResultColumn(Context context, String[] args) throws Exception
+    {
+	    MapList resultList = new MapList();
+	    try
+    	{
+		    Map programMap = (Map) JPO.unpackArgs(args);
+		    Map paramMap = (Map) programMap.get("requestMap");
+		    
+		    MapList summarizeList = (MapList)paramMap.get("summarizeList");
+		    Map summarizeMap = (Map)summarizeList.get(0);
+		    for(int i = 0; i < summarizeMap.keySet().size(); i ++)
+	      	{
+	      		String strAttrName = (String) summarizeMap.get("" + i);
+	      		
+	      		if((!strAttrName.equalsIgnoreCase("id")) && (!strAttrName.equalsIgnoreCase("relId")) && (!strAttrName.equalsIgnoreCase("level")))
+	      		{
+	      			HashMap colMap = new HashMap();
+	      			HashMap settingsMap = new HashMap();
+	
+		      		settingsMap.put("Column Type","program");
+		      		settingsMap.put("program","SEMIssueSummarize");
+		      		settingsMap.put("function","getColumnValues");
+		      		settingsMap.put("Registered Suite","EngineeringCentral");
+		      		//settingsMap.put("autoFilter","false");
+		      		// set column information
+		      		colMap.put("name", strAttrName);
+		      		String strLabelKey = strAttrName;
+		      		colMap.put("label", strLabelKey);
+		      		colMap.put("settings",settingsMap);
+		      		//user added key value pair.
+		      		
+		      		resultList.add(colMap);
+	      		}
+	  		}
+    	}catch(Exception ex)
+    	{
+    		m_logger.error(ex.getMessage(), ex);
+    		throw ex;
+    	}
+		  
+	    return resultList;
+    }
+    
+    public MapList getAllItems(Context context, String[] args) throws Exception
+    {
+    	MapList resultList = new MapList();
+    	try
+    	{
+	    	Map programMap = (Map) JPO.unpackArgs(args);
+	    	MapList summarizeList = (MapList)programMap.get("summarizeList");
+	    	for(int i = 1; i < summarizeList.size(); i ++)
+	    	{
+	    		resultList.add((Map)summarizeList.get(i));
+	    	}
+    	}catch(Exception ex)
+    	{
+    		m_logger.error(ex.getMessage(), ex);
+    		throw ex;
+    	}
+    	  
+    	return resultList;
+    }
+    
+    public Vector getColumnValues (Context context, String[] args) throws Exception
+    {
+    	try
+    	{	
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	    	Map columnMap = (Map) programMap.get("columnMap");
+	        MapList objectList = (MapList) programMap.get("objectList");
+	        HashMap paramList    = (HashMap) programMap.get("paramList");
+	        Vector columnValues = new Vector(objectList.size());
+	        
+	        String strColumnName = (String)columnMap.get("name");
+	        for(int i = 0; i < objectList.size(); i ++)
+	        {
+	        	Map dataMap = (Map)objectList.get(i);
+	        	String strValue = (String)dataMap.get(strColumnName);
+	        	if(strValue == null)
+	        	{
+	        		strValue = "";
+	        	}
+	        	columnValues.add(strValue);
+	        }
+	        
+	        return columnValues;
+    	}catch(Exception ex)
+    	{
+    		m_logger.error(ex.getMessage(), ex);
+    		throw ex;
+    	}
+    }
+    
+    public MapList getSeletedAttributeValues(Context context, String[] args) throws Exception
+	{
+    	Map paramMap = (Map) JPO.unpackArgs(args);
+    	String strSelectedObjIds = (String)paramMap.get("selectedObjIds");
+    	String strSelectedAttr = (String)paramMap.get("selectedAttr");
+    	return getSeletedAttributeValues(context, strSelectedObjIds, strSelectedAttr);
+	}
+    
+    public MapList getSeletedAttributeValues(Context context, String objectIds, String selectedAttr) throws Exception
+	{
+		MapList resultList = new MapList();
+		try
+		{
+			StringList rowList = new StringList();
+			String[] splitSelectedIds = objectIds.split(",");
+	
+			Map ttlMap = new HashMap();
+			ttlMap.put("\u5C5E\u6027", "TTL");
+			ttlMap.put("A","0");
+			ttlMap.put("B","0");
+			ttlMap.put("C","0");
+			ttlMap.put("D","0");
+			ttlMap.put("TTL","0");
+			resultList.add(ttlMap);
+			
+			for(int i = 0; i < splitSelectedIds.length; i ++)
+			{
+				String selectId = splitSelectedIds[i];
+				DomainObject selectObj = new DomainObject(selectId);
+				String[] attrValues = null;
+				
+				if(selectedAttr.equals("SEM Issue TestCarCode"))
+				{
+					attrValues = selectObj.getAttributeValue(context,selectedAttr).split(",");
+				}
+				else
+				{
+					attrValues = new String[1];
+					if(selectedAttr.equals("owner"))
+					{
+						attrValues[0] = selectObj.getInfo(context, "owner");
+					}else
+					{
+						attrValues[0] = selectObj.getAttributeValue(context,selectedAttr);
+					}
+				}
+				String strColumnValue = selectObj.getAttributeValue(context,"SEM Issue SolutionProgress");
+				for(int m = 0; m < attrValues.length; m ++)
+				{
+					String attrValue = attrValues[m];
+					if((!rowList.contains(attrValue)) && UIUtil.isNotNullAndNotEmpty(selectedAttr))
+					{ 
+						rowList.add(attrValue);
+						Map map = new HashMap();
+						map.put("\u5C5E\u6027", attrValue);
+						if(strColumnValue.equals("A"))
+						{
+							map.put("A","1");
+							map.put("B","0");
+							map.put("C","0");
+							map.put("D","0");
+						}else if(strColumnValue.equals("B")){
+							map.put("A","0");
+							map.put("B","1");
+							map.put("C","0");
+							map.put("D","0");
+						}else if(strColumnValue.equals("C")){
+							map.put("A","0");
+							map.put("B","0");
+							map.put("C","1");
+							map.put("D","0");
+						}else if(strColumnValue.equals("D")){
+							map.put("A","0");
+							map.put("B","0");
+							map.put("C","0");
+							map.put("D","1");
+						}
+						map.put("TTL","1");
+						resultList.add(map);
+					}
+					else
+					{
+						for(int j = 1; j < resultList.size(); j ++)
+						{
+							Map map = (Map)resultList.get(j);
+							String strCurrAttrValue = (String)map.get("\u5C5E\u6027");
+							if(strCurrAttrValue.equals(attrValue))
+							{
+								String strCount = (String)map.get(strColumnValue);
+								int nCount = Integer.parseInt(strCount) + 1;
+								map.put(strColumnValue, "" + nCount);
+								
+								strCount = (String)map.get("TTL");
+								nCount = Integer.parseInt(strCount) + 1;
+								map.put("TTL", "" + nCount);
+								break;
+							}
+						}				
+					}
+					String strCount = (String)ttlMap.get(strColumnValue);
+					int nCount = Integer.parseInt(strCount) + 1;
+					ttlMap.put(strColumnValue, "" + nCount);
+					
+					strCount = (String)ttlMap.get("TTL");
+					nCount = Integer.parseInt(strCount) + 1;
+					ttlMap.put("TTL", "" + nCount);
+				}
+			}
+		}catch(Exception ex)
+		{
+			m_logger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+		
+		return resultList;
+	}
+}
+

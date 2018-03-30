@@ -1,0 +1,9 @@
+tcl;
+eval {
+    puts {Executing SNSearchServer-R418HF3-downgrade.mql...}
+    
+    puts {SNSearchServer-R418HF3-downgrade.mql - Completed}
+        
+    exit 0;
+}
+

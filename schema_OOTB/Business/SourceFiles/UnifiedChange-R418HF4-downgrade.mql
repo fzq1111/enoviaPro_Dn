@@ -1,0 +1,31 @@
+#################################################################################
+#                                                                               #
+#    Copyright (c) 2004-2015 Dassault Systemes.  All Rights Reserved.           #
+#    This program contains proprietary and trade secret information of          #
+#    Matrix One, Inc.  Copyright notice is precautionary only and does not      #
+#    evidence any actual or intended publication of such program.               #
+#                                                                               #
+#################################################################################
+
+# Call the TCL Prompt
+tcl;
+
+eval { 
+	
+	puts "downgrading ECM Triggers HF 4"
+	
+	mql del bus "eService Trigger Program Parameters" "TypeChangeActionDeleteCheck"  "ECMUnifiedCheckDeleteCA";
+	
+	mql mod bus "eService Trigger Program Parameters" PolicyChangeActionStateInWorkPromoteAction    	ECMUnifiedCreateRoutesFromTemplateOrReviewer "eService Program Name" UnifiedChangeActionECMUserActionTriggers;
+	
+	mql del bus "eService Trigger Program Parameters" "TypeRealizedActivityImplicitDeleteAction"  "ECMUnifiedActionDeleteRealized";
+	
+
+	set sCmd "mql list type \"Realized Activity\""
+	set mqlret [catch {eval $sCmd} outStr]
+        if {$outStr != ""} {
+          mql mod "type" "Realized Activity" remove trigger "implicitdelete" "action";
+        }	
+}
+
+

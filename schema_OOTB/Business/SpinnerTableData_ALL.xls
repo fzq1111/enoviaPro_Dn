@@ -1,0 +1,587 @@
+Name	Registry Name	Description	Column Names (in order-use "|" delim)	Hidden (boolean)
+PLCSearchImagesTable	PLCSearchImagesTable		Name | Description | Image Size | Owner | name2	FALSE
+PLCSearchDocumentsTable	PLCSearchDocumentsTable		Name | Revision | Type | Title | Description | State | Owner | name2	FALSE
+PLCSearchSpecificationsTable	PLCSearchSpecificationsTable		Name | Type | Description | State | Owner | Revision | Date | name2	FALSE
+PLCSearchGenericTable	PLCSearchGenericTable		Name | Revision | Type | name2	FALSE
+PLCRelatedProductList	PLCRelatedProductList		Name | Type | Revision | Description | State	FALSE
+PLCBuildDistributionsList	PLCBuildDistributionsList		Name | Comments | Size | Format | Actions	FALSE
+PLCWhereUsedList	PLCWhereUsedList		level | Name | Title | Type | Revision | Description | State | Owner | Edit	FALSE
+PLCProductCompatibilityReportList	PLCProductCompatibilityReportList		Name | Left Expression | Compatibility Option | Right Expression | Reason for Failure	FALSE
+PLCProductDependencyList	PLCProductDependencyList		Level | Name | Revision | Type	FALSE
+PLCTestExecutionTestCaseList	PLCTestExecutionTestCaseList		StatusGif | Level | Name | Rev | Description | ExecutionDate | ExecutionResult | newWindow	FALSE
+PLCPortfolioContentList	PLCPortfolioContentList		Image | Name | Revision | Type | Description | State | Owner | QuickFile | name2	FALSE
+PLCSearchPortfoliosList	PLCSearchPortfoliosList		Name | Type | Description | ItemCount | Owner	FALSE
+PLCSearchProjectsTable	PLCSearchProjectsTable		Name | Type | Description | State | Owner | name2	FALSE
+PLCDesignResponsibilitySearchTable	PLCDesignResponsibilitySearchTable		Name | Type | Description | State | name2	FALSE
+PLCProductRoadmapProjectsList	PLCProductRoadmapProjectsList		Slip Days | Name | Type | Description | EstimatedFinish | ActualFinish | Governing Project | Program | State | Owner | name2	FALSE
+PLCProductRoadmapList	PLCProductRoadmapList		Name | Revision | Type | Governing Project | Current Phase | Phase Completion | Label1 | Label2 | Label3 | Label4 | State | Owner	FALSE
+PLCProductTaskList	PLCProductTaskList		Slip Days | Name | EstimatedStartDate | EstimatedFinishDate | ActualStartDate | ActualFinishDate | Label | Region | Season | Segment | Milestone Type | Year | Date | Program | Project | State | name2	FALSE
+PLCSearchPartsTable	PLCSearchPartsTable		Name | Revision | Type | Description | State | Owner | name2	FALSE
+PLCPreviewBOMTable	PLCPreviewBOMTable		Name | Reference | Description | Selected Options | Selected Action | Part Number | Action Icons | Visual Cue | Revision | State | <0x4a0004af> | Quantity | Unit Of Measure | Reference Designator	FALSE
+CFFEffectivityFramework	CFFEffectivityFramework		StructureEffectivityExpression | ItemEffectivityExpression	FALSE
+CFFDefinitionTable	CFFDefinitionTable		Name | SequenceSelectable | Product Revision	FALSE
+CFFEffectivityProposedCurrent	CFFEffectivityProposedCurrent		ProposedEffectivity | CurrentEffectivity	FALSE
+CFFStructureEffectivity	CFFStructureEffectivity		StructureEffectivityExpression	FALSE
+CFFConfigurationContext	CFFConfigurationContext		Name | Type | Revision | State | Description	FALSE
+CFFRelationalDefinitionTable	CFFRelationalDefinitionTable		Display Name | ActionIcon | Name | Type	FALSE
+CFFStructureEffectivityNoMassUpdate	CFFStructureEffectivityNoMassUpdate		StructureEffectivityExpression	FALSE
+CFFMilestoneDefinitionTable	CFFMilestoneDefinitionTable		Name | ActionIcon | Discipline | Date	FALSE
+CFFStructureEffectivityReadOnly	CFFStructureEffectivityReadOnly		StructureEffectivityExpressionReadOnly	FALSE
+RMTUseCaseList	RMTUseCaseList		Active EC | Revision | Name | state | description | originator | owner | QuickFile | name2	FALSE
+RMTCandidateRequirementList	RMTCandidateRequirementList		Active EC | Higher Revision Exists | Name | Revision | Type | Title | Owner | State | Priority | Difficulty | SponsoringCustomer | Classification | QuickFile | name2	FALSE
+RMTSearchUseCasesTable	RMTSearchUseCasesTable		Name | Revision | Description | State | Owner	FALSE
+RMTSearchRequirementsTable	RMTSearchRequirementsTable		Name | Revision | Type | Title | Description | State | Priority | Difficulty | Classification | Customer | Owner	FALSE
+RMTCommitedRequirementList	RMTCommitedRequirementList		Name | Rev | Description | Owner | Product	FALSE
+RMTContextRequirementList	RMTContextRequirementList		Active EC | Higher Revision Exists | Name | Revision | Type | Title | Owner | State | Priority | Difficulty | SponsoringCustomer | Classification | QuickFile | name2	FALSE
+RMTMyDeskRequirementList	RMTMyDeskRequirementList		Name | Revision | State | Active EC | Reserved | Difficulty | Priority | AllocationStatus | Classification | Title | Owner | Sponsoring Customer | Modified | QuickFile | NewWindow	FALSE
+RMTRequirementDocumentationView	RMTRequirementDocumentationView		Name | Title | Type | Description | Owner | State | LockStatus | Revision | Version | Actions | New Window Icon	FALSE
+RMTFulfillmentReport	RMTFulfillmentReport		Status | level | Name | Revision | Type | Description | Owner | State | Remarks | name2	FALSE
+RMTSearchDecisionsTable	RMTSearchDecisionsTable		Name | Revision | Title | Description | Owner | State	FALSE
+RMTTraceabilityRequirementTable	RMTTraceabilityRequirementTable		Name | SourceReqTitle | Rev | SourceSpecification | Title | Separator | TargetReq | TargetReqTitle | TargetRev | TargetSpecification | Title1 | Separator1 | RelType | Status	FALSE
+RMTTraceabilityReqWithDirectionTable	RMTTraceabilityReqWithDirectionTable		Name | SourceReqTitle | Rev | name | Title | Separator | Direction | TargetReq | RichTextContent | TargetReqTitle | TargetRev | TargetSpecification | Title1 | Separator1 | RelType | Status	FALSE
+RMTTraceabilityReqWithParentSpecTable	RMTTraceabilityReqWithParentSpecTable		Name | SourceReqTitle | Rev | ParentSpecification | Title | Separator | TargetReq | TargetReqTitle | TargetRev | RelType | Status | Separator2 | ParentSpecs | Title1	FALSE
+RMTTraceabilityTestCaseTable	RMTTraceabilityTestCaseTable		Name | Title | Rev | Separator | TestCase | TestRev | Owner | Status | Notes	FALSE
+RMTTraceabilityFunctionalTable	RMTTraceabilityFunctionalTable		Name | Rev | Function	FALSE
+RMTTraceabilityLogicalTable	RMTTraceabilityLogicalTable		Name | Rev | Logical	FALSE
+RMTSpecDetailTable	RMTSpecDetailTable		Name | Revision | Type | Relationship Type | Relationship Status | Classification | Title | Description | Priority | ConfigurationContext	FALSE
+RMTSpecStatusTable	RMTSpecStatusTable		Name | Revision | Title | RichTextContent | CoveredRequirements | RefiningRequirements | Classification | Status | Active EC | Active CO | Reserved | AllocationStatus | Difficulty | Priority | RichTextValidation | Owner | ConfigurationContext | StructureEffectivityExpression	FALSE
+RMTRevisionsList	RMTRevisionsList		Name | Revision | Type | Title | State | Owner | name2	FALSE
+RMTSearchChaptersTable	RMTSearchChaptersTable		Name | Revision | Description | Owner | State	FALSE
+RMTSearchCommentsTable	RMTSearchCommentsTable		Name | Revision | Description | Owner | State	FALSE
+RMTSearchSpecificationsTable	RMTSearchSpecificationsTable		Name | Type | Revision | Description | State | Title | Owner	FALSE
+RMTRequirementSpecificationsList	RMTRequirementSpecificationsList		Name | Revision | Status | Active EC | Reserved | QuickFile | Title | Description | Owner | Version | Projects | Date Modified | New Window Icon	FALSE
+RMTProjectFolderList	RMTProjectFolderList		Name | Type | Access | Description | Project Leader | State | New Window Icon	FALSE
+RMTRequirementStatusView	RMTRequirementStatusView		Name | Revision | Title | RichTextContent | CoveredRequirements | RefiningRequirements | Classification | Status | ActiveEC | Active CO | Reserved | AllocationStatus | RichTextValidation | Difficulty | Priority | Owner | Specifications | ObjDecision | OtherRequirements | ConfigurationContext | StructureEffectivityExpression	FALSE
+RMTRequirementWhereUsedView	RMTRequirementWhereUsedView		Name | Relationship Type | LinkDecision | Type | Specifications | ObjDecision | OtherRequirements | New Window Icon | ConfigurationContext	FALSE
+RMTTargetSpecificationsTable	RMTTargetSpecificationsTable		Name | Revision | Description | State | Owner | Title	FALSE
+RMTSpecContentTable	RMTSpecContentTable		Name | Revision | Type | Content | Classification | Difficulty | Priority | Description | NewWindow | ConfigurationContext	FALSE
+RMTRequirementContentView	RMTRequirementContentView		Name | Content | Relationship Type | Relationship Status | Type | Title | Priority | Difficulty | Classification | New Window Icon | ConfigurationContext	FALSE
+RMTSpecStructureCompare	RMTSpecStructureCompare		Name | Revision | Type | Relationship Type | Relationship Status | Classification | Title | Description | Priority | Content Text | ParamType | ParamValue	FALSE
+RMTRichTextDefinition	RMTRichTextDefinition		Richtext	FALSE
+RMTGlobalSearchRequirementsTable	RMTGlobalSearchRequirementsTable		Name | Revision | Type | Title | State | Priority | Difficulty | Classification | Customer | Owner | ParentSpecs | NewWindow	FALSE
+RMTGlobalSearchSpecificationsTable	RMTGlobalSearchSpecificationsTable		Name | Revision | Type | Title | Description | State | Owner | NewWindow	FALSE
+RMTGlobalSearchUseCasesTable	RMTGlobalSearchUseCasesTable		Name | Revision | Description | State | Owner | NewWindow	FALSE
+RMTTraceabilityFeatureInContext	RMTTraceabilityFeatureInContext		Name | Title | Rev | State | Sep1 | Feature | FeatureType | FeatureRev | FeatureState | IsCommitted	FALSE
+RMTTraceabilityFeatureOption1	RMTTraceabilityFeatureOption1		Name | Title | Rev | State | Sep1 | Products | Sep2 | FeatureName | FeatureType | FeatureRev | FeatureState	FALSE
+RMTTraceabilityFeatureOption2	RMTTraceabilityFeatureOption2		Name | Title | Rev | State | Products | Sep1 | Feature | FeatureType | FeatureRev | FeatureState | FeatureProducts	FALSE
+RMTSpecStructureHistoryTable	RMTSpecStructureHistoryTable		Name | Action | ToObject | User | Date	FALSE
+RMTGlobalSearchBasicsTable	RMTGlobalSearchBasicsTable		Name | Revision | Title | Description | State | Owner | NewWindow	FALSE
+RMTFullTraceabilityTable	RMTFullTraceabilityTable		NameRev | Title | Status | Type | State | Owner | Desc | NewWindow	FALSE
+RMTRequirementVersionsTable	RMTRequirementVersionsTable		Id | Description | RichTextContent | Owner | Modified | Priority | Classification | NewWindow	FALSE
+RMTRequirementRollUpTable	RMTRequirementRollUpTable		RelType | Name | Description | Owner	FALSE
+RMTRequirementVersionRichTextTable	RMTRequirementVersionRichTextTable		Name | Type | Classification | Description | Priority	FALSE
+RMTTraceabilityDerivedRequirementsOnlyTable	RMTTraceabilityDerivedRequirementsOnlyTable		RootRequirementName | SourceTitle | RootRequirementRevision | Specification Name | Title | DerivedRequirements	FALSE
+RMTTraceabilityCoverageReportTable	RMTTraceabilityCoverageReportTable		RootRequirementName | RootRequirementRevision	FALSE
+RMTCreateAndLinkExistingSpecAndRequirementSearchTable	RMTCreateAndLinkExistingSpecAndRequirementSearchTable		Name | Revision | Type | Title | State | Priority | Difficulty | Classification | Owner | ParentSpecs | Content Text	FALSE
+RMTMyDeskGroupList	RMTMyDeskGroupList		Name | Revision | Title | owner | ConfigurationContext | StructureEffectivityExpression	FALSE
+RMTTraceabilityPhysicalTable	RMTTraceabilityPhysicalTable		Name | Rev | Physical	FALSE
+RMTTraceabilityParamWithParentReqTable	RMTTraceabilityParamWithParentReqTable		Name | SourceReqTitle | Rev | ParentSpecification | Title | Separator | TargetReq | TargetReqTitle | TargetRev | ParamType | ParamValue | RelType | separator2 | ParentReqs	FALSE
+RMTCoveredRefineReqTable	RMTCoveredRefineReqTable		TargetReq | Rev | RichTextContent | SourceReqTitle | Status	FALSE
+PMCBusinessGoalSummary	PMCBusinessGoalSummary	BusinessGoal Summary Table	Name | Description | BusinessBenefit | BusinessGoalStatus | EffectiveDate | BusinessUnit | Owner	FALSE
+PMCDashboardSummary	PMCDashboardSummary	Dashboards Summary	Name | Count | Description	FALSE
+PMCProgramSummary	PMCProgramSummary	Program Summary	Name | Description | ProgramStatus | CreatedBy | CreatedDate | Vault	FALSE
+PMCProjectSpaceMyDesk	PMCProjectSpaceMyDesk	Project Summary	ProjectStatus | Name | currentPhase | Type | Status | Owner | Project | Est Finish | Act Finish | Created Date | Program | Description | Vault	FALSE
+PMCProjectTemplateSummary	PMCProjectTemplateSummary	Project Template Table	Name | EstimatedDuration | Owner | Status | Description | Vault	FALSE
+PMCAssignedWBSTaskSummary	PMCAssignedWBSTaskSummary	WBS Task Summary	WBSTaskName | Status | SlipDays | Delivarable | State | PercentageCompelete | ProjectName | Separator1 | WeeklyEfforts | Separator2 | EstStartDate | EstFinishDate | ActFinishDate | ProgramName	FALSE
+PMCRisksSummary	PMCRisksSummary	Risks Summary	Status | Name | Title | RisksStatus | RisksRPN | Impact | Probability | EffectiveDate | SlipDays | EstStartDate | EstFinishDate | ActStartDate | ActFinishDate | AssignTo | itemsSummary	FALSE
+PMCPortalRiskSummary	PMCPortalRiskSummary	Portal Risks Summary	Checkbox | Status | Title | RisksRPN | SlipDays | EstStartDate | EstFinishDate | AssignTo	FALSE
+PMCAssessmentSummary	PMCAssessmentSummary	Assessment Summary Table	Status | Name | Author | Role | Date | Resource | Schedule | Finance | Risk	FALSE
+PMCPortalAssessmentSummary	PMCPortalAssessmentSummary	Portal Assessment Summary Summary	Id | Status | Name | Author | Date | Description	FALSE
+PMCBookmarkSummary	PMCBookmarkSummary	Book Mark Summary Table	Name | Description | Link	FALSE
+PMCProjectMemberSummary	PMCProjectMemberSummary	Project Member Summary	Name | Type | Organization | Access | ProjectRole | DynamicColumn	FALSE
+PMCProjectQuality	PMCProjectQuality	Project Quality Summary	Name | State | ProblemStatement | Goal | DataType | SigmaGoal | SigmaCurrent	FALSE
+PMCFolderSummary	PMCFolderSummary	Folder Summary Page	Name | HigherRevision | LockStatus | Drop Zone | Drag column | Type | Title | Action | Revision | Version | Description | State | Size | Author | Date Modified	FALSE
+PMCPortalProjectMemberSummary	PMCPortalProjectMemberSummary	PMC Portal Project Member Summary Page	Id | Name | Organization | Access | ProjectRole	FALSE
+PMCCompanyWorkCalendars	PMCCompanyWorkCalendars		Name | Type | State | Created | Workweek | Description	FALSE
+PMCWorkCalendarLocations	PMCWorkCalendarLocations		Name | Type | Description | State | Created | NewWindow	FALSE
+PMCLocationCalendars	PMCLocationCalendars		Type | Name | Description | State | Created | NewWindow	FALSE
+PMCProjectTaskEffort	PMCProjectTaskEffort		Name | Week Ending Date | State | Pending | Plan | Total | Remain | Completed | EndDate | EndDatePredicted | StatusImage | Sun | Mon | Tue | Wed | Thu | Fri | Sat | NewWindow | ID | Comments	FALSE
+PMCTaskEffort	PMCTaskEffort		Name | Week Ending Date | State | Rejection Status | Duration | Allocation | Plan | Total | Pending | Remain | Completed | EndDate | EndDatePredicted | StatusImage | nextWeek	FALSE
+PMCProjectGovernedItemsSummary	PMCProjectGovernedItemsSummary	 Table to display the governed items of the Project	Type | Name | Description | State | Revision | Owner	FALSE
+PMCFolderReportGovernedItemsSummary	PMCFolderReportGovernedItemsSummary	 Table to display the governed items of the Project in Folder Content Report	Type | Name | Description | State | Revision | Owner	FALSE
+PMCProjectFolderContentReportSummary	PMCProjectFolderContentReportSummary	Table to display the folder Content objects	Folder | Column Separator | Type | Name | Title | Files | Revision | Version | Status	FALSE
+PMCProjectDeliverableReportSummary	PMCProjectDeliverableReportSummary	BusinessGoal Summary Table	WBS | TaskName | EstEndDate | State | PercentageComplete | Assignees | Type | Name | Files | Revision | Version | State of the deliverable | Owner	FALSE
+PMCScheduleViewTable	PMCScheduleViewTable	Schedule Summary	Name | ProjectStatus | Type | Status | Phase | PhaseEstimatedEndDate | PhaseActualEndDate | ProjectEstimatedEndDate | ProjectActualEndDate | Program | Owner | Description	FALSE
+PMCDashboardViewTable	PMCDashboardViewTable	Dashboard View	Name | Phase | CurrentPhaseDate | ProjectEstimatedEndDate | ProjectActualEndDate | SlipDays | PercentDone | Risk | Project Assessment | CostRatio | TotalCost | TotalBenefit | Quality | Program | BusinessUnit | ProjectOwner	FALSE
+PMCGeneralSearchResults	PMCGeneralSearchResults	PMC Search Results Indented Table	Name | Revision | Type | Title | File | Description | State | Owner | Vault	FALSE
+PMCTaskAssigneeSummary	PMCTaskAssigneeSummary	Assignee Summary	Name | Email | Company | Assignee Role | Allocation	FALSE
+PMCTaskQuestionSummary	PMCTaskQuestionSummary	Task Question Summary	Name | Description | Task Transfer	FALSE
+PMCProjectDashboardViewTable	PMCProjectDashboardViewTable	Dashboard View	Name | Phase | CurrentPhaseDate | SlipDays | Risk | Project Assessment | CostRatio | TotalCost | TotalBenefit | Metrics | Quality | BusinessUnit | Program | ProjectOwner	FALSE
+PMCRiskRpnTable	PMCRiskRpnTable	RPN Summary	Name | EffectiveDate | Impact | Probability | RPN | Originator | Status	FALSE
+PMCProjectBenefitSummary	PMCProjectBenefitSummary	Benefit Summary	checkbox | Name | Ledger | Planned | Estimated | Actual | Edit	FALSE
+PMCProjectCostSummary	PMCProjectCostSummary	Cost Summary	checkbox | Name | Ledger | Planned | Estimated | Actual | Edit	FALSE
+PMCProjectFinancialsTable	PMCProjectFinancialsTable	Project Space Financials table	Checkbox | Name | PlannedCost | ActualCost | PlannedBenefit | ActualBenefit | PlannedNetBenefit | ActualNetBenefit | NewTree	FALSE
+PMCProjectQualityMetric	PMCProjectQualityMetric	PMC Project Quality Metric Table	Name | Source | Date | DPMO | DPU | Mean | Standard Deviation | UpperSpecLimit | LowerSpecLimit | Sigma | Originator | Comments	FALSE
+PMCWBSViewTable	PMCWBSViewTable	Schedule Summary	Name | Type | ID | Dependency | Successor | Delivarable | Status | State | Complete | ProgressBar | ConstraintType | Constraint Date | Duration Keyword | PhaseEstimatedDuration | PhaseEstimatedStartDate | PhaseEstimatedEndDate | PhaseActualDuration | PhaseActualStartDate | PhaseActualEndDate | Owner | TaskRequirement | ProjectRole | Comments | WBS | Description	FALSE
+PMCWBSBaseLineViewTable	PMCWBSBaseLineViewTable	Schedule Summary	Name | WBS | Type | ProjectStatus | State | EstimatedStartDate | EstimatedEndDate | ActualStartDate | ActualEndDate | BaselineInitialStartDate | BaselineInitialEndDate | BaselineCurrentStartDate | BaselineCurrentEndDate | ID | Comments	FALSE
+PMCTaskDependency	PMCTaskDependency	Task dependency table	ID | Name | Project | Project Template | Dependency | Duration Keyword | SlackTime	FALSE
+PMCItemReassignment	PMCItemReassignment	Item Reassignment	Checkbox | Name | Type | Description	FALSE
+PMCWBSProjectTemplateViewTable	PMCWBSProjectTemplateViewTable	Schedule Summary	Task Name | Task Type | ID | Dependency | Delivarable | State | Duration Keyword | EstimatedDuration | ConstraintType | TaskRequirement | ProjectRole | QuestionMark | WBS | Description	FALSE
+PMCDecisionsRelatedDecisions	PMCDecisionsRelatedDecisions		Name | Type | QuickFile | Title | Description | Owner | State | Parent Object	FALSE
+PMCControlledFolderRevisionsSummary	PMCControlledFolderRevisionsSummary		Name | Revision | Policy | State | Description	FALSE
+RouteSummary	RouteSummary	Route Summary Table	Checkbox | StatusGif | Name | Description | RouteStatus | ScheduledCompletionDate | ActualCompletionDate | Owner | NewTree	FALSE
+MyDeskRouteSummary	MyDeskRouteSummary	My Desk Route Summary Table	Checkbox | StatusGif | Name | Description | RouteStatus | ScheduledCompletionDate | Scope | NewTree	FALSE
+TMCMyDeskWorkspaceTemplateSummary	TMCMyDeskWorkspaceTemplateSummary	My Desk Workspace Template Summary Table	Checkbox | Name | Revision | description | Availability | Owner | NewTree	FALSE
+TMCWorkspaceTemplateAccessSummary	TMCWorkspaceTemplateAccessSummary	Workspace Template Access Summary Table	personName | Type | ProjectLeadGif | CreateRouteGif | Organization | NewTree	FALSE
+TMCWorkspaceTemplateFolderSummary	TMCWorkspaceTemplateFolderSummary	Workspace Template Folder Summary Table	personName | Description | security | NewTree	FALSE
+TMCWorkspaceTemplateRevSummary	TMCWorkspaceTemplateRevSummary	Workspace Template Rev Summary Table	revName | RevId | Description | Availability | Owner | NewTree	FALSE
+TMCGeneralSearchResult	TMCGeneralSearchResult	Search Result Summary For Adding To Team Central Folder	Checkbox | Name | Revision | Type | Description | State	FALSE
+TMCFilesSearchResult	TMCFilesSearchResult	TeamCentral Files Search results Table	Name | LockedGif | Workspace | Category | Version | Description | newWindow	FALSE
+TMCContentSummary	TMCContentSummary		Image | Name | Title | Type | Rev | Ver | Actions | Checkin | LockStatus | RouteStatus | Description | State | DetailPopup	FALSE
+TMCWorkspaceFolderSummary	TMCWorkspaceFolderSummary	Team Folder Summary Table	Checkbox | Name | Content | Owner | Linked | NewTree	FALSE
+TMCWorkspaceSubscriptionSummary	TMCWorkspaceSubscriptionSummary	Team Central Workspace Subscriptions Summary	Checkbox | Item | Type | Event	FALSE
+TMCMyDeskWorkspaceSummary	TMCMyDeskWorkspaceSummary	My Desk Workspace Summary Table	Checkbox | Name | description | state | Owner | NewTree	FALSE
+TMCWorkspaceRouteTasksSummary	TMCWorkspaceRouteTasksSummary		Status | Name | Actions | Instructions | DueDate | AllowDelegation | NeedsOwnerReview | Route | NewTree	FALSE
+TMCWorkspaceFolderAccessSummary	TMCWorkspaceFolderAccessSummary		LastFirstName | ProjectLeadIcon | CreateRouteIcon | CreateFolderIcon | Type | Organization | InheritedAccess | Access	FALSE
+TMCWorkspaceAccessSummary	TMCWorkspaceAccessSummary		CheckBox | LastFirstName | ProjectLeadIcon | CreateRouteIcon | CreateFolderIcon | Type | Organization | Access	FALSE
+TMCDiscussionSummary	TMCDiscussionSummary		Name | Replies | LastMessage | Owner	FALSE
+TMCWorkspaceSubFolderAccessSummary	TMCWorkspaceSubFolderAccessSummary		LastFirstName | ProjectLeadIcon | CreateRouteIcon | CreateFolderIcon | Type | Organization | InheritedAccess | Access	FALSE
+TMCSelectFolder	TMCSelectFolder	Team Select Folder Summary Table	Name | Description | Owner	FALSE
+TMCWorkspaceTemplateSearchResults	TMCWorkspaceTemplateSearchResults		Name | Revision | Description | Availability | Owner | NewWindow	FALSE
+TMCFindContentFolderSearch	TMCFindContentFolderSearch	Table to display folders result in file content	Checkbox | Name | WorkSpace | Description	FALSE
+TMCWorkspacePredefinedFolderResults	TMCWorkspacePredefinedFolderResults		Name | Description	FALSE
+TMCWorkspaceAddContentFindOwnerResults	TMCWorkspaceAddContentFindOwnerResults		Name | Type	FALSE
+TMCFolderSearchResults	TMCFolderSearchResults		Name | Title | Revision | Owner | Date	FALSE
+TMCWorkspaceRolesSearchTable	TMCWorkspaceRolesSearchTable	Team Workspace Roles Search Table	Checkbox | Name | Type	FALSE
+TMCWorkspaceMembersSearchTable	TMCWorkspaceMembersSearchTable	Team Workspace Members Search Table	Checkbox | Name | Secure ID Login | Organization | WorkPhoneNumber | newWindow	FALSE
+TMCFileSearchOwnerResult	TMCFileSearchOwnerResult	Table to display owners result in Team file search	Checkbox | Name | Type | Organization	FALSE
+TMCDiscussionAttachmentsTable	TMCDiscussionAttachmentsTable	Table to display files result in Discussion attachment	Checkbox | Name | Workspace | Folder | Version | Description | newWindow	FALSE
+TMCPushSubscriptionTable	TMCPushSubscriptionTable	Table to display Subscrption Events on folder	AlertEvents | Recipients	FALSE
+TMCPushSubscriptionAddRecipients	TMCPushSubscriptionAddRecipients	Table to display Subscrption Recipients on folder	Checkbox | Recipients	FALSE
+TMCPushSubRecipientsTable	TMCPushSubRecipientsTable	Table to display Subscrption Recipients on folder	Checkbox | Recipients | Type	FALSE
+TMCEditWorkspaceAccess	TMCEditWorkspaceAccess		Name | ProjectLeadIcon | CreateRouteIcon | CreateFolderIcon | Type | Organization | Access	FALSE
+AppFolderContentSearchResult	AppFolderContentSearchResult		CheckBox | Name | Revision | Version | Type | Date	FALSE
+MetricsTableForOpenViewDelete	MetricsTableForOpenViewDelete	Common Table for Open, View, Delete WebReport functionalitites	RadioButton | Name | LastRun | CompletedIn | Owner	FALSE
+MetricsTableForObjectDetailsSummary	MetricsTableForObjectDetailsSummary	Common Table for Metrics Object Details Summary functionalitites	Name | Revision | Type | Description | State | newWindow	FALSE
+SMTFolderSummary	SMTFolderSummary		Name | Type | Description	FALSE
+SMTPeopleSearchResult	SMTPeopleSearchResult		UserName | FirstName | LastName | State | E-mail	FALSE
+SMTServiceKeySummary	SMTServiceKeySummary		ExpirationDateStatusIcon | Name | Person | Description | State | ApplicationID | ValidityType	FALSE
+SMTServiceContentSummary	SMTServiceContentSummary		Title | Namespace | Description	FALSE
+SMTServiceList	SMTServiceList		Name | Revision | Description	FALSE
+SMTFolderList	SMTFolderList		Name | Description	FALSE
+SMTGeneralSearchResult	SMTGeneralSearchResult		CheckBox | Name | Revision | Type | Date	FALSE
+SMTServiceSummary	SMTServiceSummary		Name | Revision | Description | State | ApplicationID | Owner	FALSE
+SMTSERVICEUsageHistory	SMTSERVICEUsageHistory		Date | PERSON | PLMKEY | TIME_SPENT	FALSE
+SMTServiceKeyUsageHistory	SMTServiceKeyUsageHistory		Date | APP_ID | SERVICE_ID | TIME_SPENT	FALSE
+APPWhereUsed	APPWhereUsed		Name | Level | Label | Type | Revision | Description | State | Owner	FALSE
+APPWhereUsedHierarchial	APPWhereUsedHierarchial		Name | Revision | Type | Description | State | Owner | name2	FALSE
+APPWhereUsedRelated	APPWhereUsedRelated		Name | Revision | RelatedBy | Type | Description | State | Owner | name2	FALSE
+VPLMCommonNavSummary			Name | Revision | Description | Owner | Organization | Project | Created | Modified | Maturity | Type	FALSE
+ENCEBOMIndentedSummarySB	ENCEBOMIndentedSummarySB	EBOM Indented Summary Table	VPMVisible	FALSE
+LCMyPartsList	LCMyPartsList		Image Icon | Name | Rev | Type | Description | state | Classification Attributes | DetailPopup	FALSE
+AEFCollection	AEFCollection	AEF Collection Table	Name | Description | Count | newWindow	FALSE
+AEFCollectionItems	AEFCollectionItems	AEF Collection Items	Name | Revision | Type | Description | State | newWindow | File | Image	FALSE
+AEFGeneralSearchResults	AEFGeneralSearchResults	AEF Search results Table	Name | Name1 | Revision | Type | Description | State | ModifiedDate | CreatedDate | Owner | File | Image | newWindow	FALSE
+AEFTriggerReportSummary	AEFTriggerReportSummary	Summary Table for Trigger Report Results Display	SeqNo | State | TriggerName | TriggerType | TriggerParameterName | Inherited | Revision | Current | TriggerProgramName | TriggerMethodName | Purpose	FALSE
+AEFBackgroundJobList	AEFBackgroundJobList	JobRequest	Checkbox | Statusicon | Name | Title | Message | StartDate | Progress | CompletedDate | Log | Action | NewTree	FALSE
+3DLive Basic	3DLive Basic	Table for 3DLive selectables	Type | Name | Revision | Latest | Locker | Owner | Originated | Modified | State	FALSE
+AEFMxLinkSearchResults	AEFMxLinkSearchResults	AEF MxLink Search results Table	Name | Revision | Type | Vault | mxLink (Copy this link to your Clipboard)	FALSE
+3DLive Part	3DLive Part	Table of 3DLive selectables for type Part	Type | Name | Revision | MaterialCategory | UnitOfMeasure | BuyCode | LeadTime | TargetCost | EstimatedCost | Weight | SparePart | Description | Latest | EffectivityDate | Locker | Owner | Originated | Modified | State	FALSE
+3DLive Product Configuration	3DLive Product Configuration	Table for 3DLive selectables for ProductConfiguration	Type | Name | Revision | Description | Product | State | Owner | Purpose	FALSE
+AEFConsolidatedSearchResults	AEFConsolidatedSearchResults	AEF Consolidated Search results Table	Name | Revision | Type | Description | State | File | newWindow | Vault	FALSE
+AEFCollectionsConsolidated	AEFCollectionsConsolidated	AEF Consolidated Collection Table	Name | Description | Count | newWindow	FALSE
+AEFLifecycleApprovalsSummary	AEFLifecycleApprovalsSummary		Checkbox | State | Assignee | Task/Signature | Task Title | Comments/Instruction | Action | Due Date | Completed Date	FALSE
+AEFMyTaskMassApprovalSummary	AEFMyTaskMassApprovalSummary		Checkbox | StatusGif | Name | Title | Approver | DueDate | Object | Approval Status | Comments	FALSE
+AEFLifecycleTaskSignaturesSummary	AEFLifecycleTaskSignaturesSummary		StatusGif | Name | Approver | Title | Approval Status | Approval Or Due Date | Comments Or Instructions | Separator | Related Object Dynamic Column	FALSE
+AEFGenericDeleteErrorReport	AEFGenericDeleteErrorReport	AEF Generic Delete Error Report Table	Type | Name | Revision | Error	FALSE
+AEFValidateTrigger	AEFValidateTrigger	AEF Trigger Validation	descrisption | state | Policy | AffectedTypes | eServiceErrorType	FALSE
+AEFTriggerValidationReport	AEFTriggerValidationReport	AEF Trigger Validation Report	description | results | comments | Error Report	FALSE
+AEFPersonChooserDetails	AEFPersonChooserDetails		Name | Email | WorkPhoneNumber	FALSE
+AEFOrganizationChooserDetails	AEFOrganizationChooserDetails		Name | PhoneNumber | FaxNumber | WebSite	FALSE
+AEFDynamicGrid	AEFDynamicGrid		Name | Type | Revision | Dynamic Column | NewWindow	FALSE
+DomainAccess	DomainAccess	AEF Domain Access Table	Organization | Project | Access | Inherited From | Inherited Access | Comments	FALSE
+DomainProjects	DomainProjects	Domain Projects Summary Table	Name | Access	FALSE
+SecurityContexts	SecurityContexts	Security Contexts Summary Table	Org | Project	FALSE
+APPOrganizationSummary	APPOrganizationSummary	Component Suite Organization Summary Table	Name | Type | PhoneNumber | FaxNumber | WebSite | newWindow	FALSE
+PeopleSummary	PeopleSummary	Organization People Summary Table	Name | IsEmployee | EmailAddress | State | License Type | OrganizationalRoles | LeadResponsibility | Edit | newWindow | Login Type	FALSE
+APPDiscussionsList	APPDiscussionsList	Discussions Summary Table	Id | SubscriptionStatus | Name | LastMessage | Visibility | Replies | Owner | newWindow	FALSE
+APPDiscussionsAccessList	APPDiscussionsAccessList	Access Summary Table	Name | BusinessUnit | Region | newWindow	FALSE
+APPAttachmentsList	APPAttachmentsList	Attachment list Table	Icon | Name | Revision | Description | Actions | Popup	FALSE
+RegionList	RegionList	Region List Summary Table	Name | Description | newWindow	FALSE
+APPRouteSummary	APPRouteSummary	Route Summary Table	Checkbox | StatusGif | Name | Description | RouteBasePurpose | RouteStatus | RouteScope | ScheduledCompletionDate | Owner | NewTree	FALSE
+APPRouteTemplateSummary	APPRouteTemplateSummary	Route Template Summary Table	Checkbox | Name | Revision | Description | State | RouteBasePurpose | Availability | Owner | Scope | NewTree	FALSE
+APPMemberList	APPMemberList	Member List Summary Table	Name | Description | State | Scope | Owner | BusinessUnit | Popup	FALSE
+APPMemberListMembers	MemberListMembers	Member List Members Summary Table	CheckBox | Name | BusinessUnit | Region | SpecOffice | Popup	FALSE
+APPDocumentSummary	APPDocumentSummary		LockStatus | RouteStatus | Usage Icon | Name | Title | Rev | Ver | Type | Actions | Description | State | DetailPopup	FALSE
+APPDocumentRevisions	APPDocumentRevisions		Name | PopupName | Title | Rev | Description | State | Actions	FALSE
+APPFileSummary	APPFileSummary		Name | LockStatus | Version | File Created Date | Comments | File Owner | Format | FileSize | Actions	FALSE
+APPFileVersions	APPFileVersions		Version | Name | Version Created Date | Comments | Version Owner | Format | FileSize | Actions	FALSE
+APPInactivePeopleSummary	APPInactivePeopleSummary		Name | Organization Name | Business Phone | Email Address	FALSE
+IssueList	IssueList	Issue List Table	Slip Days | Name | Type | Description | State | EscalationRequired | Separator1 | EstimatedStartDate | EstimatedFinishDate | Separator2 | ActualStartDate | ActualFinishDate | Separator3 | ClassifiedItem | Owner | Priority | Edit | QuickFile | name2	FALSE
+IssueReportedAgainstList	IssueReportedAgainstList	Issue Reported Against List Table	Name | Revision | Type | Description | State | Owner | name2	FALSE
+IssueResolvedToList	IssueResolvedToList	Issue Resolved To List Table	Name | Revision | Type | Description | State | Owner | name2	FALSE
+IssueAddExistingSearchGenericTable	IssueAddExistingSearchGenericTable		Name | Revision | Type | name2	FALSE
+IssueSearchIssuetable	IssueSearchIssuetable	IssueSearchIssuetable	Name | Type | Description | State | Owner | Priority | Category | Classification | Originator | Vault | name2	FALSE
+IssueSearchPersonsTable	IssueSearchPersonsTable		Name | User Name | Company | name2	FALSE
+IssueAssigneeList	IssueAssigneeList		Name | User Name | Company | Email Address	FALSE
+IssueSearchCompanyTable	IssueSearchCompanyTable		Name | State | Phone | Web Site | name2	FALSE
+IssueSearchDocumentTable	IssueSearchDocumentTable		Name | Revision | Type | Title | Description | State | Owner | name2	FALSE
+AppFolderSearchResult	AppFolderSearchResult		CheckBox | Name | File Name | Revision | Version | Type | Date	FALSE
+AppGeneralSearchResult	AppGeneralSearchResult		CheckBox | Name | Revision | Type | Description | State	FALSE
+APPTaskSummary	APPTaskSummary		checkbox | Complete | Status | Name | Title | Actions | Approval Status | Instructions | DueDate | Route | Content | Scope | NewTree	FALSE
+APPCollaborationPartnersSummary	APPCollaborationPartnersSummary		Checkbox | Name | Phone Number | WebSite | ShareTypes | EditShareTypes | newWindow	FALSE
+APPPotentialSuppliersSummary	APPPotentialSuppliersSummary		Name | State | Phone | Website | ParentCompany | Supplier Type | newWindow	FALSE
+APPMemberListMembersSummary	APPMemberListMembersSummary		Name | Type | E-mail | Location | State	FALSE
+APPMemberListPeopleSearchList	APPMemberListPeopleSearchList		UserName | FirstName | LastName | State | Role | E-mail | newWindow	FALSE
+APPPersonSearchResults	APPPersonSearchResults		Name | FullName | EmailAddress | State | newWindow	FALSE
+APPRouteDocumentSummary	APPRouteDocumentSummary		LockStatus | File | RouteStatus | Name | Title | Rev | Ver | Type | Actions | Description | State | StateBlock | DetailPopup	FALSE
+RouteTemplateSummary	RouteTemplateSummary	Route Template Search Summary Table	Name | Revision | Description	FALSE
+APPCompaniesSummary	APPCompaniesSummary		Checkbox | Name | Company Type | Phone | Website | newWindow	FALSE
+APPLocationsSummary	APPLocationsSummary		Name | Type | City | State | PostalCode | Country | Primary Contact | newWindow	FALSE
+APPNonVersionableFileSummary	APPNonVersionableFileSummary		LockStatus | Name | Format | FileSize | Actions	FALSE
+APPFormatsSummary	APPFormatsSummary		Name | Versions	FALSE
+APPCollaborationRequestsSummary	APPCollaborationRequestsSummary		Checkbox | FromOrg | ToOrg | RequestedDate	FALSE
+APPCapabilitySummary	APPCapabilitySummary		Name | Type | Status | Qualification Status | newWindow	FALSE
+APPRouteTemplateRevisionSummary	APPRouteTemplateRevisionSummary		Name | Rev | date	FALSE
+APPInboxTaskContentSummary	APPInboxTaskContentSummary		Name | Desc | stateCondition | Actions	FALSE
+APPECList	APPECList		Name | Type | Description | State | Severity | Owner | QuickFile | newWindow	FALSE
+APPECEffortReportList	APPECEffortReportList		Name | Type | State | Owner | Impact Analysis Effort | Implementation Impact | Validation Impact | Total Effort	FALSE
+APPECStatusReportList	APPECStatusReportList		Name | Type | Description | State | Severity | Owner | Reported Against | Files | Assigned | Impact Analysis | Test Case | Percentage Passed	FALSE
+APPECReportedAgainstSearchList	APPECReportedAgainstSearchList		Name | Rev | Type | Description | State | Owner | newWindow	FALSE
+APPECMemberListsSearchList	APPECMemberListsSearchList		Name | Type | Organization | State | Scope | Owner | newWindow	FALSE
+APPECRouteTemplateSearchList	APPECRouteTemplateSearchList		Name | Rev | Description | Availability | Organization | newWindow	FALSE
+APPECAffectedItemsList	APPECAffectedItemsList		Higher Revision Exists | Name | Rev | Type | Description | State | Owner | Reason for Change | Requested Change | QuickFile | newWindow	FALSE
+APPECAffectedItemsSearchList	APPECAffectedItemsSearchList		Higher Revision Exists | Name | Rev | Type | Description | State | Owner | newWindow	FALSE
+APPECImplementedItemsList	APPECImplementedItemsList		Higher Revision Exists | Name | Rev | Type | Description | State | Owner | QuickFile | newWindow	FALSE
+APPECImplementedItemsSearchList	APPECImplementedItemsSearchList		Higher Revision Exists | Name | Rev | Type | Description | State | Owner | newWindow	FALSE
+APPECSatisfiedItemsList	APPECSatisfiedItemsList		Name | Rev | Type | Description | State | Owner | QuickFile | newWindow	FALSE
+APPECAssigneeList	APPECAssigneeList		Name | Organization | Work Phone No | Email Address | name2	FALSE
+APPImpactAnalysisList	APPImpactAnalysisList		Name | Description | Owner | State | ScheduleImpact | ImplementationEffort | ValidationEffort | ImpactAnalysisEffort | RelativeCost | RelativePenalty | RelativeRisk | QuickFile | newWindow | PrioritizationBenefit	FALSE
+APPImpactAnalysisSearchList	APPImpactAnalysisSearchList		Name | Description | State | Schedule Impact | Implementation Effort | Validation Effort | Impact Analysis Effort | Relative Cost | Relative Penalty | Relative Risk | Owner | newWindow	FALSE
+APPECContextList	APPECContextList		Name | Type | Description | State | Reason for Change | Owner | QuickFile | newWindow	FALSE
+APPECContextSearchList	APPECContextSearchList		Name | Type | Description | State | Category Of Change | Severity | Owner | newWindow	FALSE
+APPSkillPersonSummary	APPSkillPersonSummary		Name | Competency | Experience | newWindow	FALSE
+APPPersonSkillSummary	APPPersonSkillSummary		Name | Description | Competency | Experience	FALSE
+APPMultiTask	APPMultiTask	AEF Search results Table	Checkbox | Status | Name | Actions | ApprovalStatus | Instructions | DueDate | Comments | Route | ConnectedObjects | newWindow	FALSE
+APPPartFamilyPartsList	APPPartFamilyPartsList		Name | Rev | Type | Description | state | newWindow | Classification Attributes	FALSE
+APPRouteContentSearchResults	APPRouteContentSearchResults	Route Content Search Results Summary Table	Checkbox | Name | Type | Rev | State | Description	FALSE
+ECSearchPersonsTable	ECSearchPersonsTable		Name | User Name | Company | name2	FALSE
+ECSearchCompanyTable	ECSearchCompanyTable		Name | State | Phone | Web Site | name2	FALSE
+APPQuickFileSummary	AppQuickFileSummary		LockStatus | Name | Version | File Created Date | FileType | ContainedIn | Actions | FileSize | Format	FALSE
+APPWorkflowTasks	APPWorkflowTasks		Status | Name | Description | Assignee | DueDate | ActualCompletionDate | Priority | Instructions | DetailPopup	FALSE
+APPWorkflowContent	APPWorkflowContent		Name | Type | Rev | State | Description | State Block | DetailPopup	FALSE
+APPTaskDeliverableSearchList	APPTaskDeliverableSearchList		checkbx | Name | Title | Rev | Object Modified Date	FALSE
+APPWorkflowRollupDeliverablesSummary	APPWorkflowRollupDeliverablesSummary		LockStatus | RouteStatus | Name | Title | Rev | Ver | Type | Actions | Description | Task | DetailPopup	FALSE
+APPWorkflowAddContentSummary	APPWorkflowAddContentSummary		checkbx | Name | Type | Rev | State | Owner | Description | DetailPopup	FALSE
+APPWorkflowSummary	APPWorkflowSummary		Status Incidator | Name | Description | State | Due Date | Related Objects | new tree	FALSE
+APPObjectWorkflowSummary	APPObjectWorkflowSummary		Status Incidator | Name | Description | State | Due Date | Owner | new tree	FALSE
+APPProcessSummary	APPProcessSummary		Radiobuttons | Name | Description	FALSE
+APPLocationsSearchSummary	APPLocationsSearchSummary		Name | City | State | PostalCode | Country | newWindow	FALSE
+APPMySubscriptions	APPMySubscriptions		checkbox | Name | Revision | Type | Description | Event | newWindow	FALSE
+APPSubscribersSummary	APPSubscribersSummary		Name | Email	FALSE
+APPSubscriptionPersonSearchResults	APPSubscriptionPersonSearchResults		Checkbox | Name | FullName | Company | EmailAddress | AssignedRoles | newWindow	FALSE
+APPObjectAccessSummary	APPObjectAccessSummary		Checkbox | Name | Type | Organization | Access | newWindow	FALSE
+APPDiscussionSummary	APPDiscussionSummary		SubscriptionStatus | Discussion | LastMessage | Visibility | Replies | Owner | separator | Name | type | Rev | separator2 | newWindow	FALSE
+APPAccessRequestSummary	APPAccessRequestSummary	Summary Table for Access Request	Name | Status | Reason for Request | Requested Documents | Assigned To | Grant Expiration Date | Originator | Revision | Current | DetailPopup	FALSE
+APPVCFileVersionsSummary	APPVCFileVersionsSummary		Version | Owner | Check in Date | Comments | Format | Tags | Actions	FALSE
+APPVCBranchesSummary	APPVCBranchesSummary		BranchId | Lock Status | Retired Status | Tags	FALSE
+APPVCFolderConfigurationsSummary	APPVCFolderConfigurationsSummary		Configuration Name | Description | Actions	FALSE
+APPVCFolderContentsSummary	APPVCFolderContentsSummary		Name | Version | Check In Comments | Tags | Actions | Other	FALSE
+APPRefDocumentsSearchResults	APPRefDocumentsSearchResults	Reference Documents Summary Table	emxTableRowId | Type | Name | Revision | State | Description	FALSE
+APPUsageReport	APPUsageReport		StateOfUsage | Purpose | Originator | Originated | Document | NewWindow	FALSE
+APPDownloadReport	APPDownloadReport		Originator | Document | DownloadedComponents | Originated | Status | Parent Component | NewWindow	FALSE
+APPAccessRequestDocumentSummary	APPAccessRequestDocumentSummary		LockStatus | RouteStatus | Name | Title | Rev | Ver | Type | Actions | Description | State | Owner | DetailPopup	FALSE
+APPVCFileFolderSearchResults	APPVCFileFolderSearchResults		Name | Version | Tags | Type	FALSE
+APPVCFolderConfigContentsSummary	APPVCFolderConfigContentsSummary		Contents Icon | Name | Version | Check In Comments | Actions	FALSE
+APPPlantSummary	APPPlantSummary	Common View BOM Indented Summary Table	Name | Type | City | PlantTimeZone | State | PostalCode | Country | newWindow	FALSE
+APPRouteTaskRevisions	APPRouteTaskRevisions		Name | Title | Revision | Task Type | State | Approval Status | Comments Or Instructions | Due Date | Completed Date | Assignee | New Window	FALSE
+APPObjectRouteSummary	APPObjectRouteSummary		Checkbox | StatusGif | Name | RouteStatus | ScheduledCompletionDate | Description | Owner | StateCondition | NewTree	FALSE
+APPDecisionsList	APPDecisionsList		Name | Type | Revision | QuickFile | Title | FromContext | Description | Owner | State | CreationDate | ReleaseDate | Creator | NewWindow	FALSE
+APPDecisionWhereUsedTable	APPDecisionWhereUsedTable		Name | Type | Revision | Description | Owner | State | NewWindow	FALSE
+APPDecisionWhereUsedRelTable	APPDecisionWhereUsedRelTable		RelationshipFrom | RelType | RelationshipTo	FALSE
+APPMyDeskDecisionsList	APPMyDeskDecisionsList		Name | Revision | Type | QuickFile | Description | Owner | State | RelatedObjects | Date Modified | NewWindow	FALSE
+APPRevisionsList	APPRevisionsList		Name | Revision | Type | Description | State | Owner | name2	FALSE
+APPDecisionAppliesToList	APPDecisionAppliesToList		Name | Type | Revision | Description | State | Owner | NewWindow	FALSE
+APPMeetingAgendaSummary	APPMeetingAgendaSummary		Name | Sequence Number | Responsible Person | Duration | AgendaAgainst	FALSE
+APPMeetingAttendee	APPMeetingAttendee		Name | WorkPhone | Email | Company	FALSE
+APPMeetingSummary	APPMeetingSummary		Name | Relationship | Type | Owner | State | Context | AgendaAgainst | Description | Startdate | StartTime | Duration | Actions | name	FALSE
+APPResultTypesAgendaItems	APPResultTypesAgendaItems		Name | Revision | Type | name2	FALSE
+APPProductLicense	APPProductLicense		Name | State | Email Address(Existing) | Separator1 | License Type | Available | Assigned | Consumed	FALSE
+APPUserProductLicense	APPUserProductLicense		Name | LicenseAssigned | Separator1 | Available | Assigned | Consumed	FALSE
+APPVCModuleContentsSummary	APPVCModuleContentsSummary		Name | Version | Comments | Tags | Actions | Other	FALSE
+APPVCHrefContentsSummary	APPVCHrefContentsSummary		Name | Version | Comments | Tags | Actions | Other	FALSE
+APPDecisionsAddExistingSearch	APPDecisionsAddExistingSearch		Name | Type | Revision | QuickFile | Title | Description | Owner | State | CreationDate | Creator | NewWindow	FALSE
+APPBusinessSkillSummary	APPBusinessSkillSummary		Name | Skill Type | Count | Description | newWindow	FALSE
+APPCurrencyExchangeRateSummary	APPCurrencyExchangeRateSummary		Name | ToCurrency | ExcRate | EffectiveDate	FALSE
+APPRoleSummary	APPRoleSummary		Name | Description	FALSE
+APPGroupSummary	APPGroupSummary		Name | Description	FALSE
+APPRouteAccessSummary	APPRouteAccessSummary		Name | Type | Organization | Access | newWindow	FALSE
+APPRouteTaskSummary	APPRouteTaskSummary		checkbox | Status | Name | Title | Actions | Revision | State | Assignee | Action | Instructions | ApprovalStatus | DueDate | Comments | CompletionDate | ShowAssigneeIcon | OwnerReview | NewTree	FALSE
+APPUserSummary	APPUserSummary		Name | Type | Organization	FALSE
+APPIssueCategoryChooser	APPIssueCategoryChooser		Name | Type	FALSE
+APPSubscriptionTable	APPSubscriptionTable		SubscriptionEvents | SubscriptionStatus | Type | EmailId	FALSE
+DomainAccessOrganizationSummary	DomainAccessOrganizationSummary	 Organization Summary Table	Name | Type | PhoneNumber | FaxNumber | WebSite | newWindow	FALSE
+APPDashboardUserDocuments	APPDashboardUserDocuments		Name | RouteStatus | Title | Actions | newWindow | LockStatus | Usage Icon | Rev | Ver | Subscribe | Type | Modified | State | Task Deliverable | Description | Originator | Originated	FALSE
+APPDashboardEC	APPDashboardEC		Name | newWindow | Type | Description | Status | Category | Severity | Ref Docs | Affected Items | Owner | Separator | State Evaluate | State Approved | State Implement	FALSE
+IssueListDetails	IssueListDetails		Name | Edit | Ref Docs | Type | State | Priority | EscalationRequired | Separator1 | EstimatedStartDate | EstimatedFinishDate | Separator2 | ActualStartDate | ActualFinishDate | Separator3 | ReportedAgainstList | Owner	FALSE
+VPLMIndentedSummary		 VPLM Expand Indented Summary Table	DisplayName | Icon | VPLMattPLMEntityVName | Name | Revision | Description | State | Type	FALSE
+VPLMIndentedSummaryNoNav		 VPLM ImplementLink Indented Summary Table	Name | Icon | Revision | Description | State | Type	FALSE
+VPLMIndentedSummaryInst		 VPLM Expand Indented Summary Table with instances infos	Name | Icon | SupplierName | Revision | Description | State | Type	FALSE
+VPLMProposalsTable		 VPLM Proposals for Authoring	Status | TypeOp | Source | Target | Diagnostic | Comm	FALSE
+ENCEBOMIndentedSummary	ENCEBOMIndentedSummary	EBOM Indented Summary Table	VPMVisible	FALSE
+ExtensionToAddListTable	ExtensionToAddListTable		extName | extType | extNbrAttrs	FALSE
+VPLMECARelatedObjects	VPLMECARelatedObjects		Name | Revision | Type | V_description | State | Owner | newWindow	FALSE
+emxPLMOnlineAdminPolicyResultTable		To display the table of policies	Name | Desription	FALSE
+emxPLMOnlineAdminRuleResultTable		To display the table of rules	Name	FALSE
+emxPLMOnlineAdminCommandResultTable		To display the table of commands	Name	FALSE
+emxPLMOnlineAdminMaskResultTable		To display the table of masks	Name	FALSE
+emxPLMOnlineAdminTypeResultTable		To display the table of references	Name | Desription	FALSE
+emxPLMOnlineAdminRelationshipResultTable		To display the table of instances	Name | Desription	FALSE
+emxPLMOnlineAdminModelViewReferenceTable		To display the table of references	Name | Desription	FALSE
+emxPLMOnlineAdminModelViewInstanceTable		To display the table of instances	Name | Desription	FALSE
+PARObjectsWhereUsed	PARObjectsWhereUsed		Type | Name | Revision | Owner | State | name2	FALSE
+PARObjectsToConnect	PARObjectsToConnect		Type | Name | Revision | Owner | State | Relationship Type | name2	FALSE
+PARRevisionsList	PARRevisionsList		ObjectName | ParameterRevision | Title | Dimension | ParameterValue | Owner | State | name2	FALSE
+PARInterfaceName	PARInterfaceName		PlmParameterInterface | InterfaceNLS	FALSE
+DCObjectsStandard	DCObjectsStandard		lock | Name | Type | Title | Description | State | Owner | DetailPopup	FALSE
+DCObjectsStandardWithoutOwner	DCObjectsStandardWithoutOwner		lock | Name | Rev | Type | Title | Description | State | DetailPopup	FALSE
+DCObjectsStandardWithoutLock	DCObjectsStandardWithoutLock		Name | Rev | Type | Title | Description | State | Owner | DetailPopup	FALSE
+DCMyDocumentsStandard	DCMyDocumentsStandard		Name | Rev | Type | Title | Description | State | Originator | DetailPopup	FALSE
+DCMyDocumentsApprover	DCMyDocumentsApprover		Name | Rev | Type | Title | Description | State | Approver | DetailPopup	FALSE
+DCFolders	DCFolders		Name | Security | Description | Owner | DetailPopup	FALSE
+DCObjectAccess	DCObjectAccess		Name | Type | Organization | Access | DetailPopup	FALSE
+DCFileMarkups	DCFileMarkups		Name | Ver | Description | Owner	FALSE
+DCFiles	DCFiles		lock | Name | Ver | ReasonforChange | Format | FileSize | Markups | Actions | DetailPopup	FALSE
+DCFileVersions	DCFileVersions		Name | Ver | FileSize | Modified | ReasonforChange | Actions	FALSE
+DCSubscription	DCSubscription		Name | Rev | Type | Description | Event | Edit | DetailPopup	FALSE
+DCAdministration	DCAdministration		Name | State | Phone | WebSite | DetailPopup	FALSE
+DCGeneralSearchResults	DCGeneralSearchResults	DC Search results Table	Name | Revision | Type | Title | Description | State | Owner | newWindow	FALSE
+LCLibraryList	LCLibraryList		lock | Name | Rev | Image | Type | Title | Description | State | Owner | DetailPopup	FALSE
+LCClassificationList	LCClassificationList		Name | Image | Type | Description | state | Classification Path | DetailPopup	FALSE
+LCSearchClassificationList	LCSearchClassificationList		Name | Rev | Type | Description | state | Classification Path | DetailPopup	FALSE
+LCGeneralSearchResults	LCGeneralSearchResults		Name | Rev | Type | Title | Description | state | Owner | DetailPopup	FALSE
+LCInProcessClassesList	LCInProcessClassesList		lock | Name | Type | Image | Title | Description | state | Owner | Classification Path | DetailPopup	FALSE
+LCSearchClassificationListAtLibrary	LCSearchClassificationListAtLibrary		Name | Rev | Type | Description | state | Classification Path | DetailPopup	FALSE
+MCMAttributeGroupsList	MCMAttributeGroupsList		Name | Description | Assigned | newWindow	FALSE
+MCMAttributesList	MCMAttributesList		Name | Type | Description | DefaultValue	FALSE
+MCMAttributeGroupsCommandList	MCMAttributeGroupsCommandList		Name | Description | Attributes | Inherited From | newWindow	FALSE
+LCRetentionScheduleDocument	LCRetentionScheduleDocument		Name | Retention Date | Comments | State | Description | newWindow	FALSE
+LCRetainedDocumentTable	LCRetainedDocumentTable		Image Icon | Name | type | Retention Period | Retention Date | Files Name | Comments | Title | Rev | State | Owner | newWindow	FALSE
+LCRetentionRecordSummary	LCRetentionRecordSummary		Check Box | Name | Type | Description | Status | DefaultRetentionPeriod | Initiation Date | Comments | Owner | newWindow	FALSE
+LCRetentionScheduleSearchRecords	LCRetentionScheduleSearchRecords		Name | Type | Default Retention Period | State | Description | Owner	FALSE
+LBCAttributeList	LBCAttributeList		ActualName | Name | Type | Description | DefaultValue	FALSE
+LBCAttributeGroupsList	LBCAttributeGroupsList		Name | Description | Attributes	FALSE
+LBCFoldersSearchResults	LBCFoldersSearchResults		Name | Revision | Type | Description | State | Owner	FALSE
+LBCObjectClassificationList	LBCObjectClassificationList		Name | Type | Title | Description | state | owner | Classification Path | DetailPopup	FALSE
+LBCRouteApprovalsSummary	LBCRouteApprovalsSummary		State | Assignee | Task/Signature | Task Title | Comments/Instruction | Action	FALSE
+LBCFolderAccessSummary	LBCFolderAccessSummary		Name | Type | Organization | Access	FALSE
+C3DAPPDocumentSummary	C3DAPPDocumentSummary		Name | Title | Rev | Ver | Type | Description | State | DetailPopup	FALSE
+AttributeMagnitudesTable			magnitudeName | magnitudeComment	FALSE
+NLSLangListTable			langName | nlsLangCode	FALSE
+Attribute6WPredicatsTable			6wpredicatName | 6wpredicatDescription	FALSE
+PackageConfigScopesTable			attrName | ownerPack | attrPublication | typeComment	FALSE
+DeploymentPackagesListTable			packageName | packageNature | packageComment	FALSE
+EditExtensionScopesTable			packageName | ownerPack | typeComment	FALSE
+PackagesConfigurationDeploymentListTable			packName | packPublication | packPrefix | packComment | packCreationDate	FALSE
+TypesForUniquenessKeyTable			typeName | typeComment	FALSE
+DeploymentConstrainedAttributesTable			deploymentConstrainedAttrName | constrainedAttributeOwner | constrainedPublication | constrainedType | constrainedDefaultValue | constrainedAttrLaunchDetails	FALSE
+DeploymentUniquenessKeysTable			deploymentUKName | keyPublication | keyType | keyExtension	FALSE
+PackageConfigActivationUniquenessKeyTable			ukName | ukPackage | ukConstrainedType | ukConstrainedExtension | ukNumOfConstrainedAttributes | ukActivationStatus	FALSE
+ManageMxTNRTypesTable			packageName | packageNature | mxTNRTypeStatus	FALSE
+BusinessRuleSetTable			Name | criterion | Scope | Exec | Desc	FALSE
+NLSAdminObjectTable			ObjectAdminName | fr | en | de | it | ja | es | zh-CN | nlsValue_Dynamic	FALSE
+DeploymentExtensionsTable			deploymentExtName | deploymentExtStatic | scope | Deprecated | publication | attributes | ExtComment | attrLaunchDetails	FALSE
+PackagesConfigurationListTable			packName | packParentPackage | packPublication | packPrefix | packComment | packCreationDate	FALSE
+CustomizablePackagesTable			packageName | packageComment	FALSE
+CustoTypesExtTable			name | comment	FALSE
+PackageConfigOtherExtsTable			typeExtName | nature | ownerPack | publication | attributes | TypeExtComment	FALSE
+UKSpecilizationViewTable			deploymentUKName | keyType | keyExtension	FALSE
+PackageConfigTypesTable			typeExtName | nature | extendedBy | AbstractDeprecated | publication | attributes | TypeExtComment | attrLaunchDetails	FALSE
+PackageConfigExtsTable			typeExtName | nature | scopes | AbstractDeprecated | publication | attributes | ExtComment | attrLaunchDetails	FALSE
+ECMCOAffectedChangeActionsTable	ECMCOAffectedChangeActionsTable		Name | Type | CAState | Status | GovernedCO | ProposedEffectivity | QuickActions | TechnicalAssignee | SeniorTechnicalAssignee | TechnicalApprovalList | Contributor | Reviewers | ResponsibleTechnicalOrganisation | Estimated Completion Date | Dependency | TypeOfDependency	FALSE
+ECMChangeActionSummary	ECMChangeActionSummary		Name | Type | Owner | ResponsibleOrganization | Status | State | ApprovalStatus | TechnicalAssignee | SeniorTechnicalAssignee | ReviewerList | Contributor | Reviewers | CompletionDate | ActualStartDate | ParentCO | Report | Edit | NewWindow	FALSE
+ECMChangeOrderSummary	ECMChangeOrderSummary		Name | Type | Status | Owner | Originator | ChangeCoordinator | State | ApprovalStatus | Description | ResponsibleOrganization | ReportedAgainst | ActualStartDate | ActualEndDate | CompletionDate | ChangeSeverity | Report | Edit | DetailPopup	FALSE
+ECMImpactAnalysisTable	ECMImpactAnalysisTable		ChangeAction | RTO | Tech Assignee	FALSE
+ImpactAnalysisList	ImpactAnalysisList		Name | Description | Owner | State | ScheduleImpact | ImplementationEffort | ValidationEffort | ImpactAnalysisEffort | RelativeCost | RelativePenalty | RelativeRisk | PrioritizationBenefit | QuickFile | newWindow	FALSE
+ECMCOAffectedItemsTable	ECMCOAffectedItemsTable		Name | Type | Revision | Requested Change | TypeOfChange | State | RelatedCA	FALSE
+ECMChangeTemplateSummary	ECMChangeTemplateSummary		Name | Type | State | OwningOrganization | Availability | Description | Owner | DefaultCOPolicy | DefaultType | Edit | File | NewWindow	FALSE
+ECMGeneralCOSearchResult	ECMGeneralCOSearchResult		Name | Type | State | Status | Owner | Originator | ResponsibleOrganization | ReportedAgainst | CompletionDate | DetailPopup	FALSE
+ECMGeneralCASearchResult	ECMGeneralCASearchResult		Name | Type | State | Status | ResponsibleOrganization | TechnicalAssignee | SeniorTechnicalAssignee | ParentCO | CompletionDate | NewWindow	FALSE
+ECMCAAffectedItemSummary	ECMCAAffectedItemSummary		Name | Revision | Type | State | Description | Reason For Change | Requested Change	FALSE
+ECMCAImplementedItemSummary	ECMCAImplementedItemSummary		Name | Revision | Type | State | Description | Requested Change	FALSE
+ECMCARelatedItemSummary	ECMCARelatedItemSummary		Name | Revision | Type | Description | State | Owner	FALSE
+ECMPrerequisiteSummary	ECMPrerequisiteSummary		Name | PrerequisiteType | Revision | Type | Description | State | Owner	FALSE
+ECMChangeTemplateSearchSummary	ECMChangeTemplateSearchSummary		Name | Type | State | OwningOrganization | Description | Owner | Originator | DeafultCOPolicy | DeafultType | NewWindow	FALSE
+ECMGeneralTable	ECMGeneralTable		Name | Rev | type | Description | State | Owner | QuickFile | NewWindow	FALSE
+ECMChangeAssigneesListSummary	ECMChangeAssigneesListSummary		Checkbox | Name | Organization | Work Phone No | Email Address	FALSE
+ECMAssigneeTable	ECMAssigneeTable		User Name | Full Name | Company	FALSE
+ECMCandidateItemTable	ECMCandidateItemTable		Name | Revision | Type | State | Description | Owner | newWindow	FALSE
+ECMRelatedItemTable	ECMRelatedItemTable		Name | Revision | Type | State | Description | CustomLabel	FALSE
+ECMHistorySummary	ECMHistorySummary		Date | Action | Description | Person | State	FALSE
+ECMCAPrerequisiteSummary	ECMCAPrerequisiteSummary		Name | State | Type of Dependency | Policy | Estimated Completion Date | Technical Assignee	FALSE
+ECMAttributeList	ECMAttributeList		Name | Type | Description | DefaultValue	FALSE
+ECMChangeSubscriptionsTable	ECMChangeSubscriptionsTable		Name | Type | Description | State | QuickActions | Events	FALSE
+ECMCAsSummaryTable	ECMCAsSummaryTable		Name | Type | Revision | Description | State	FALSE
+ECMCOsSummaryTable	ECMCOsSummaryTable		Name | Type | Revision | Description | State	FALSE
+ECMLegacySummaryTable	ECMLegacySummaryTable		Name | Type | Revision | Description | State	FALSE
+ECMCRAffectedItemsTable	ECMCRAffectedItemsTable		RelatedCA | Type | Name | Revision | GovernedCO | Requested Change | TypeOfChange | State | Status | ProposedEffectivity | QuickActions | TechnicalAssignee | SeniorTechnicalAssignee | TechnicalReviewerList | ResponsibleTechnicalOrganisation | PlannedEndDate | Dependency | TypeOfDependency | Plant | CIA	FALSE
+ECMAttributeGroupTable	ECMAttributeGroupTable		Name | Description | Attributes	FALSE
+ECMAttributeGroupAttributesAdded	ECMAttributeGroupAttributesAdded		Name | Type | Description | DefaultValue	FALSE
+ECMChangeSummary	ECMChangeSummary		GovernedCO | GovernedCR | RelatedCA | Status | State | Type | Contributor | TechnicalAssignee | ActualStartDate | PlannedEndDate | Requested Change | TypeOfChange | ResponsibleOrganization | GovernedCO1 | RelatedCR | SeniorTechnicalAssignee | Reviewers | TechnicalReviewerList | Description	FALSE
+LBCClassifiedItemSearchResults	LBCClassifiedItemSearchResults		Name | Rev | Type | Description | state | DetailPopup	FALSE
+LBCDocumentSummary	LBCDocumentSummary		LockStatus | RouteStatus | Usage Icon | Name | Title | Rev | Ver | Type | Actions | Description | State | Classification Attributes | DetailPopup	FALSE
+LBCAGBackgroundJobList	LBCAGBackgroundJobList	JobRequest	Checkbox | Statusicon | Name | Title | Message | OutputFile | StartDate | Progress | Log | Action | NewTree	FALSE
+LBCBackgroundJobList	LBCBackgroundJobList	JobRequest	Statusicon | Name | Title | Message | OutputFile | StartDate | Progress | Log | Action | NewTree	FALSE
+LBCFindObjectsList	LBCFindObjectsList		Name | Image | Type | Description | state | Classification Path | DetailPopup	FALSE
+LBCClassifyTable	LBCClassifyTable		Name | Classification Path	FALSE
+LBCGeneralSearchResults	LBCGeneralSearchResults	LBC Search results Table	Name | Type | Description | State | File | Image | newWindow	FALSE
+LBCBOMIndentedSummary	LBCBOMIndentedSummary		Name | Type | Rev | Policy | Part Family | Classification Attributes | Find Number | Reference Designator | Quantity | UOM	FALSE
+LBCFindLibraries	LBCFindLibraries		Name | Image | Revision | Type | Description | state | new Window	FALSE
+PLCMyDeskBuildList	PLCMyDeskBuildList		Slip Days | Name | Type | State | Owner | Originator | Description | Build Serial Number | Build Unit Number | Shorthand Name | Build Disposition | PlannedBuildDate | ActualBuildDate | DateShipped | Plant | Customer | Contract Number | Part No. | Part Revision | Product | Product Configuration | QuickFile | name2	FALSE
+PLCSearchBuildConfigurationTable	PLCSearchBuildConfigurationTable		Name | Type | State | Owner | Originator | Description | Build Serial Number | BuildUnitNumber | Shorthand Name | Build Disposition | Planned Build Date | Actual Build Date | Date Shipped | Part No. | Part Revision | Product | Product Configuration | QuickFile | name2	FALSE
+PLCSearchBuildsTable	PLCSearchBuildsTable		Name | Description | State | Owner | Planned Build Date | Actual Build Date | name2	FALSE
+PLCMyDeskProductLineList	PLCMyDeskProductLineList		Marketing Name | Name | Image | Description | State | Company | Owner | Design Responsibility | QuickFile | name2	FALSE
+PLCMyDeskProductList	PLCMyDeskProductList		MarketingName | Name | Higher Revision Exists | Active EC | Image | Model | Revision | Type | Description | StartEffectivity | EndEffectivity | Governing Project | Current Phase | Phase Completion | State | Owner | Design Responsibility | QuickFile | name2	FALSE
+PLCModelList	PLCModelList		Marketing Name | Name | Image | description | State | owner | Design Responsibility | QuickFile | name2	FALSE
+PLCProductLineList	PLCProductLineList		Marketing Name | Name | Image | Description | State | Company | Owner | Design Responsibility | QuickFile | name2	FALSE
+PLCProductList	PLCProductList		Name | Higher Revision Exists | Active EC | Image | Revision | Type | Description | StartEffectivity | EndEffectivity | Governing Project | Current Phase | Phase Completion | State | Owner | Design Responsibility | QuickFile | name2	FALSE
+PLCProductRoadmapProjectsTable	PLCProductRoadmapProjectsTable		Name | Slip Days | Governing Project | Type | Description | EstimatedFinish | ActualFinish | Program | State | Owner | name2	FALSE
+PLCProductTaskTable	PLCProductTaskTable		Name | Slip Days | EstimatedStartDate | EstimatedFinishDate | ActualStartDate | ActualFinishDate | Label | Region | Season | Segment | Milestone Type | Year | Date | Program | Project | State | name2	FALSE
+PLCTestExecutionList	PLCTestExecutionList		Name | State | SlipDays | PercentagePassed | EstimatedStartDate | EstimatedEndDate | ActualStartDate | ActualEndDate | Owner | newWindow	FALSE
+PLCSearchPersonsTable	PLCSearchPersonsTable		Name | User Name | Company | name2	FALSE
+PLCPortfolioList	PLCPortfolioList		Name | Type | Description | Owner | ItemCount | name2	FALSE
+PLCSearchProductLinesTable	PLCSearchProductLinesTable		Marketing Name | Name | Description | State | Owner | Company | name2	FALSE
+PLCSearchModelsTable	PLCSearchModelsTable		MarketingName | Name | Type | Description | Product Line | Owner | State | Vault | name2	FALSE
+PLCSearchProductsTable	PLCSearchProductsTable		Name | Type | Revision | DerivedFrom | Description | State | Owner | name2	FALSE
+PLCSearchTestCasesTable	PLCSearchTestCasesTable		Name | Description | State | Owner | name2	FALSE
+PLCTypeAheadTable	PLCTypeAheadTable		Name | Type	FALSE
+PLCIntendedProductUnitList	PLCIntendedProductUnitList		Name | Revision | Type | Description | State | Owner | Product | QuickFile | name2	FALSE
+PLCProductRoadMapSearchTable	PLCProductRoadMapSearchTable		Name | Type | Description | Owner	FALSE
+PLCGlobalSearchProductsTable	PLCGlobalSearchProductsTable		MarketingName | Type | Name | Revision | Description | State | Owner | name2	FALSE
+PLCRevisionsList	PLCRevisionsList		Image | Active EC | Display Name | Name | Revision | Type | Description | State | Owner | DerivedFrom | QuickFile | name2	FALSE
+PLCProductDerivations	PLCProductDerivations		Revision | DerivationCue | LatestCue | Name | Image | Active EC | DerivationType | DerivedFrom | DerivationLevel | MarketingName | Type | Description | StartEffectivity | EndEffectivity | Governing Project | Current Phase | Phase Completion | Design Responsibility | State | Owner | name2	FALSE
+PLCEffectivityProducts	PLCEffectivityProducts		Name | SequenceSelectable | Type | State | DerivedFrom | DerivationType	FALSE
+PLCSearchModelsProductsList	PLCSearchModelsProductsList		Name | Revision | DerivedFrom | Type | Description | Owner	FALSE
+PLCMilestonesTrackSummaryTable	PLCMilestonesTrackSummaryTable		Name | State | Date | Discipline | Owner	FALSE
+PLCMilestoneTrackActionsTable	PLCMilestoneTrackActionsTable		Discipline | dummy	FALSE
+PLCModelMilestonesTrackSummaryTable	PLCModelMilestonesTrackSummaryTable		Name | State | Date | Discipline | Owner | Product	FALSE
+PLCProductRoadMapTasksSearchTable	PLCProductRoadMapTasksSearchTable		Name | ID | Type | Description | Owner	FALSE
+PLCDocumentSummary	PLCDocumentSummary		LockStatus | RouteStatus | Usage Icon | Name | Title | Rev | Ver | Type | Actions | Description | State | DetailPopup	FALSE
+PLCImageList	PLCImageList		Image | Seq No | Name | Description | Image Size | MarketingName | MarketingText | Primary Image | Owner | name2	FALSE
+PLCTestCaseList	PLCTestCaseList		Name | Revision | description | state | owner | name2	FALSE
+PLCUnitsSummaryList	PLCUnitsSummaryList		Name | Type | State | Owner | Status | Build Unit Number | Shorthand Name | Build Disposition | name2	FALSE
+PLCProductLineHierarchy	PLCProductLineHierarchy		Marketing Name | Type | Name | Image | Revision | State | DerivationType | Description | newWindow	FALSE
+PLCBuildList	PLCBuildList		Active EC | Slip Days | Name | Type | Description | State | Planned Build Date | Actual Build Date | Owner | QuickFile | name2	FALSE
+PLCAssigneeList	PLCAssigneeList		Name | Organization | Work Phone No | Email Address | name2	FALSE
+PLCDocumentWhereUsedList	PLCDocumentWhereUsedList		Name | Revision | Type | Description | State | Owner | name2	FALSE
+PLCSearchCompanyTable	PLCSearchCompanyTable		Name | State | Phone | Web Site | name2	FALSE
+PackageConfigAttributesTable			attrName | attrIsVolatile | Deprecated | attrPublication | attrType | attrDefaultValue | attrUKs | attrLaunchDetails	FALSE
+PMCProjectTemplateCoOwnersTable	PMCProjectTemplateCoOwnersTable		Name | E-mail | Phone	FALSE
+PMCProjectBaselineSummaryTable	PMCProjectBaselineSummaryTable		Name | Type | ProjectState | WBS | PhaseEstimatedDuration | PhaseEstimatedStartDate | PhaseEstimatedEndDate | BaselineStartDate | BaselineEndDate | OriginetorColumn | Note	FALSE
+PMCProjectTemplateVersions	PMCProjectTemplateVersions		Name | Version | Owner | State | EstimatedDuration | Description	FALSE
+PMCScheduleBaselineTable	PMCScheduleBaselineTable		Name | Type | State | BaselineDuration | BaselineStartDate | BaselineEndDate | CurrentEstimatedDuration | CurrentEstimatedStartDate | CurrentEstimatedEndDate | ID | Dependency | ConstraintType | Constraint Date | ParentTask | Description	FALSE
+PMCDecisionsList	PMCDecisionsList		Name | Type | Revision | QuickFile | Title | FromContext | Description | Owner | State | CreationDate | ReleaseDate | Creator | NewWindow	FALSE
+PMCDashboardDetailsTable	PMCDashboardDetailsTable		Name | currentPhase | CurrentPhaseDate | SlipDays | Risks | ProjectAssessment | CostRatio | TotalCost | TotalBenefit | Metrics | ProjectOwner | TemplateTasks | Quality | BusinessUnit | Program Name	FALSE
+PMCReportDemandSummary	PMCReportDemandSummary		Resource Pool | Month Object Dynamic Column	FALSE
+PMCResourcePoolBusinessUnits	PMCResourcePoolBusinessUnits		Name | State | Description | PhoneNumber | FaxNumber | ResourceManager | newWindow	FALSE
+PMCResourcePoolDepartments	PMCResourcePoolDepartments		Name | State | Description | PhoneNumber | FaxNumber | ResourceManager | newWindow	FALSE
+PMCResourcePoolResourceRequest	PMCResourcePoolResourceRequest		Name | Project | ProjectOwner | Skill | State	FALSE
+PMCResourcePoolPeople	PMCResourcePoolPeople		Name | Type | State | Project Role | Organization Role | Lead Role | Email | newWindow	FALSE
+PMCResourceRequestSummaryTable	PMCResourceRequestSummaryTable		Name | Person | State | ProjectName | ProjectRole | ProjectOwner | SkillCompetency | ResourcePool | StandardCost | Discussion | FTE	FALSE
+PMCReportResourceUtilization	PMCReportResourceUtilization		Monthly Breakdown | Month Object Dynamic Column	FALSE
+PMCResourcePoolSummary	PMCResourcePoolSummary		Name | Type | Capacity | OpenRequests | ResourceManagers | Description	FALSE
+PMCResourceRequestCreateWBSTable	PMCResourceRequestCreateWBSTable		Project Role | State | Organization | Business Skill | Standard Cost | FTE	FALSE
+PMCReportDemandVersusCapacityTB	PMCReportDemandVersusCapacityTB		Monthly Breakdown | Month Object Dynamic Column	FALSE
+PMCResourceRequestSkillSummary	PMCResourceRequestSkillSummary		Name | Competency | Description | newWindow	FALSE
+PMCReportProjectAssignment	PMCReportProjectAssignment		Project | Month Object Dynamic Column	FALSE
+PMCAddResourceTable	PMCAddResourceTable		Person | FTE	FALSE
+PMCReportPeopleProjectAssignment	PMCReportPeopleProjectAssignment		People | Projects | State | Month Object Dynamic Column	FALSE
+PMCReportResourceDemandBySkill	PMCReportResourceDemandBySkill		Business Skills | Month Object Dynamic Column	FALSE
+PMCReportResourceLoading	PMCReportResourceLoading		Dynamic Column	FALSE
+PMCWBSPlanningViewTable	PMCWBSPlanningViewTable		DynamicColumn	FALSE
+PMCDurationKeywordsSummaryTable	PMCDurationKeywordsSummaryTable		Name | Type | Duration | Duration Unit | Description	FALSE
+PMCFolderMemberAccessViewTable	PMCFolderMemberAccessViewTable		Name | Type | Author | Default User Access | Inherit Access | Project Member	FALSE
+PMCFolderRoleAccessViewTable	PMCFolderRoleAccessViewTable		Name | Type | Author | Default User Access | Inherit Access | Project Role	FALSE
+PMCWeeklyTimeSheet	PMCWeeklyTimeSheet		TimeSheet | Week | Status | State | Total Hrs | Comments	FALSE
+PMCWeeklyTimeSheetApprover	PMCWeeklyTimeSheetApprover		User Name | TimeSheet | Week | Status | State | Hours To Approve | Total Hrs | Comments	FALSE
+PMCWeeklyTimeSheetDefaultView	PMCWeeklyTimeSheetDefaultView		Name | Type | Mon | Tue | Wed | Thu | Fri | Sat | Sun | Total | Planned Efforts | State	FALSE
+PMCWeeklyTimeSheetDetailedView	PMCWeeklyTimeSheetDetailedView		Name | Type | WBS | Mon | Tue | Wed | Thu | Fri | Sat | Sun | Total | Planned Efforts | Remaining Efforts | Status | Comments | State | Submitted On | Approver | Appr./Rej. On | Progress	FALSE
+PMCWeeklyTimeSheetApproverDefaultView	PMCWeeklyTimeSheetApproverDefaultView		Name | Type | Mon | Tue | Wed | Thu | Fri | Sat | Sun | Total | Planned Efforts | Comments | State	FALSE
+PMCWeeklyTimeSheetApproverDetailedView	PMCWeeklyTimeSheetApproverDetailedView		Name | Type | WBS | Mon | Tue | Wed | Thu | Fri | Sat | Sun | Total | Planned Efforts | Remaining Efforts | Status | Comments | State | Submitted On | Appr./Rej. On | Progress	FALSE
+PMCWeeklyTimeSheetSearchResult	PMCWeeklyTimeSheetSearchResult		Name | Submitted By | State | Actions	FALSE
+PMCProgramAutonomySearch	PMCProgramAutonomySearch		Name | Type | Description | Owner | File | Image | newWindow	FALSE
+PMCChecklistSummaryTable	PMCChecklistSummaryTable		Name | Type | State | Modified Date | Response | Comments | ResponseType | Completed By | Description	FALSE
+PMCChecklistSummarySearchTable	PMCChecklistSummarySearchTable		Name | Type | Gate | Description | State	FALSE
+PMCTimeSheetSearchAddTask	PMCTimeSheetSearchAddTask		Name | Type | WBS | State | Owner | PerComplete | Description	FALSE
+PMCProjectTemplateBudgetTable	PMCProjectTemplateBudgetTable		Item | Template Enforcement | IntervalPeriod	FALSE
+PMCProjectBudgetTable	PMCProjectBudgetTable		Item | Template Enforcement	FALSE
+PMCProjectBudgetReportTable	PMCProjectBudgetReportTable		Item | CostInterval	FALSE
+PMCProjectBudgetPlanTable	PMCProjectBudgetPlanTable		Item | Ledger Account Number | CostInterval	FALSE
+PMCBudgetActualTransactionSummary	PMCBudgetActualTransactionSummary	Actual Transaction Summary	Name | Transaction Date | Description | Phase | Cost Item | PO No | Amount	FALSE
+PMCProjectBenefitSummaryTable	PMCProjectBenefitSummaryTable		Item | Ledger Account Number | BenefitInterval	FALSE
+PMCProjectBenefitAddBenefitTable	PMCProjectBenefitAddBenefitTable		Item | Template Enforcement	FALSE
+PMCResourcePlanTemplateRequestSummaryTable	PMCResourcePlanTemplateRequestSummaryTable		Name | ProjectRole | ResourcePool | StandardCost | FTE	FALSE
+PMCResourcePlanTemplateSummaryTable	PMCResourcePlanTemplateSummaryTable		Name | State | Description | Last Modified Date	FALSE
+PMCLaborReportTable	PMCLaborReportTable		Name | Type | Dynamic | Total	FALSE
+PMCCommonPersonSearchTable	PMCCommonPersonSearchTable		Name | Company | E-mail | Phone | Title | Organizational Role | Location | Business Skill | AccessRoles	FALSE
+PMCLaborReport	PMCLaborReport		Name | Type | Dynamic | Total	FALSE
+PMCLaborReportByPerson	PMCLaborReportByPerson		Name | Type | Dynamic | Total	FALSE
+PMCGenericProgramSearchResults	PMCGenericProgramSearchResults		Name | Description | Owner	FALSE
+PMCGenericProjectSpaceSearchResults	PMCGenericProjectSpaceSearchResults		Name | Description | State | Owner | Created	FALSE
+PMCGenericCompanySearchResults	PMCGenericCompanySearchResults		Company Name | OrganizationID | Cage Code | DUNS Number	FALSE
+PMCGenericBusinessUnitSearchResults	PMCGenericBusinessUnitSearchResults		Name | OrganizationID | DUNS Number	FALSE
+PMCGenericRiskSearchResults	PMCGenericRiskSearchResults		Name | Title | Description | Owner | Risk Assignee	FALSE
+PMCGenericTaskSearchResults	PMCGenericTaskSearchResults		Name | Description | Owner | Task Assignee	FALSE
+PMCGenericBusinessGoalsSearchResults	PMCGenericBusinessGoalsSearchResults		Name | Business Unit | Goal Description | Owner | State	FALSE
+PMCGenericLocationSearchResults	PMCGenericLocationSearchResults		Location Name | Address | City | StateRegion | Postal Code	FALSE
+PMCGenericResourcePoolSearchResults	PMCGenericResourcePoolSearchResults		Name | Type | State | Standard Cost	FALSE
+PMCBusinessSkillSearchSummary	PMCBusinessSkillSearchSummary		Name | Skill Type | ParentSkill | CompanyToWhichSkillBelongs | Description	FALSE
+PMCRiskDashboard	PMCRiskDashboard		Checkbox | Status | Name | Title | RisksStatus | RisksRPN | SlipDays | EstStartDate | EstFinishDate | ActStartDate | ActFinishDate | AssignTo | itemsSummary | Edit	FALSE
+PMCSCProjectAccessSummary	PMCSCProjectAccessSummary	Project Member Access Summary	Name | Type | Organization | Access	FALSE
+PMCWBSAssignmentViewTable	PMCWBSAssignmentViewTable		Name | WBS | Type | Complete | ProgressBar | PhaseEstimatedDuration | PhaseEstimatedEndDate | Owner | Separator1 | Assignees | Separator2 | ID	FALSE
+PMCMyCalendarViewTable	PMCMyCalendarViewTable		Name | Assignees | ID	FALSE
+PMCProjectSummary	PMCProjectSummary		Name | Description | Status | Owner | Created Date	FALSE
+PMCBusinessGoalProjectSummary	PMCBusinessGoalProjectSummary		Name | Type | ProjectStatus | Status | Owner | Est Finish | Act Finish | Created Date | Program | Description	FALSE
+PMCAddTaskDependencyTable	PMCAddTaskDependencyTable		Name | ID | Task Type | Owner | Dependency Type | Duration Keyword | SlackTime	FALSE
+PMCAddExternalTaskDependencyTable	PMCAddExternalTaskDependencyTable		Title | Type | Status | Description	FALSE
+PMCWhatIfCompareViewTable	PMCWhatIfCompareViewTable		Name | Type | ID | Dependency | ConstraintType | Constraint Date | PhaseEstimatedDuration | PhaseEstimatedStartDate | PhaseEstimatedEndDate | Description | dupId	FALSE
+PMCWhatIfExperimentSummaryTable	PMCWhatIfExperimentSummaryTable		Issue | Name | WBS | Type | ProjectState | PhaseEstimatedDuration | PhaseEstimatedStartDate | PhaseEstimatedEndDate | Note | OriginetorColumn	FALSE
+PMCWhatIfWBSViewTable	PMCWhatIfWBSViewTable		Name | ParentTask | Type | ID | Dependency | State | ConstraintType | Constraint Date | PhaseEstimatedDuration | PhaseEstimatedStartDate | PhaseEstimatedEndDate | PhaseActualDuration | PhaseActualStartDate | PhaseActualEndDate | Description	FALSE
+PMCMilestonesSummaryTable	PMCMilestonesSummaryTable	Milestone Summary	Name | Type | State | Owner | EstimatedEndDate | ActualEndDate | Discipline	FALSE
+PMCProjectSummaryForProjects	PMCProjectSummaryForProjects		Name | ProjectStatus | currentPhase | Type | Status | Owner | Est Finish | Act Finish | Created Date | Program | Description | Vault	FALSE
+PMCWhatIfProjectChangeTable	PMCWhatIfProjectChangeTable		Name | promoteIssueObject | StatusGif | IssueState | Priority | ProblemType | PhaseEstimatedDuration | PhaseEstimatedStartDate | PhaseEstimatedEndDate | Note | Owner | IssueAssignee | Experiment | Route | ApprovalRejectComment | Approve | approvalStatus	FALSE
+PMCWhatIfRouteSummaryTable	PMCWhatIfRouteSummaryTable		Checkbox | StatusGif | Name | RouteStatus | ScheduledCompletionDate | Description | Owner | StateCondition | NewTree	FALSE
+PMCPlanDeliverableTable	PMCPlanDeliverableTable		TaskName | State | Delivers | Plan | StartDate | EndDate | Snapshot	FALSE
+PMCDeliversTable	PMCDeliversTable		TaskName | Type | Description | Policy	FALSE
+PMCDeliverableTemplateTable	PMCDeliverableTemplateTable		DeliverableTemplate | Plan | StartDate | EndDate	FALSE
+PMCDeliverableSearchSummary	PMCDeliverableSearchSummary		Name | Skill Type | Description | State | Owner | Originated	FALSE
+PMCProjectSnapshotViewTable	PMCProjectSnapshotViewTable		Name | WBS | Type | Status | Actions | EffectivityStartDate | EffectivityEndDate | State | Complete | PhaseEstimatedDuration | PhaseEstimatedStartDate | PhaseEstimatedEndDate | PhaseActualDuration | PhaseActualStartDate | PhaseActualEndDate | Owner	FALSE
+PMCCompanyResourceManagerListTable	PMCCompanyResourceManagerListTable		Name | First Name | Last Name | Email	FALSE
+PMCQuestionSummaryTable	PMCQuestionSummaryTable		Name | Type | Question | State | QuestionResponse	FALSE
+PMCTaskListTable	PMCTaskListTable		Name | Question Response	FALSE
+PMCQuestionListTable	PMCQuestionListTable		Name | State | Question Response	FALSE
+PMCOrganizationSummary	PMCOrganizationSummary		Name | Type | CompanyName | PhoneNumber | FaxNumber | WebSite	FALSE
+PMCWBSAllocationViewTable	PMCWBSAllocationViewTable		Name | Type | Complete | ProgressBar | TotalAllocation | PhaseEstimatedDuration | PhaseEstimatedEndDate | Owner | Separator1 | Assignees | Separator2 | ID	FALSE
+PMCProjectImportFileViewTable	PMCProjectImportFileViewTable		ImportDetails	FALSE
+PMCProjectTemplateQuestionTable	PMCProjectTemplateQuestionTable		Question | questionResponse	FALSE
+PMCPredictTemplateWBSTable	PMCPredictTemplateWBSTable		Name | Type | Description	FALSE
+PMCPendingDeliverableSummary	PMCPendingDeliverableSummary		Name | Title | Delivarable | State | Rev | Ver | Type | TaskName | Description	FALSE
+PMCMemberTimesheetMonitor	PMCMemberTimesheetMonitor		Name | Organization | TimesheetGridSeparator | Weeks	FALSE
+PMCTypeAheadTable	PMCTypeAheadTable		Name | Type	FALSE
+PMCExistingRisksSummary	PMCExistingRisksSummary		Name | Title | itemsSummary | RiskAttachment | RisksRPN | Impact | Probability | EffectiveDate | EstStartDate | EstFinishDate	FALSE
+PMCAddGatesFromDeliverablePlanTable	PMCAddGatesFromDeliverablePlanTable		Name | Description | State | EstimatedEndDate	FALSE
+PMCWorkCalendarExceptions	PMCWorkCalendarExceptions		Title | Exception Type | Frequency | Start Date | End Date	FALSE
+PMCProjectCalendarSearchTable	PMCProjectCalendarSearchTable		Name | DefaultCalendar | Workweek | Description	FALSE
+PMCTaskCalendarSearchTable	PMCTaskCalendarSearchTable		Name | ProjectCalendar | Workweek | Description	FALSE
+PMCProjectCalendarsTable	PMCProjectCalendarsTable		Name | DefaultCalendar | Workweek | Description	FALSE
+ECHApplicableItemsSummary	ECHApplicableItemsSummary		Name | Revision | Type | Change Discipline | UpwardCompatibility | Description | State | Owner | newWindow	FALSE
+ECHApplicableItemSearchResult	ECHApplicableItemSearchResult		Name | Revision | Type | Description | State | Owner	FALSE
+ECHAffectedItemSummary	ECHAffectedItemSummary		Name | Revision | Type | Description | State | Owner | AssociatedTask | newWindow	FALSE
+ECHDecisionManufacturingApplicableItemsSummary	ECHDecisionManufacturingApplicableItemsSummary		Name | Revision | Type | UpwardCompatibility | Description | State | Owner | Manufacturing Intent | Manufacturing Intent Implemented At | name2	FALSE
+ECHDecisionDesignApplicableItemsSummary	ECHDecisionDesignApplicableItemsSummary		Name | Revision | Type | UpwardCompatibility | Description | State | Owner | name2	FALSE
+PropagateApplicabilityTable	PropagateApplicabilityTable		ChangeObject | ChangeIcon | Message	FALSE
+ECHChangeTaskImpactedObjectsList	ECHChangeTaskImpactedObjectsList		Name | Revision | Type | Description | State | Owner | name2	FALSE
+ECHModelRelatedChangeProjectsList	ECHModelRelatedChangeProjectsList		Name | Type | Change Discipline | Description | EstimatedFinish | ActualFinish | Program | State | Owner | name2	FALSE
+ECHModelRelatedChangeProjectsListSearch	ECHModelRelatedChangeProjectsListSearch		Checkbox | Name | Type | Change Discipline | Description | EstimatedFinish | ActualFinish | Program | State | Owner | name2	FALSE
+ECHApplicableChangeTasksList	ECHApplicableChangeTasksList		Name | ApplicableBy | Type | Description | State | Owner | DecisionName | DecisionState | NewWindow	FALSE
+ECHChangeTaskApplicabilityContextsList	ECHChangeTaskApplicabilityContextsList		Name | Revision | Type | Description | State | Owner | name2	FALSE
+ECHDecisionApplicabilitySummary	ECHDecisionApplicabilitySummary		Name | Change Disciplines	FALSE
+MyDeskIssueCategorySummaryTable	MyDeskIssueCategorySummaryTable	My Desk Issue Category Summary Table	Name | description | type | IssueOwnedBy	FALSE
+IssueClassificationSearchTable	IssueClassificationSearchTable	Issue Category Summary Table	Name | description | type	FALSE
+PARSearchResult	PARSearchResult		ObjectName | ParameterRevision | Title | Dimension | Priority | Function | Separator1 | ObjectiveType | ObjectiveProbability | ConfidenceLevel | Separator2 | Valuation Type | Parameter Value | Minimal Value | Maximal Value | MultipleValues | Display Unit | Separator3 | Role | ParameterAggregator | Owner | State | name2	FALSE
+PLMAssociatedParameters	PLMAssociatedParameters		Object Name | Revision | Title | Dimension | Priority | Function | Separator1 | ObjectiveType | ObjectiveProbability | ConfidenceLevel | Separator2 | Valuation Type | Parameter Value | Minimal Value | Maximal Value | MultipleValues | Display Unit | Separator3 | Role | Relation Description | Properties	FALSE
+PARParameters	PARParameters		Object Name | Revision | Title | Dimension | State | Priority | Function | Separator1 | ObjectiveType | ObjectiveProbability | ConfidenceLevel | Separator2 | Valuation Type | Parameter Value | Minimal Value | Maximal Value | MultipleValues | Display Unit | Separator3 | Role | RelationshipType | Relation Description | Properties	FALSE
+DeploymentAttributesTable			attrName | attrIsVolatile | attributeOwner | Deprecated | publication | attrType | attrDefaultValue | attrLaunchDetails	FALSE
+ExportPropertiesLangListTable			propertiesLangName | propertiesLangCode	FALSE
+RPTIssueReport			Name | Type | Description | State | Priority | Owner | Originator | Originated | Assignees	FALSE
+

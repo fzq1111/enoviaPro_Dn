@@ -1,0 +1,9 @@
+del bus OntoLiteral "dsmer_elementCount_Description" _ ;
+del bus OntoLiteral "dsmer_gondolaSectionAsset_Description" _ ;
+del bus OntoLiteral "dsmer_publication_Description" _ ;
+del bus OntoLiteral "dsmer_subAssortment_Description" _ ;
+del bus OntoProperty "dsmer_elementCount" _ ;
+del bus OntoProperty "dsmer_gondolaSectionAsset" _ ;
+del bus OntoProperty "dsmer_publication" _ ;
+del bus OntoProperty "dsmer_subAssortment" _ ;
+

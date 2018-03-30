@@ -1,0 +1,16 @@
+import matrix.db.Context;
+
+
+public class ${CLASSNAME} extends ${CLASS:emxGenericFieldsBase} {
+	
+    /**
+     * @param context
+     * @param args
+     * @throws Exception
+     */
+    public ${CLASSNAME}(Context context, String[] args) throws Exception {
+    	super(context, args);
+    }
+
+}
+

@@ -1,0 +1,20 @@
+# File: 3DDrive-Common-PnOSecurity-PD-R418HF2-downgrade.mql
+# Description: This file uninstalls P&O and Security content for 3DDrive R418 HF2.
+#
+# JIC 15:12:03 Created file
+# JIC 15:12:09 IR IR-411539-3DEXPERIENCER2016x: Added deactivation of 4 proxy-related triggers
+
+
+tcl;
+eval {
+    # Create/modify triggers
+    mql promote bus "eService Trigger Program Parameters" "RelationshipAssignedSecurityContextCreateAction" "AssignAdminProxy";
+
+    mql promote bus "eService Trigger Program Parameters" "RelationshipAssignedSecurityContextDeleteAction" "UnassignAdminProxy";
+
+    mql promote bus "eService Trigger Program Parameters" "TypePnOProjectCreateAction" "CreateProjectAdminProxy";
+
+    mql promote bus "eService Trigger Program Parameters" "TypePnOProjectDeleteAction" "DeleteProjectAdminProxy";
+}
+exit
+

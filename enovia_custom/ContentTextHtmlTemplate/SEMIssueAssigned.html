@@ -1,0 +1,43 @@
+<html>
+  <head>
+  	<META http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Issue Review Notification</title>
+  </head>
+  
+  <body style="font-size: 14px; font-family: times">
+  	<div>
+  		
+  		<p style="text-indent: 1em;">'${IssueOwner}' 发来了问题：</p>
+</div>
+	
+	<div>
+	 <p>
+	 <table width="892" height="70" border ="1">
+			   <tr>
+				  <td width="130"><div align="center">项目</div></td>
+				  <td width="130"><div align="center">问题分类</div></td>
+					<td width="130"><div align="center">问题名称</div></td>
+					<td width="130"><div align="center">问题描述</div></td>
+					<td width="130"><div align="center">对策期限</div></td>
+					<td width="130"><div align="center">对策进度</div></td>
+				</tr>
+				<tr>
+				  <td><div align="center">${SEMIssueProject}</div></td>
+					<td><div align="center">${SEMIssueType}</div></td>
+					<td> <div align="center"><a href="${IssueURL}">${IssueName}</a></div></td>
+					<td>${IssueDescription}</td>
+					<td><div align="center">${IssueEstimatedEndDate}</div></td>
+                    <td><div align="center">${IssueSEMIssueSolutionProgress}</div></td>
+				</tr>
+	  </table>
+	 </p>
+</div>
+	<div>
+	  <p><span style="text-indent: 1em;">请您及时反馈对策</span><br/>
+      </p>
+	  <p><span style="text-indent: 1em;">该问题的详细信息打开链接为：<a href="${IssueURL}">${IssueName}</a></span><br/>
+      </p>
+	  <div>提醒：本邮件为东南PM系统后台自动发送的邮件，请勿回复。</div></p>
+  	</div>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+Type	Name	Rev	New Name	New Rev	Policy	State	Vault	Owner	description	eService Name Prefix	eService Name Suffix	eService Processing Time Limit	eService Retry Count	eService Retry Delay	eService Safety Policy	eService Safety Vault
+eService Object Generator	type_AccessRequest		type_AccessRequest		eService Object Generator	Exists	eService Administration	creator		AccessRequest-	.Doc	60	1	1000	policy_AccessRequest	vault_eServiceAdministration
+eService Object Generator	type_Benefit		type_Benefit		eService Object Generator	Exists	eService Administration	creator		BEN		60	1	1000	policy_FinancialItems	vault_eServiceProduction
+eService Object Generator	type_Budget		type_Budget		eService Object Generator	Exists	eService Administration	creator		BUD		60	1	1000	policy_FinancialItems	vault_eServiceProduction
+eService Object Generator	type_BuildSpecification		type_BuildSpecification		eService Object Generator	Exists	eService Administration	creator		BSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_ChangeAction		type_ChangeAction		eService Object Generator	Exists	eService Administration	creator		CA-		60	5	1000	policy_ChangeAction	vault_eServiceAdministration
+eService Object Generator	type_ChangeOrder		type_ChangeOrder		eService Object Generator	Exists	eService Administration	creator		CO-		60	5	1000	policy_FormalChange	vault_eServiceAdministration
+eService Object Generator	type_ChangeRequest		type_ChangeRequest		eService Object Generator	Exists	eService Administration	creator		CR-		60	5	1000	policy_ChangeRequest	vault_eServiceAdministration
+eService Object Generator	type_ChangeTemplate		type_ChangeTemplate		eService Object Generator	Exists	eService Administration	creator		CHT-		60	5	1000	policy_ChangeTemplate	vault_eServiceAdministration
+eService Object Generator	type_Chapter		type_Chapter		eService Object Generator	Exists	eService Administration	creator		CHAP-		60	5	60	policy_Chapter	vault_eServiceAdministration
+eService Object Generator	type_Checklist		type_Checklist		eService Object Generator	Exists	eService Administration	creator		CH-		60	5	2000	policy_Checklist	vault_eServiceAdministration
+eService Object Generator	type_ChecklistItem		type_ChecklistItem		eService Object Generator	Exists	eService Administration	creator		CI-		60	5	2000	policy_ChecklistItem	vault_eServiceAdministration
+eService Object Generator	type_Comment		type_Comment		eService Object Generator	Exists	eService Administration	creator		COMM-		60	5	60	policy_Comment	vault_eServiceAdministration
+eService Object Generator	type_ComputedParameter		type_ComputedParameter		eService Object Generator	Exists	eService Administration	creator	Autoname	PAR-		60	5	60	policy_Parameter	vault_eServiceAdministration
+eService Object Generator	type_ConfigurableProduct		type_ConfigurableProduct		eService Object Generator	Exists	eService Administration	creator		CP-		60	5	60	policy_Product	vault_eServiceAdministration
+eService Object Generator	type_CustomerRequirement		type_CustomerRequirement		eService Object Generator	Exists	eService Administration	creator		CR-		60	5	60	policy_SoftwareUserRequirement	vault_eServiceAdministration
+eService Object Generator	type_CustomerRequirementSpecification		type_CustomerRequirementSpecification		eService Object Generator	Exists	eService Administration	creator		CRS-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_CustomerResponseRequirementSpecification		type_CustomerResponseRequirementSpecification		eService Object Generator	Exists	eService Administration	creator		CRRS-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_CustomerSpecification		type_CustomerSpecification		eService Object Generator	Exists	eService Administration	creator		CSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_DOCUMENTS		type_DOCUMENTS		eService Object Generator	Exists	eService Administration	creator		Doc-		60	5	60	policy_Document	vault_eServiceAdministration
+eService Object Generator	type_Decision		type_Decision		eService Object Generator	Exists	eService Administration	creator		DEC-		60	5	60	policy_Decision	vault_eServiceAdministration
+eService Object Generator	type_DesignSpecification		type_DesignSpecification		eService Object Generator	Exists	eService Administration	creator		DSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_Document		type_Document		eService Object Generator	Exists	eService Administration	creator		DOC-		60	5	60	policy_Document	vault_eServiceAdministration
+eService Object Generator	type_Effort		type_Effort		eService Object Generator	Exists	eService Administration	creator		Effort-	-01	60	5	1000	policy_Effort	vault_eServiceAdministration
+eService Object Generator	type_EngineeringChange		type_EngineeringChange		eService Object Generator	Exists	eService Administration	creator		EC-		60	5	60	policy_EngineeringChange	vault_eServiceAdministration
+eService Object Generator	type_Event		type_Event		eService Object Generator	Exists	eService Administration	creator		E-		60	5	1000	policy_Event	vault_eServiceAdministration
+eService Object Generator	type_FeatureRequirementSpecification		type_FeatureRequirementSpecification		eService Object Generator	Exists	eService Administration	creator		FRS-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_FeatureSpecification		type_FeatureSpecification		eService Object Generator	Exists	eService Administration	creator		FSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_FunctionalSpecification		type_FunctionalSpecification		eService Object Generator	Exists	eService Administration	creator		FSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_HardwareBuild		type_HardwareBuild		eService Object Generator	Exists	eService Administration	creator		HB-		60	5	60	policy_Build	vault_eServiceAdministration
+eService Object Generator	type_HardwareProduct		type_HardwareProduct		eService Object Generator	Exists	eService Administration	creator		HP-		60	5	60	policy_Product	vault_eServiceAdministration
+eService Object Generator	type_Image		type_Image		eService Object Generator	Exists	eService Administration	creator		IM-		60	5	60	policy_Image	vault_eServiceAdministration
+eService Object Generator	type_ImpactAnalysis		type_ImpactAnalysis		eService Object Generator	Exists	eService Administration	creator		Impact-		60	5	60	policy_Impact	vault_eServiceAdministration
+eService Object Generator	type_InboxTask		type_InboxTask		eService Object Generator	Exists	eService Administration	creator		IT-		60	5	1000	policy_InboxTask	vault_eServiceAdministration
+eService Object Generator	type_Issue		type_Issue		eService Object Generator	Exists	eService Administration	creator		ISS-		60	5	60	policy_Issue	vault_eServiceAdministration
+eService Object Generator	type_Job		type_Job		eService Object Generator	Exists	eService Administration	creator		JOB-		60	5	1000	policy_Job	vault_eServiceAdministration
+eService Object Generator	type_Meeting		type_Meeting		eService Object Generator	Exists	eService Administration	creator		M-		60	5	1000	policy_Meeting	vault_eServiceAdministration
+eService Object Generator	type_MemberList	-	type_MemberList	-	eService Object Generator	Exists	eService Administration	creator		ML-		60	5	1000	policy_MemberList	vault_eServiceAdministration
+eService Object Generator	type_Message		type_Message		eService Object Generator	Exists	eService Administration	creator		M-		60	5	1000	policy_Message	vault_eServiceAdministration
+eService Object Generator	type_MilestoneHolder		type_MilestoneHolder		eService Object Generator	Exists	eService Administration	creator		MT-		60	5	60	policy_MilestoneHolder	vault_eServiceAdministration
+eService Object Generator	type_Model		type_Model		eService Object Generator	Exists	eService Administration	creator		M-		60	5	60	policy_Model	vault_eServiceAdministration
+eService Object Generator	type_OntoDataProperty		type_OntoDataProperty		eService Object Generator	Exists	eService Administration	creator		PRT-		1000	5	60	policy_OntoDefaultPolicy	vault_vplm
+eService Object Generator	type_OntoIndividual		type_OntoIndividual		eService Object Generator	Exists	eService Administration	creator		IND-		1000	5	60	policy_OntoDefaultPolicy	vault_vplm
+eService Object Generator	type_OntoNamedConcept		type_OntoNamedConcept		eService Object Generator	Exists	eService Administration	creator		CPT-		1000	5	60	policy_OntoDefaultPolicy	vault_vplm
+eService Object Generator	type_OntoObjectProperty		type_OntoObjectProperty		eService Object Generator	Exists	eService Administration	creator		PRT-		1000	5	60	policy_OntoDefaultPolicy	vault_vplm
+eService Object Generator	type_OntoOntology		type_OntoOntology		eService Object Generator	Exists	eService Administration	creator		ONT-		1000	5	60	policy_OntoDefaultPolicy	vault_vplm
+eService Object Generator	type_PLMResourceSetSubItem		type_PLMResourceSetSubItem		eService Object Generator	Exists	eService Administration	creator		PLMResourceSetSubItem-		1000	5	60	policy_PLMResourceSetCBPPolicy	vault_vplm
+eService Object Generator	type_PLMResourceSetSubItemCriterionValue		type_PLMResourceSetSubItemCriterionValue		eService Object Generator	Exists	eService Administration	creator		PLMResourceSetSubItemCriterionValue-		1000	5	60	policy_PLMResourceSetCBPPolicy	vault_vplm
+eService Object Generator	type_PlmParameter		type_PlmParameter		eService Object Generator	Exists	eService Administration	creator	Autoname for PlmParameters	PAR-		60	5	60	policy_Parameter	vault_eServiceAdministration
+eService Object Generator	type_Portfolio		type_Portfolio		eService Object Generator	Exists	eService Administration	creator		P-		60	5	60	policy_Portfolio	vault_eServiceAdministration
+eService Object Generator	type_ProductLine		type_ProductLine		eService Object Generator	Exists	eService Administration	creator		PL-		60	5	60	policy_ProductLine	vault_eServiceAdministration
+eService Object Generator	type_ProductRequirementSpecification		type_ProductRequirementSpecification		eService Object Generator	Exists	eService Administration	creator		PRS-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_ProductSpecification		type_ProductSpecification		eService Object Generator	Exists	eService Administration	creator		PSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_Products		type_Products		eService Object Generator	Exists	eService Administration	creator		P-		60	5	60	policy_ConfigurableProduct	vault_eServiceAdministration
+eService Object Generator	type_ProjectFolder		type_ProjectFolder		eService Object Generator	Exists	eService Administration	creator		PF-		60	5	1000	policy_ProjectFolder	vault_eServiceAdministration
+eService Object Generator	type_ProjectMember		type_ProjectMember		eService Object Generator	Exists	eService Administration	creator		PM-		60	5	1000	policy_ProjectMember	vault_eServiceAdministration
+eService Object Generator	type_ProjectSpace		type_ProjectSpace		eService Object Generator	Exists	eService Administration	creator		P-		60	5	1000	policy_ProjectSpace	vault_eServiceProduction
+eService Object Generator	type_PublishSubscribe		type_PublishSubscribe		eService Object Generator	Exists	eService Administration	creator		PS-		60	5	1000	policy_PublishSubscribe	vault_eServiceAdministration
+eService Object Generator	type_Quality		type_Quality		eService Object Generator	Exists	eService Administration	creator		Q-		60	5	2000	policy_Quality	vault_eServiceAdministration
+eService Object Generator	type_Requirement		type_Requirement		eService Object Generator	Exists	eService Administration	creator		R-		60	5	60	policy_SoftwareUserRequirement	vault_eServiceAdministration
+eService Object Generator	type_RequirementGroup		type_RequirementGroup		eService Object Generator	Exists	eService Administration	creator		SPF-		60	5		policy_RequirementGroup	vault_eServiceProduction
+eService Object Generator	type_RequirementSpecification		type_RequirementSpecification		eService Object Generator	Exists	eService Administration	creator		RSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_ResourceRequest		type_ResourceRequest		eService Object Generator	Exists	eService Administration	creator		REQ		60	1	1000	policy_ResourceRequest	vault_eServiceProduction
+eService Object Generator	type_RetentionHold		type_RetentionHold		eService Object Generator	Exists	eService Administration	creator		RHN-		60	5	1000	policy_RetentionHold	vault_eServiceAdministration
+eService Object Generator	type_RetentionRecord		type_RetentionRecord		eService Object Generator	Exists	eService Administration	creator		RRN-		60	5	1000	policy_RetentionRecord	vault_eServiceAdministration
+eService Object Generator	type_Route		type_Route		eService Object Generator	Exists	eService Administration	creator		R-		60	5	1000	policy_Route	vault_eServiceAdministration
+eService Object Generator	type_RouteTemplate	1	type_RouteTemplate	1	eService Object Generator	Exists	eService Administration	creator		RT-		60	5	1000	policy_RouteTemplate	vault_eServiceAdministration
+eService Object Generator	type_ServiceProduct		type_ServiceProduct		eService Object Generator	Exists	eService Administration	creator		P-		60	5	60	policy_Product	vault_eServiceAdministration
+eService Object Generator	type_SoftwareBuild		type_SoftwareBuild		eService Object Generator	Exists	eService Administration	creator		SB-		60	5	60	policy_Build	vault_eServiceAdministration
+eService Object Generator	type_SoftwareProduct		type_SoftwareProduct		eService Object Generator	Exists	eService Administration	creator		SP-		60	5	60	policy_Product	vault_eServiceAdministration
+eService Object Generator	type_SoftwareRequirementSpecification		type_SoftwareRequirementSpecification		eService Object Generator	Exists	eService Administration	creator		RSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_SoftwareSpecification		type_SoftwareSpecification		eService Object Generator	Exists	eService Administration	creator		SSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_Specification		type_Specification		eService Object Generator	Exists	eService Administration	creator		SPEC-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_SubSystemRequirementSpecification		type_SubSystemRequirementSpecification		eService Object Generator	Exists	eService Administration	creator		SSRS-		60	5	60	policy_RequirementSpecification	vault_eServiceAdministration
+eService Object Generator	type_SystemRequirementSpecification		type_SystemRequirementSpecification		eService Object Generator	Exists	eService Administration	creator		SRS-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_SystemSpecification		type_SystemSpecification		eService Object Generator	Exists	eService Administration	creator		SSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_TaskManagement		type_TaskManagement		eService Object Generator	Exists	eService Administration	creator		T-		60	5	1000	policy_ProjectTask	vault_eServiceProduction
+eService Object Generator	type_TestCase		type_TestCase		eService Object Generator	Exists	eService Administration	creator		TC-		60	5	60	policy_TestCase	vault_eServiceAdministration
+eService Object Generator	type_TestExecution		type_TestExecution		eService Object Generator	Exists	eService Administration	creator		TE-		60	5	60	policy_TestExecution	vault_eServiceAdministration
+eService Object Generator	type_TestSpecification		type_TestSpecification		eService Object Generator	Exists	eService Administration	creator		TSP-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_UKUniquenessKey		type_UKUniquenessKey		eService Object Generator	Exists	eService Administration	creator		UK-		1000	5	60	policy_OntoDefaultPolicy	vault_vplm
+eService Object Generator	type_UseCase		type_UseCase		eService Object Generator	Exists	eService Administration	creator		UC-		60	5	60	policy_SoftwareUseCase	vault_eServiceAdministration
+eService Object Generator	type_UseCaseSpecification		type_UseCaseSpecification		eService Object Generator	Exists	eService Administration	creator		UCS-		60	5	60	policy_Specification	vault_eServiceAdministration
+eService Object Generator	type_UserRequirement		type_UserRequirement		eService Object Generator	Exists	eService Administration	creator		UR-		60	5	60	policy_SoftwareUserRequirement	vault_eServiceAdministration
+

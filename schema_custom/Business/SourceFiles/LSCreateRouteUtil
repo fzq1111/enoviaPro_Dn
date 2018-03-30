@@ -1,0 +1,1917 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import matrix.db.Role;
+import matrix.db.UserList;
+import matrix.db.User;
+
+import matrix.db.Attribute;
+import matrix.db.AttributeList;
+import matrix.db.AttributeType;
+import matrix.db.BusinessObject;
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.Policy;
+import matrix.db.Relationship;
+import matrix.db.RelationshipType;
+import matrix.db.State;
+import matrix.db.StateList;
+import matrix.util.Pattern;
+import matrix.util.SelectList;
+import matrix.util.StringList;
+
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.common.Route;
+import com.matrixone.apps.common.RouteTemplate;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.apps.program.ProgramCentralConstants;
+import com.matrixone.apps.common.RouteTemplate;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.common.BusinessUnit;
+import matrix.db.ExpansionIterator;
+
+public class ${CLASSNAME} extends ${CLASS:emxDomainObject}{
+	private static Logger m_logger = Logger.getLogger(${CLASS:SEMBudget}.class);
+    
+	public ${CLASSNAME}(Context context, String[] args)throws Exception 
+	{
+		super(context, args);
+	}
+	
+	
+	static final String AEF_ROUTE_ACCESS_GRANTOR_USERNAME = "Route Access Grantor";
+
+	
+	/**
+	 * set webfrom field template List
+	 * @param context
+	 * @param args
+	 * @return
+	 * @throws Exception
+	 * Jan 21, 2016
+	 * @author 
+	 */
+	public Object getFormObjectRouteTemplateHTML(Context context,String[]args)throws Exception
+	{
+		Map rangeMap = new HashMap();
+		HashMap programMap = (HashMap)JPO.unpackArgs(args);		
+		HashMap requestMap = new HashMap((Map)programMap.get("requestMap"));
+		HashMap fieldMap = new HashMap((Map)programMap.get("fieldMap"));
+		HashMap fieldValues = ((HashMap)programMap.get("fieldValues"));
+		
+		HashMap settingMap = new HashMap((Map)fieldMap.get("settings"));
+		String strAddRoutestate = (String)settingMap.get("LS Add Route State");
+		String strType = (String)requestMap.get("type");
+		String strPolicy = (String)requestMap.get("policy");
+		String sFieldName = (String) fieldMap.get("name");		
+		StringBuffer strRouteTemplate = new StringBuffer();
+		if(strType == null){
+			strType ="";
+		}
+		String LSRouteFilter = (String)settingMap.get("LSRouteFilter");
+		if(LSRouteFilter ==null)
+		{
+			LSRouteFilter="";
+		}
+		String LSRouteIdentifier = (String)settingMap.get("LSRouteIdentifier");
+		if(LSRouteFilter ==null)
+		{
+			LSRouteFilter="";
+		}
+		if(LSRouteIdentifier ==null)
+		{
+			LSRouteIdentifier="";
+		}
+
+		if(strAddRoutestate == null){
+			strAddRoutestate ="";
+		}
+		String strState = strAddRoutestate.trim().replace(" ", "_");
+		String strRouteTemplateName ="";
+		String sLanguage = context.getSession().getLanguage();
+		strPolicy = PropertyUtil.getSchemaProperty(context,strPolicy);
+		strType = PropertyUtil.getSchemaProperty(strType);	
+		if(fieldValues!=null)
+		{
+			strType = (String)fieldValues.get("TypeActual");
+			strPolicy = (String)fieldValues.get("Policy");
+		}
+		
+		Map programMap1 = new HashMap();
+		programMap1.put("txtName", "*");
+		programMap1.put("selScope", "Enterprise");
+		programMap1.put("strState", strAddRoutestate);
+		programMap1.put("strPolicy", strPolicy);
+		programMap1.put("strType", strType);
+		programMap1.put("LSRouteFilter", LSRouteFilter);
+		programMap1.put("LSRouteIdentifier", LSRouteIdentifier);
+		
+		MapList templateList = (MapList) JPO.invoke(context,"LSCreateRouteUtil", null , "getRouteTemplatesList" ,  JPO.packArgs(programMap1), MapList.class);
+		strRouteTemplate.append("<input type=\"hidden\" name=\"" + sFieldName + "Display\" value=\""+ strRouteTemplateName +"\"/>");
+		strRouteTemplate.append("<input type=\"hidden\" id=\"" + sFieldName + "\"  name=\"" + sFieldName + "\" value=\""+ strRouteTemplateName +"\"/>");
+		strRouteTemplate.append("<input type=\"hidden\" name=\"" + sFieldName + "OID\" value=\"" + getRouteTemplateId(context,new String[]{strRouteTemplateName}) + "\"/>");
+		String TemplateHelper = "--\u8BF7\u9009\u62E9--";  		
+    	strRouteTemplate.append("<select name=\"templateHelper\" onchange=\"javascript:update(this,'"+sFieldName+"')\" >");
+		strRouteTemplate.append("<option value=\"\">"+TemplateHelper+"</option>");
+
+		for(int i=0;i<templateList.size();i++)
+		{
+			Map tem = (Map)templateList.get(i);
+			String name =tem.get("name").toString();
+			String id=tem.get("id").toString();
+			String str= name+"@"+id;
+			strRouteTemplate.append("<option value=\""+str+"\">"+name+"</option>");
+		}
+		strRouteTemplate.append("</select>");
+		String retURL = strRouteTemplate.toString();
+		retURL = retURL.replaceAll("&", "&amp;");
+		if(fieldValues!=null)
+		{
+			rangeMap.put("SelectedValues", retURL.toString());
+			rangeMap.put("SelectedDisplayValues", retURL.toString());
+			return rangeMap;
+		}else{
+			return retURL;
+		}
+	}
+
+	
+	/**
+	 * set JSP field template List
+	 * CH Add Route State  symbolic state
+	 * @param context
+	 * @param args
+	 * @return
+	 * @throws Exception
+	 * Jan 21, 2016
+	 * @author caipan
+	 */
+	public String getJSPObjectRouteTemplateHTML(Context context,String[] args) throws Exception
+	{
+		HashMap programMap = (HashMap)JPO.unpackArgs(args);
+		String strAddRoutestate = (String)programMap.get("LS Add Route State");
+		String strType = (String)programMap.get("type");
+		String strPolicy = (String)programMap.get("policy");
+		String sFieldName = (String) programMap.get("LSRouteTemplate");
+		String LSRouteFilter  = (String) programMap.get("LSRouteFilter ");
+		String LSRouteIdentifier = (String) programMap.get("LSRouteIdentifier");
+
+		StringBuffer strRouteTemplate = new StringBuffer();
+		if(strType == null)
+		{
+			strType ="";
+		}
+		
+		if(LSRouteFilter ==null)
+		{
+			LSRouteFilter="";
+		}
+		if(LSRouteIdentifier ==null)
+		{
+			LSRouteIdentifier="";
+		}
+		
+		if(strAddRoutestate == null){
+			strAddRoutestate ="";
+		}
+		String strState = strAddRoutestate.trim().replace(" ", "_");
+		String sLanguage = context.getSession().getLanguage();
+    	strPolicy = PropertyUtil.getSchemaProperty(strPolicy);
+		strType = PropertyUtil.getSchemaProperty(strType);
+		Map programMap1 = new HashMap();
+		//programMap1.put("objectId", "");
+		programMap1.put("txtName", "*");
+		programMap1.put("selScope", "Enterprise");
+		programMap1.put("strState", strAddRoutestate);
+		programMap1.put("strPolicy", strPolicy);
+		programMap1.put("strType", strType);
+		programMap1.put("LSRouteFilter", LSRouteFilter);
+		programMap1.put("LSRouteIdentifier", LSRouteIdentifier);
+
+		String strRouteTemplateName ="";
+		MapList templateList = new MapList();
+		if(UIUtil.isNotNullAndNotEmpty(strPolicy)&&UIUtil.isNotNullAndNotEmpty(strType)&&UIUtil.isNotNullAndNotEmpty(strAddRoutestate))
+		{
+			 templateList = (MapList) JPO.invoke(context,"LSCreateRouteUtil", null , "getRouteTemplatesList" ,  JPO.packArgs(programMap1), MapList.class);
+			
+		}
+		String retURL ="";
+		strRouteTemplate.append("<input type=\"hidden\" name=\"" + sFieldName + "Display\" value=\""+ strRouteTemplateName +"\"/>");
+		strRouteTemplate.append("<input type=\"hidden\" id=\"" + sFieldName + "\"  name=\"" + sFieldName + "\" value=\""+ strRouteTemplateName +"\"/>");
+		strRouteTemplate.append("<input type=\"hidden\" name=\"" + sFieldName + "OID\" value=\"" + getRouteTemplateId(context,new String[]{strRouteTemplateName}) + "\"/>");
+		String TemplateHelper = "--\u8BF7\u9009\u62E9--";  		
+    	strRouteTemplate.append("<select name=\"templateHelper\" onchange=\"javascript:updateJSP(this,'"+sFieldName+"')\" >");
+		strRouteTemplate.append("<option value=\"\">"+TemplateHelper+"</option>");
+
+		for(int i=0;i<templateList.size();i++)
+		{
+			Map tem = (Map)templateList.get(i);
+			String name =tem.get("name").toString();
+			String id=tem.get("id").toString();
+			String str= name+"@"+id;
+			strRouteTemplate.append("<option value=\""+str+"\">"+name+"</option>");
+		}
+		strRouteTemplate.append("</select>");
+		retURL = strRouteTemplate.toString().replaceAll("&", "&amp;");
+
+		return retURL;
+	}
+	
+	
+	public String getRouteTemplateId(Context context,String [] args) throws Exception
+	{
+		String routeTemplateId = "";
+		if(args.length > 0)
+		{
+			String routeTemplateName = args[0];
+        	if(routeTemplateName != null && !routeTemplateName.equals("") && !routeTemplateName.equals("null")){
+        		StringList selectStms = new StringList();
+				selectStms.add(DomainObject.SELECT_ID);
+				selectStms.add(DomainObject.SELECT_TYPE);
+				selectStms.add(DomainObject.SELECT_CURRENT);
+				selectStms.add(DomainObject.SELECT_REVISION);
+				String whereCus = "name == '"+routeTemplateName.trim()+"'";
+				MapList tempRouteTemp = DomainObject.findObjects(context,DomainObject.TYPE_ROUTE_TEMPLATE,"*",whereCus,selectStms);
+				Map routeTempMap = null;
+			   if(tempRouteTemp != null && tempRouteTemp.size()>0) {
+				   tempRouteTemp.sort(DomainObject.SELECT_REVISION, "ascending", "String");
+					routeTempMap = (Map)tempRouteTemp.get(tempRouteTemp.size()-1);
+					String currentTemp =(String) routeTempMap.get(DomainObject.SELECT_CURRENT);
+					if(currentTemp.trim().equals("Active")){
+						routeTemplateId = (String)routeTempMap.get(DomainObject.SELECT_ID);
+					}
+				}
+        	}
+		}
+		return routeTemplateId;
+	}
+	
+	
+	
+	/**
+	 * CH Add Route State  policy state
+	 * New OID Route templetID
+	 * objectId ObjectId
+	 * @param context
+	 * @param args
+	 * @throws Exception
+	 * Jan 21, 2016
+	 * @author caipan
+	 */
+	public void updateRoute(Context context,String[]args) throws Exception{
+		try{
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+        HashMap paramMap   = (HashMap) programMap.get("paramMap");
+        HashMap requestMap   = (HashMap) programMap.get("requestMap");
+        HashMap fieldMap = (HashMap)programMap.get("fieldMap");
+        HashMap settingMap = (HashMap)fieldMap.get("settings");
+        String strRouteState = (String)settingMap.get("LS Add Route State");
+        String strNewOID = (String)paramMap.get("New OID");
+        String strOldOID = (String)paramMap.get("Old OID");
+        String objectId = (String)paramMap.get("objectId");          
+
+        if(UIUtil.isNotNullAndNotEmpty(strNewOID)&&UIUtil.isNotNullAndNotEmpty(objectId)){
+        	StringList stateNameList = new StringList();
+        	DomainObject newObj = DomainObject.newInstance(context,objectId);
+        	 StateList stateList  =newObj.getStates(context);
+        	 Iterator itrState = stateList.iterator();
+             while(itrState.hasNext()){
+             	State state = (State)itrState.next();
+             	stateNameList.add(state.getName());
+             }
+             if(!stateNameList.contains(strRouteState.trim())){
+            	 return;
+             }
+             String policy = newObj.getPolicy().getName();
+             String state =   FrameworkUtil.reverseLookupStateName(context, policy,strRouteState);
+             String args1[] = new String[3];
+ 			args1[0] = objectId;
+ 			args1[1] = state;
+ 			args1[2] = strNewOID;
+ 			if(UIUtil.isNotNullAndNotEmpty(state)){
+ 			CreateRoutes(context,args1);
+ 			}
+        }else{
+        	return;
+        }
+		}catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+        
+	}
+	
+
+	
+    
+	/**
+	 * @param context
+	 * @param args args[0]ObjectId 
+	 * args[1] changeObject symbolic State
+	 * args[2] routeTemplate Id
+	 * args[0] objectId
+	 * @return
+	 * @throws Exception
+	 */
+	public int CreateRoutes(Context context,String args[])throws Exception{
+		try{
+			String objectId = args[0];
+			//System.out.println(objectId+" "+args[1]+" "+args[2]+"  caicai");
+			//DomainObject domObj = new DomainObject(objectId);
+			String routeTemplate = args[2];
+			DomainObject domRouteTemplate = new DomainObject(routeTemplate);
+			String strCurrent = domRouteTemplate.getInfo(context, DomainObject.SELECT_CURRENT);
+			com.matrixone.apps.common.Person person = (com.matrixone.apps.common.Person)DomainObject.newInstance(context,DomainConstants.TYPE_PERSON);
+			DomainObject personObject = person.getPerson(context);
+			
+			 Route routeObj = null; // object route
+			 String strObjOwner = null;
+			if(strCurrent.equals(DomainConstants.STATE_ROUTE_TEMPLATE_ACTIVE)){
+				DomainObject changeObject = new DomainObject(objectId);
+				strObjOwner = changeObject.getOwner(context).getName();
+				String strState = args[1];
+				String strPolicy = changeObject.getInfo(context, DomainObject.SELECT_POLICY);
+				String tempDesc = domRouteTemplate.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+				String strAutoStopOnRejection=""; //IR-118894
+		        // get Alias Names
+		        String RoutePolicyAdminAlias = FrameworkUtil.getAliasForAdmin(context,
+		                DomainObject.SELECT_POLICY, DomainObject.POLICY_ROUTE, true);
+		        String RouteTypeAdminAlias = FrameworkUtil.getAliasForAdmin(context,
+		                DomainObject.SELECT_TYPE, DomainObject.TYPE_ROUTE, true);
+	
+		        String sAttrRouteBasePurpose = PropertyUtil.getSchemaProperty(context,
+		                "attribute_RouteBasePurpose");
+		     //IR-118894 starts
+		        
+		        String sAttrRestartUponTaskRejection = PropertyUtil.getSchemaProperty(context, "attribute_AutoStopOnRejection" ); 
+		        String SELECT_ATTRIBUTE_AUTO_STOP_REJECTION  = "attribute[" + sAttrRestartUponTaskRejection + "]"; 
+		        
+		      //IR-118894 ends
+		        String sAttrRouteCompletionAction  =PropertyUtil.getSchemaProperty(context,
+		        "attribute_RouteCompletionAction");
+		        String sProductionVault = PropertyUtil
+	                    .getSchemaProperty(context,"vault_eServiceProduction");
+	            // get Route Object id
+	            String sRouteId = FrameworkUtil.autoName(context,
+	                    RouteTypeAdminAlias, "", RoutePolicyAdminAlias,
+	                    sProductionVault);
+	            routeObj = (Route) DomainObject.newInstance(context,
+	                    DomainObject.TYPE_ROUTE);
+	            // create ROute object
+	            routeObj.setId(sRouteId);
+	            // HashMap to carry all the attribute values to be set
+	            HashMap attrMap = new HashMap();
+	            // rename change object object name
+	            String changeObjectName = changeObject.getInfo(context,
+	                    DomainConstants.SELECT_NAME);
+	            String strRouteName = routeObj.getInfo(context,
+	                    DomainConstants.SELECT_NAME);
+	            strRouteName = "Route_"+ strRouteName + "_" + changeObjectName + "_"+ strState;
+	            // set new name to Route object
+	            routeObj.setName(context, strRouteName);
+	            String symbolicPolicy = FrameworkUtil.getAliasForAdmin(context, "policy", strPolicy, true);
+	            attrMap.put(DomainConstants.ATTRIBUTE_ROUTE_BASE_STATE,strState);
+	            attrMap.put(DomainConstants.ATTRIBUTE_ROUTE_BASE_POLICY,symbolicPolicy);
+	            attrMap.put(sAttrRouteBasePurpose, "Standard");
+	            routeObj.open(context);
+	            routeObj.setDescription(context, tempDesc);
+	            routeObj.connect(context,new RelationshipType(DomainObject.RELATIONSHIP_PROJECT_ROUTE),true, personObject);
+	            //set Route Completion Action
+	            strAutoStopOnRejection = domRouteTemplate.getInfo(context, SELECT_ATTRIBUTE_AUTO_STOP_REJECTION);
+
+
+		    String notifyRouteOwner = "";
+	            try{
+	            	notifyRouteOwner = FrameworkProperties.getProperty(context, "DBC.emxComponents.NoPromoteRelatedItems.State");
+	            }catch(Exception e){
+	            	notifyRouteOwner = "";
+	            }
+	            StringList policyStateList = null;
+	            if(notifyRouteOwner != null && !notifyRouteOwner.trim().equals("") && !notifyRouteOwner.equals("null")){
+	            	policyStateList = FrameworkUtil.split(notifyRouteOwner.trim(), ",");
+	            }
+	            String symbolicPolicyState = symbolicPolicy+"|"+strState;
+	            
+	            if(policyStateList != null && policyStateList.size() > 0 && policyStateList.contains(symbolicPolicyState))
+	            {
+	            	routeObj.setAttributeValue(context,sAttrRouteCompletionAction,"Notify Route Owner");
+	            }else{
+	            	routeObj.setAttributeValue(context,sAttrRouteCompletionAction,"Promote Connected Object");
+	            }	      
+		    routeObj.setAttributeValue(context,sAttrRestartUponTaskRejection,strAutoStopOnRejection); //IR-118894 
+	            // Add contents to the Route i.e. ECO
+	            RelationshipType relationshipType = new RelationshipType(
+	                    DomainConstants.RELATIONSHIP_OBJECT_ROUTE);
+	            DomainRelationship newRel = routeObj.addFromObject(context,
+	                    relationshipType, objectId);
+	            
+	            // connect to Route Template
+	            routeObj.connectTemplate(context, routeTemplate);
+	            // add member list from template to route
+	            routeObj.addMembersFromTemplate(context, routeTemplate);
+	            // UPDATE OBJECT ROUTE ATTRIBUTES.
+	            newRel.setAttributeValues(context, attrMap);
+	            // Change Route Action Attribute to Approve
+	            SelectList relProductSelects = new SelectList(1);
+	            relProductSelects
+	                    .add(DomainConstants.SELECT_RELATIONSHIP_ID);
+	            // 369474
+	            String nodeTypePattern = DomainConstants.TYPE_PERSON + "," + DomainConstants.TYPE_ROUTE_TASK_USER;
+	            MapList routeNodeList = null;
+	            DomainObject Domobj = (DomainObject) DomainObject
+	                    .newInstance(context);
+	            Domobj.setId(sRouteId);
+	            // get all the tasks in the route
+	            routeNodeList = Domobj.getRelatedObjects(context,
+	                    DomainConstants.RELATIONSHIP_ROUTE_NODE,
+	                    //DomainConstants.TYPE_PERSON,   // 369474
+	                    nodeTypePattern, null,
+	                    relProductSelects, false, true, (short) 1, null,
+	                    null);
+	            Iterator itrRouteNodeList = routeNodeList.iterator();
+	            while(itrRouteNodeList.hasNext()){
+	            	  Map currentMap = (Map) itrRouteNodeList.next();
+	                  DomainRelationship routeNodeId = new DomainRelationship(
+	                          (String) currentMap
+	                                  .get(DomainConstants.SELECT_RELATIONSHIP_ID));
+	                  //attribute map for Route node relationship
+	                  HashMap attributeMap = new HashMap();
+	                 // attributeMap.put(
+	                   //       DomainConstants.ATTRIBUTE_ROUTE_ACTION,
+	                     //     "Approve");
+	                  routeNodeId.setAttributeValues(context, attributeMap);
+	            }
+	         // auto start route
+	            /*if(args.length == 3){
+	            	new ${CLASS:emxChange}(context,args).startRoute(context, sRouteId);
+	            }*/
+				if ("User Agent".equals(Domobj.getOwner(context).getName()))
+				{
+					if (strObjOwner != null)
+					{
+						Domobj.changeOwner(context, strObjOwner);
+					}
+				}
+				StringList selectTypeStmts = new StringList();
+				selectTypeStmts.addElement("id");
+				selectTypeStmts.addElement(DomainObject.SELECT_TYPE);
+				selectTypeStmts.addElement("name");
+				StringList selectRelStmts = new StringList();
+				selectRelStmts.addElement(DomainRelationship.SELECT_RELATIONSHIP_ID);
+				selectRelStmts.addElement("attribute["+DomainObject.ATTRIBUTE_ROUTE_SEQUENCE+"]");
+				selectRelStmts.addElement("attribute["+DomainObject.ATTRIBUTE_ROUTE_ACTION+"]");
+				
+				routeObj.setId(sRouteId);
+				MapList	tskMapList = routeObj.getRelatedObjects(context,
+								                        DomainRelationship.RELATIONSHIP_ROUTE_NODE,  //String relPattern
+								                        DomainObject.TYPE_PERSON+","+DomainObject.TYPE_ROUTE_TASK_USER, //String typePattern
+								                        selectTypeStmts,          //StringList objectSelects,
+								                        selectRelStmts,                     //StringList relationshipSelects,
+								                        false,                    //boolean getTo,
+								                        true,                     //boolean getFrom,
+								                        (short)1,                 //short recurseToLevel,
+								                        "",                       //String objectWhere,
+								                        "",                       //String relationshipWhere,
+								                        null,                     //Pattern includeType,
+								                        null,                     //Pattern includeRelationship,
+								                        null);                    //Map includeMap
+				
+				
+				if(tskMapList != null && tskMapList.size()>0){
+					StringList personIdList = new StringList();
+					List  personList = new ArrayList();
+					tskMapList.sort("attribute["+DomainObject.ATTRIBUTE_ROUTE_SEQUENCE+"]","descending","integer");
+					Map tempMap = null;
+					boolean check = true;
+					for(int i = 0;i<tskMapList.size();i++)
+					{
+						tempMap = (Map)tskMapList.get(i);
+						String strPersonId = (String)tempMap.get("id");
+						String strType = (String)tempMap.get(DomainObject.SELECT_TYPE);
+						String relRouteNodeId = (String) tempMap.get(DomainObject.SELECT_RELATIONSHIP_ID);
+						if(strType.equals(DomainObject.TYPE_PERSON) && !personIdList.contains(strPersonId)){
+							personIdList.add(strPersonId);
+							personList.add((String)tempMap.get("name"));
+						}
+						String attrRouteAction = (String) tempMap.get("attribute["+DomainObject.ATTRIBUTE_ROUTE_ACTION+"]");
+						if(attrRouteAction.equals("Notify Only") && strType.equals(DomainObject.TYPE_ROUTE_TASK_USER)&&check)
+						{
+							Person notifyOnlyPerson = Person.getPerson(context, routeObj.getOwner(context).getName());  
+							DomainRelationship.modifyTo(context, relRouteNodeId, notifyOnlyPerson);
+							check = false;
+							
+						}
+					}
+					if(personList.size()>0){
+						ContextUtil.pushContext(context, AEF_ROUTE_ACCESS_GRANTOR_USERNAME, null, null);
+						try{
+							routeObj.grantAccessOnContent(context,(String[])personList.toArray(new String[]{}));
+						}catch(Exception e){
+							ContextUtil.popContext(context);
+							throw e;
+						}
+						ContextUtil.popContext(context);
+					}
+				}
+			}
+		}catch(Exception e){
+			System.out.println("Exception ::"+e.toString());
+			m_logger.error(e.getMessage(), e);
+			throw e;
+		}
+		return 0;
+	}
+	/**
+	 * JSP Page create Route
+	 * @param context
+	 * @param args
+	 * Jan 21, 2016
+	 * @author caipan
+	 */
+	public void JSPCreateRoutes(Context context,String[] args){
+		Map map;
+		try {
+			map = (Map)JPO.unpackArgs(args);
+			String[] array = new String[3];
+			String objectId = map.get("objectId").toString();
+			String state = map.get("state").toString();
+			DomainObject obj = new DomainObject(objectId);
+			String policyName = obj.getPolicy(context).getName();
+			String alianState = FrameworkUtil.reverseLookupStateName(context, policyName, state);			
+			array[0]=objectId;
+			array[1] = alianState;
+			array[2] =  map.get("templateID").toString(); 
+			CreateRoutes(context,array);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			m_logger.error(e.getMessage(), e);
+		}
+	}
+	
+	
+	/**
+	 * AEFTaskAddApproverFromTemplate get Route Select
+	 * @param context
+	 * @param args
+	 * @return
+	 * @throws Exception
+	 */
+	public String getJSPRouteTemplateHTML(Context context,String[] args) throws Exception{
+		HashMap programMap = (HashMap)JPO.unpackArgs(args);
+		String strAddRoutestate = (String)programMap.get("CH Add Route State");
+		String strType = (String)programMap.get("type");
+		String strPolicy = (String)programMap.get("policy");
+		String sFieldName = (String) programMap.get("CHRouteTemplate");
+		String CHRouteTemplateName = (String) programMap.get("CHRouteTemplateName");
+		String strCH_doc_min_class = (String) programMap.get("CH_doc_min_class");
+		String strObjectId = (String) programMap.get("objectId");
+		StringBuffer strRouteTemplate = new StringBuffer();
+		if(strType == null){
+			strType ="";
+		}
+		if(strCH_doc_min_class == null){
+			strCH_doc_min_class ="";
+		}
+		if(strAddRoutestate == null){
+			strAddRoutestate ="";
+		}
+		String strState = strAddRoutestate.trim().replace(" ", "_");
+		String sLanguage = context.getSession().getLanguage();
+    	//String strClear =EngineeringUtil.i18nStringNow("emxEngineeringCentral.Common.Clear",sLanguage);
+    	String strClear = "\u6E05\u9664";
+		String TemplateHelper = i18nNow.getI18nString( "emxComponents.Common.TemplateHelper" , "emxComponentsStringResource" , sLanguage);  
+    	String strRouteTemplateName ="";
+		strPolicy = PropertyUtil.getSchemaProperty(strPolicy);
+		strType = PropertyUtil.getSchemaProperty(strType);
+		Map programMap1 = new HashMap();
+		programMap1.put("objectId", strObjectId);
+		programMap1.put("txtName", "*");
+		programMap1.put("selScope", "Enterprise");
+		programMap1.put("strState", strAddRoutestate);
+		programMap1.put("CHpolicy", strPolicy);
+		programMap1.put("CHtype", strType);
+		programMap1.put("CH_doc_min_class", strCH_doc_min_class);
+		MapList templateList = new MapList();
+		if(UIUtil.isNotNullAndNotEmpty(strPolicy)&&UIUtil.isNotNullAndNotEmpty(strType)&&UIUtil.isNotNullAndNotEmpty(strAddRoutestate)){
+			 //templateList = (MapList) JPO.invoke(context,"emxRouteTemplate", null , "getRouteTemplatesList" ,  JPO.packArgs(programMap1), MapList.class);
+			templateList = (MapList) getRouteTemplatesList(context, JPO.packArgs(programMap1));
+			
+		}
+		strRouteTemplate.append("<select name=\"templateHelper\" onchange=\"javascript:updateRouteJSP(this,'"+sFieldName+"','"+CHRouteTemplateName+"')\" >");
+		strRouteTemplate.append("<option value=\"\">"+TemplateHelper+"</option>");
+		for(int i=0;i<templateList.size();i++){
+		Map tem = (Map)templateList.get(i);
+		String name =tem.get("name").toString();
+		String id=tem.get("id").toString();
+		String str= name+"@"+id;
+		strRouteTemplate.append("<option value=\""+str+"\">"+name+"</option>");
+		//end
+		}
+		strRouteTemplate.append("</select>");
+		String retURL = strRouteTemplate.toString();
+		
+		retURL = retURL.replaceAll("&", "&amp;");
+		return retURL;
+	}
+	
+	
+	
+	/**
+	 * 
+	 * @param context
+	 * @param args
+	 * @return
+	 * @throws Exception
+	 * Dec 29, 2015
+	 * @author caipan
+	 */
+		public Object getRouteTemplatesList(Context context, String[] args) throws Exception {
+			MapList routeTemplateList = new MapList();
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+
+			String strRelatedObjectId = (String) programMap.get("objectId");
+			String sName = (String) programMap.get("txtName");
+			String sScope = (String) programMap.get("selScope");
+			String strState = (String) programMap.get("strState");			
+			if (strState == null || strState.equals("")) 
+			{
+				throw new Exception("strState is null or empty.");
+			}
+			String typeFilter = "to[" + RouteTemplate.RELATIONSHIP_ROUTE_TEMPLATES + "].from.type";
+			String where = "(current == Active)";
+			//add by wangyitao;
+			String LSRouteFilter = (String) programMap.get("LSRouteFilter");
+			if(LSRouteFilter==null)
+			{
+				LSRouteFilter="";
+			}
+			if(LSRouteFilter !=null && LSRouteFilter.length()>0)
+			{
+				//String filter="'*attribute[LS Route Filter]=="+LSRouteFilter+"*'";
+				where += " && ((attribute[LS Route Filter] ~~ " + LSRouteFilter + ") || (attribute[LS Route Filter]=='') )";
+			}
+			String LSRouteIdentifier = (String) programMap.get("LSRouteIdentifier");
+			//end
+			try {
+				//String strType =programMap.get("strType").toString(); //relatedObject.getInfo(context, DomainObject.SELECT_TYPE);
+				//String strPolicyName = programMap.get("strPolicy").toString();//relatedObject.getInfo(context, DomainObject.SELECT_POLICY);
+				String strType ="";
+				String strPolicyName ="";
+			
+				if (strRelatedObjectId == null || strRelatedObjectId.equals("")) 
+				{
+
+					 strType = (String) programMap.get("strType");
+					 strPolicyName = (String) programMap.get("strPolicy");
+					 strType =  "type_"+FrameworkUtil.findAndReplace(strType, " ", "");
+					 strPolicyName =  "policy_"+FrameworkUtil.findAndReplace(strPolicyName, " ", "");
+					 strState =  "state_"+FrameworkUtil.findAndReplace(strState, " ", "");
+				}else{
+					DomainObject strObj = new DomainObject(strRelatedObjectId);
+					 strType = strObj.getType(context);
+					 strPolicyName = strObj.getInfo(context,"policy");
+					strType =  "type_"+FrameworkUtil.findAndReplace(strType, " ", "");
+					strPolicyName =  "policy_"+FrameworkUtil.findAndReplace(strPolicyName, " ", "");
+					strState =  "state_"+FrameworkUtil.findAndReplace(strState, " ", "");
+					
+					
+
+				}			
+												
+				String sRouteIdentifierMatch = "";
+				if (strPolicyName != null && !strPolicyName.equals("") && strState != null && !strState.equals(""))
+				{
+					
+					//where += " && (attribute[LS Route Identifier] ~~ '*" + sRouteIdentifierMatch + "*')";
+					sRouteIdentifierMatch = strType+"|"+strPolicyName+"|"+strState;
+
+				}
+				
+				String sRouteIdentifierValue = "";
+				String templateName = "";
+				String availability = "";
+				boolean checkName = false;
+				boolean checkAvailability = false;
+				MapList returnTempList = (MapList) getRouteTemplates(context, where);
+				MapList tempList = new MapList();
+				if(UIUtil.isNotNullAndNotEmpty(sRouteIdentifierMatch)){
+					for(int x = 0 ; x<returnTempList.size(); x++)
+					{
+						Map map = (Map)returnTempList.get(x);
+						String tempId = (String)map.get("id");
+						DomainObject strTempObj = new DomainObject(tempId);
+						String attrValue = strTempObj.getAttributeValue(context,"LS Route Identifier");
+						if(UIUtil.isNotNullAndNotEmpty(attrValue))
+						{
+
+							if(attrValue.indexOf(sRouteIdentifierMatch) != -1)  
+							{
+								tempList.add(map);
+							}  
+	
+						}else{
+							tempList.add(map);
+						}
+					}
+				}
+				Pattern namePattern = null;
+				if ((sName != null) && (!sName.equals("*"))) {
+					namePattern = new Pattern(sName);
+					checkName = true;
+				} else {
+					sName = "*";
+					namePattern = new Pattern(sName);
+					checkName = false;
+				}
+				Pattern availabilityPattern = null;
+				if ((sScope != null) && (!sScope.equals("*"))) {
+					if (sScope.equals("User")) {
+						sScope = DomainObject.TYPE_PERSON;
+					} else if (sScope.equals("Enterprise")) {
+						sScope = DomainObject.TYPE_COMPANY;
+					}
+					availabilityPattern = new Pattern(sScope);
+					checkAvailability = true;
+				} else {
+					sScope = "*";
+					availabilityPattern = new Pattern(sScope);
+					checkAvailability = false;
+				}
+				if (!checkName && !checkAvailability) {
+					return tempList;
+				} else {
+					Hashtable tempMap = null;
+					if (tempList != null) {
+						for (int i = 0; i < tempList.size(); i++) {
+							tempMap = (Hashtable) tempList.get(i);
+							routeTemplateList.add(tempMap);
+						}
+					}
+				}
+			} catch (Exception e) {
+				m_logger.error(e.getMessage(), e);
+			}
+			return routeTemplateList;
+		}
+		
+		
+		
+	    /**
+		    * Gets the MapList containing all Route Templates.
+		    * @param context the eMatrix <code>Context</code> object
+		    * @param args holds input arguments.
+		    * @return a MapList containing all Route Templates.
+		    * @throws Exception if the operation fails.
+		    * @since Common 10.0.1.1
+		    */
+		   private Object getRouteTemplates(Context context, String objWhere) throws Exception
+		   {
+		        String WorkspaceId                    = "to["+RouteTemplate.RELATIONSHIP_ROUTE_TEMPLATES+"].from.id";
+		        String WorkspaceName                  = "to["+RouteTemplate.RELATIONSHIP_ROUTE_TEMPLATES+"].from.name";
+		        String typeFilter                     = "to["+RouteTemplate.RELATIONSHIP_ROUTE_TEMPLATES+"].from.type";
+		        String buFilter = "to["+RouteTemplate.RELATIONSHIP_ROUTE_TEMPLATES+"].from.id";
+		        // build select params
+		        if (objWhere != null)
+		        {
+		            //Added for bug 376335
+		            if(objWhere.indexOf("current == Active") != -1)
+		                objWhere=objWhere+" && latest==TRUE";
+		            //Ended
+		            else
+		                objWhere=objWhere+" && revision==last";
+
+		        }else{
+		            objWhere="revision==last";
+		        }
+		        
+		        SelectList selectStmts = new SelectList();
+		        selectStmts.add(RouteTemplate.SELECT_NAME);
+		        selectStmts.add(RouteTemplate.SELECT_DESCRIPTION);
+		        selectStmts.add(RouteTemplate.SELECT_REVISION);
+		        selectStmts.add(RouteTemplate.SELECT_OWNER);
+		        //commented for bug 352540
+		        selectStmts.add(RouteTemplate.SELECT_ROUTE_TEMPLATES_TYPE);
+		       selectStmts.add(RouteTemplate.SELECT_OWNING_ORGANIZATION_ID);
+		        selectStmts.add(RouteTemplate.SELECT_TYPE);
+		        selectStmts.add(RouteTemplate.SELECT_ID);
+		        selectStmts.add(WorkspaceId);
+		        selectStmts.add(WorkspaceName);
+		        selectStmts.add(typeFilter);
+		        selectStmts.add(RouteTemplate.SELECT_RESTRICT_MEMBERS);
+		//  IR-047371V6R2011 - START
+		       selectStmts.add( RouteTemplate.SELECT_OWNING_ORGANIZATION_NAME );
+		//  IR-047371V6R2011 - END
+
+		//begin ---------------------------------------------------add by wangyitao 2016.12.21
+
+		      selectStmts.add("attribute[LS Route Identifier]");
+		      
+
+		//end  ---------------------------------------------------add by wangyitao 2016.12.21
+		        MapList templateMapList = new MapList();
+		        MapList templatePersonMapList = new MapList();
+		       MapList finalTemplateMap = new MapList();
+		        try
+		        {
+		            String orgId = PersonUtil.getUserCompanyId(context);
+		            DomainObject templateObj = DomainObject.newInstance(context);
+		            Pattern OrgRelPattern = new Pattern(DomainObject.RELATIONSHIP_ROUTE_TEMPLATES);
+		            OrgRelPattern.addPattern(DomainConstants.RELATIONSHIP_DIVISION);
+		            OrgRelPattern.addPattern(DomainObject.RELATIONSHIP_COMPANY_DEPARTMENT );
+		            Pattern OrgTypePattern = new Pattern(DomainObject.TYPE_ROUTE_TEMPLATE);
+		            OrgTypePattern.addPattern(DomainConstants.TYPE_BUSINESS_UNIT);
+		            OrgTypePattern.addPattern(DomainConstants.TYPE_DEPARTMENT);
+
+		            Pattern includeOrgRelPattern = new Pattern(DomainObject.RELATIONSHIP_ROUTE_TEMPLATES);
+		            Pattern includeOrgTypePattern = new Pattern(DomainObject.TYPE_ROUTE_TEMPLATE);
+		            //Get the enterprise level RouteTemplates
+		            if(orgId != null)
+		            {
+		                templateObj.setId(orgId);
+		                templateMapList = templateObj.getRelatedObjects(context,
+		                                                                OrgRelPattern.getPattern(),
+		                                                                OrgTypePattern.getPattern(),
+		                                                                selectStmts,
+		                                                                null,
+		                                                                false,//modified for bug 352540
+		                                                                true,
+		                                                                (short)0,
+		                                                                objWhere,
+		                                                                null,
+		                                                                includeOrgTypePattern,
+		                                                                includeOrgRelPattern,
+		                                                                null);
+		            }
+						templateObj.setId(PersonUtil.getPersonObjectID(context));
+		                ContextUtil.startTransaction(context,false);
+		                ExpansionIterator expIter = templateObj.getExpansionIterator(context,
+		                                                                            DomainObject.RELATIONSHIP_ROUTE_TEMPLATES,
+		                                                                            DomainObject.TYPE_ROUTE_TEMPLATE,
+		                                                                            selectStmts,
+		                                                                            new StringList(),
+		                                                                            false,
+		                                                                            true,
+		                                                                            (short)1,
+		                                                                            objWhere,
+		                                                                            null,
+		                                                                            (short)0,
+		                                                                            false,
+		                                                                            false,
+		                                                                            (short)100,
+		                                                                            false);
+		                templatePersonMapList =  FrameworkUtil.toMapList(expIter,(short)0,null,null,null,null);
+		                expIter.close();
+		                ContextUtil.commitTransaction(context);
+		                for (int i=0;i<templatePersonMapList.size();i++)
+		                {
+		                    templateMapList.add(templatePersonMapList.get(i));
+		                }
+		            if(FrameworkUtil.isSuiteRegistered(context,"featureVersionTeamCentral",false,null,null))
+		            {
+
+		                templateObj.setId(com.matrixone.apps.common.Person.getPerson(context).getObjectId());
+
+		                Pattern typePattern = new Pattern(templateObj.TYPE_ROUTE_TEMPLATE);
+		                typePattern.addPattern(templateObj.TYPE_PROJECT_MEMBER);
+		                typePattern.addPattern(templateObj.TYPE_PROJECT);
+
+		                Pattern relPattern = new Pattern(templateObj.RELATIONSHIP_ROUTE_TEMPLATES);
+		                relPattern.addPattern(templateObj.RELATIONSHIP_PROJECT_MEMBERSHIP);
+		                relPattern.addPattern(templateObj.RELATIONSHIP_PROJECT_MEMBERS);
+		                //String sWhere             = "(revision ~~ last)";
+		                Pattern includeTypePattern = new Pattern(templateObj.TYPE_ROUTE_TEMPLATE);
+		                MapList templateWorkspaceMapList = templateObj.getRelatedObjects(context,
+																	relPattern.getPattern(),
+																	typePattern.getPattern(),
+																	selectStmts,
+																	null,
+																	true,
+																	true,
+																	(short)0,
+																	objWhere,
+																	"",
+																	includeTypePattern,
+																	null,
+																	null);
+		                Iterator tempMapItr = templateWorkspaceMapList.iterator();
+		                HashMap attrMap = new HashMap();
+		                while(tempMapItr.hasNext()) {
+		                    Map map = (Map)tempMapItr.next();
+		                    //getting ITable:sortObjects - java.lang.IllegalArgumentException: fromIndex(4) > toIndex(2) error when directly add the map
+		                    //may be because of different levels
+		                    if(((String)map.get(typeFilter)).equals(templateObj.TYPE_PROJECT) || ((String)map.get(typeFilter)).equals("Contract") || ((String)map.get(typeFilter)).equals("Program") || ((String)map.get(typeFilter)).equals("Project Space") || ((String)map.get(typeFilter)).equals("Products") ||((String)map.get(typeFilter)).equals("Project Department") && (!templateMapList.contains(map))) {
+		                        templateMapList.add(map);
+		                    }
+		                }
+		            }
+		            if(FrameworkUtil.isSuiteRegistered(context,"appVersionProgramCentral",false,null,null))
+		            {
+
+		                templateObj.setId(com.matrixone.apps.common.Person.getPerson(context).getObjectId());
+		                Pattern typePattern = new Pattern(templateObj.TYPE_ROUTE_TEMPLATE);
+		                typePattern.addPattern(templateObj.TYPE_PROJECT_SPACE);
+		                Pattern relPattern = new Pattern(templateObj.RELATIONSHIP_ROUTE_TEMPLATES);
+		                relPattern.addPattern(templateObj.RELATIONSHIP_MEMBER);
+		                //String sWhere             = "(revision ~~ last)";
+		                Pattern includeTypePattern = new Pattern(templateObj.TYPE_ROUTE_TEMPLATE);
+		                MapList templateProjectspaceMapList = templateObj.getRelatedObjects(context,
+		                                relPattern.getPattern(),
+		                                typePattern.getPattern(),
+		                                selectStmts,
+		                                null,
+		                                true,
+		                                true,
+		                                (short)2,
+		                                objWhere,
+		                                "",
+		                                includeTypePattern,
+		                                null,
+		                                null);
+		                Iterator tempMapItr = templateProjectspaceMapList.iterator();
+		                HashMap attrMap = new HashMap();
+		                while(tempMapItr.hasNext()) {
+		                    Map map = (Map)tempMapItr.next();
+		                }
+		            }
+					ArrayList buList = getBURelatedToPerson (context);
+		            Iterator templateMapListItr = templateMapList.iterator();
+		           String contextPerson = context.getUser();
+		           String perName = "";
+		           String busUnitId = "";
+		           String owner = "";
+		            String type = "";
+		            Map templateMap;
+		            DomainObject busUnitBO;
+		            BusinessUnit businessUnit;
+		            while(templateMapListItr.hasNext()){
+		                templateMap = (Map)templateMapListItr.next();
+		                templateMap.remove("level");
+		               // Modified for bug 352071
+		                String buFilterQuery=buFilter;
+		               busUnitId = (String) templateMap.get(buFilterQuery);
+		           if(busUnitId != null && !"".equals(busUnitId))
+		                {
+		                    busUnitBO = DomainObject.newInstance(context, busUnitId);
+		                    type = (String) busUnitBO.getInfo(context,DomainConstants.SELECT_TYPE);
+
+		                }
+		                owner = (String) templateMap.get("owner");
+		                if (contextPerson.equals(owner)) {
+		                    finalTemplateMap.add(templateMap);
+		                }
+		               else if (DomainConstants.TYPE_BUSINESS_UNIT.equals(type)) {
+						   	//Add the Template if the Context Person is part of the BU
+						   	if (buList.contains(busUnitId)) {
+								finalTemplateMap.add(templateMap);
+							}
+		               }
+		                else if (DomainConstants.TYPE_DEPARTMENT.equals(type)) {
+		                        //Add the Template if the Context Person is part of the BU
+		                        if (buList.contains(busUnitId)) {
+		                            finalTemplateMap.add(templateMap);
+		                        }
+		                   }
+		                else {
+		                   finalTemplateMap.add(templateMap);
+		               }
+		           }
+		       } catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+		       }
+		        
+		       return finalTemplateMap;
+		    }	
+	
+		   public ArrayList getBURelatedToPerson (Context context) throws Exception {
+
+				ArrayList BUList = new ArrayList();
+				SelectList selectStmts = new SelectList(1);
+       		selectStmts.add("id");
+
+				DomainObject personObj = DomainObject.newInstance(context);
+               personObj.setId(com.matrixone.apps.common.Person.getPerson(context).getObjectId());
+               Pattern typePattern = new Pattern(PropertyUtil.getSchemaProperty(context,"type_BusinessUnit"));
+               typePattern.addPattern(DomainConstants.TYPE_BUSINESS_UNIT);
+               typePattern.addPattern(DomainConstants.TYPE_DEPARTMENT);
+               Pattern relPattern = new Pattern(PropertyUtil.getSchemaProperty(context,"relationship_BusinessUnitEmployee"));
+               relPattern.addPattern(DomainConstants.RELATIONSHIP_BUSINESS_UNIT_EMPLOYEE);
+               relPattern.addPattern(DomainObject.RELATIONSHIP_MEMBER);
+				String objWhere  = "";
+               MapList BUMapList = personObj.getRelatedObjects(context,
+                               relPattern.getPattern(),
+                               typePattern.getPattern(),
+                               selectStmts,
+                               null,
+                               true,
+                               true,
+                               (short)1,
+                               objWhere,
+                               "",
+                               null,
+                               null,
+                               null);
+
+				Iterator BUListItr = BUMapList.iterator();
+				String busUnitId = "";
+				Map BUMap = null;
+				while(BUListItr.hasNext()){
+					BUMap = (Map)BUListItr.next();
+					busUnitId = (String)BUMap.get("id");
+					if (busUnitId!=null && !busUnitId.equals("")) {
+						BUList.add(busUnitId);
+					}
+				}
+				return BUList;
+		   }
+ 
+		
+		   
+//modify task user 
+		   
+	public boolean checkRouteNodeDelete(Context context,String[] args)throws Exception
+	{
+		HashMap programMap = (HashMap)JPO.unpackArgs(args);
+		String routeNodeId = (String)programMap.get("routeNodeId");
+		DomainRelationship routeNodeObj = new DomainRelationship(routeNodeId);
+		String LSAllowDelete = routeNodeObj.getAttributeValue(context,"LS Allow Delete");
+		String routeId = (String)programMap.get("routeId");
+		DomainObject strObj = new DomainObject(routeId);
+		String current = strObj.getAttributeValue(context,"Route Status");
+		if("Stopped".equals(current) || "Not Started".equals(current))
+		{			
+			if("YES".equals(LSAllowDelete))
+			{
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			return false;
+		}
+ 
+	}
+	
+	public boolean checkLSTaskFinishExpression(Context context,String[] args)throws Exception
+	{
+		boolean bl = true;
+		try{
+			ContextUtil.pushContext(context);
+			HashMap programMap = (HashMap)JPO.unpackArgs(args);
+			String routeNodeId = (String)programMap.get("routeNodeId");
+			DomainRelationship routeNodeObj = new DomainRelationship(routeNodeId);
+			String LSTaskFinishExpression = routeNodeObj.getAttributeValue(context,"LS Task Finish Expression");
+			if (LSTaskFinishExpression==null || "null".equals(LSTaskFinishExpression) || "".equals(LSTaskFinishExpression))
+			{
+				return true;
+			}
+			String routeId = (String)programMap.get("routeId");
+
+	    	String checkerExpression = com.matrixone.apps.domain.util.MqlUtil.mqlCommand(context,"print connection " + routeNodeId + " select attribute[TMT Route Task Finish Checker] dump");	
+	    	DomainObject routedObject = new DomainObject(routeId);
+	    	ContextUtil.popContext(context);
+    		String checkerResult = routedObject.getInfo(context,"evaluate[" + checkerExpression + "]");
+    		if (!"true".equalsIgnoreCase(checkerResult)&&!"".equals(checkerResult))
+    		{
+    			return false;
+    		}
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return bl;
+	}
+	
+	
+	StringList busList = new StringList("id");
+	StringList relList = new StringList("id[connection]");
+	public boolean checkRouteNodeReAssign(Context context,String[] args)throws Exception
+	{
+		
+		HashMap programMap = (HashMap)JPO.unpackArgs(args);
+		String objectId = (String)programMap.get("objectId");
+		DomainObject strObj = new DomainObject(objectId);
+		String ctxUser = context.getUser();
+		String ctxUserId = PersonUtil.getPersonObjectID( context,  ctxUser) ;
+		MapList routeList = strObj.getRelatedObjects(context,"Object Route","*",busList,relList,false,true,(short)1,null,null);
+	
+		if(routeList.size()>0)
+		{
+			for(int i = 0 ; i < routeList.size(); i++)
+			{
+				Map map = (Map)routeList.get(i);
+				String routeId = (String)map.get("id");
+				DomainObject routeObj = new DomainObject(routeId);
+				String routeOwner = routeObj.getInfo(context,"owner");
+				String routeCurrent = routeObj.getInfo(context,"current");
+				String routeOwnerId = PersonUtil.getPersonObjectID( context,  routeOwner) ;
+				if(routeOwnerId.equals(ctxUserId) || "Complete".equals(routeCurrent))
+				{
+					return true;
+				}
+				String where="current=='Assigned'";
+				MapList routeNodeList = routeObj.getRelatedObjects(context,"Route Node","*",busList,relList,false,true,(short)1,"",null);
+
+				StringList allowList = new StringList();
+				for(int n = 0 ; n < routeNodeList.size(); n++)
+				{
+					Map routeNodeMap = (Map)routeNodeList.get(n);
+					//String routeNodeId = (String)routeNodeMap.get("id");
+					String routeNodeRelId = (String)routeNodeMap.get("id[connection]");
+					DomainRelationship routeNodeObj = new DomainRelationship(routeNodeRelId);
+					String LSAllowReAssign = routeNodeObj.getAttributeValue(context,"LS Allow ReAssign");
+					if("YES".equals(LSAllowReAssign))
+					{
+						String RouteNodeId = routeNodeObj.getAttributeValue(context,"Route Node ID");
+						allowList.add(RouteNodeId);
+					}
+				}	
+				MapList inboxTaskList = routeObj.getRelatedObjects(context,"Route Task","*",busList,relList,true,false,(short)1,where,null);
+
+				if(inboxTaskList.size()>0)
+				{
+					for(int j = 0 ; j < inboxTaskList.size(); j++)
+					{
+						Map taskMap = (Map)inboxTaskList.get(j);
+						String taskId = (String)taskMap.get("id");
+						DomainObject taskObj = new DomainObject(taskId);
+						String RouteNodeId = taskObj.getAttributeValue(context,"Route Node ID");
+						if(allowList.contains(RouteNodeId))
+						{
+							MapList personList = taskObj.getRelatedObjects(context,"Project Task","*",busList,relList,false,true,(short)1,null,null);
+							if(personList.size()>0)
+							{
+								for(int x = 0 ; x < inboxTaskList.size(); x++)
+								{
+									Map personMap = (Map)personList.get(x);
+									String personId = (String)personMap.get("id");
+									if(personId.equals(ctxUserId))
+									{
+										return true;
+									}
+								}	
+							}
+						}
+					}	
+					
+				}else{
+					return false;
+				}
+			}
+		}else{
+			return false;
+		}	
+		
+		return false;
+ 
+	}
+	
+	
+    public StringList getLSApproverRange(Context context,String[] args)throws Exception
+    {
+    	Map programMap = (Map)JPO.unpackArgs(args);   	
+    	String routeNodeId = (String)programMap.get("routeNodeId");
+		DomainRelationship routeNodeObj = new DomainRelationship(routeNodeId);
+		String LSApproverRange = routeNodeObj.getAttributeValue(context,"LS Approver Range");
+		
+    	StringList temroleList = FrameworkUtil.split(LSApproverRange, "////|");
+    	StringList roleList = new StringList();
+    	String roleName = null;
+    	for(int i=0;i<temroleList.size();i++)
+    	{
+    		roleName = (String)temroleList.get(i);
+    		roleName = PropertyUtil.getSchemaProperty(context,roleName);
+    		roleList.add(roleName);
+    	}    	
+    	Role role =null;
+    	StringList personList = new StringList();
+    	String username ;
+    	String userId;
+    	for(int i=0;i<roleList.size();i++)
+    	{
+    		role = new Role((String)roleList.get(i));
+    		UserList userList = role.getAssignments(context);
+    		for(int j=0;j<userList.size();j++)
+    		{
+    			User user = userList.getElement(j);
+    			username =  user.getName();
+    			userId = PersonUtil.getPersonObjectID( context,  username) ;
+    			personList.add(userId);
+    		}
+    	}    	
+    	return personList;
+    }
+    
+    	
+    
+    public Object getAllSearchRouteTemplates(Context context, String[] args) throws Exception {
+		MapList resultMapList = new MapList();
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+
+		String sOId = (String) programMap.get("objectId");
+		String sName = (String) programMap.get("txtName");
+		String sScope = (String) programMap.get("selScope");
+		String strState = (String) programMap.get("strState");
+
+		if (sOId == null || sOId.equals("")) {
+			//return super.getAllSearchRouteTemplates(context, args);
+		}
+		
+		//If the scope is not Enterprise, call ootb method.
+
+		if (sScope == null || !sScope.equals("Enterprise")) {
+			//return super.getAllSearchRouteTemplates(context, args);
+		}
+
+		if (strState == null || strState.equals("")) {
+			throw new Exception("strState is null or empty.");
+		}
+
+
+
+		try {
+			StringList oIdList = FrameworkUtil.split(sOId, "~");
+
+
+			String[] args1 = new String[1];
+			MapList baseTemplateMapList = new MapList();
+			StringList baseIdList = new StringList();
+			StringList resultIdList = new StringList();
+
+			if (oIdList != null && oIdList.size() > 0) {
+				for (int i = 0; i < oIdList.size(); i++) {
+					String sObjectId = (String) oIdList.get(i);
+					//System.out.println("\n****** getAllSearchRouteTemplates sObjectId:" + sObjectId);
+					
+					args1[0] = sObjectId;
+					HashMap programMap1 = new HashMap();
+					programMap1.put("objectId", sObjectId);
+					programMap1.put("txtName", sName);
+					programMap1.put("selScope", sScope);
+					programMap1.put("strState", strState);
+					
+					resultIdList = new StringList();
+
+					
+					MapList thisTemplateList = (MapList) getRouteTemplatesList(context, JPO.packArgs(programMap1));
+					//System.out.println("----------- getAllSearchRouteTemplates thisTemplateList.size():" + thisTemplateList);
+					
+					StringList thisIdList = getIdList(context, thisTemplateList);
+					//System.out.println("-----------getAllSearchRouteTemplates thisIdList:" + thisIdList);
+					
+					if (thisIdList == null || thisIdList.size() < 1) {
+						return new MapList();
+					}
+
+					if (i == 0) {
+						baseTemplateMapList = thisTemplateList;
+						baseIdList = thisIdList;
+						resultIdList = thisIdList;
+						//System.out.print("******baseIdList 0:" + baseIdList);
+					} else if (i > 0) {
+						for (int m = 0; m < baseIdList.size(); m++) {
+							String baseId = (String)baseIdList.get(m);
+
+							if(thisIdList.contains(baseId)){
+							//	System.out.println("Add to resultIdList:" + baseIdList.get(m));
+								resultIdList.addElement(baseId);
+							}							
+						}
+						//System.out.print("******baseIdList " + i + ":" + baseIdList);
+						baseIdList = resultIdList;						
+					}
+					
+					//System.out.print("******resultIdList for " + i + ":" + resultIdList);
+				}
+			}
+
+			//System.out.print("******resultIdList:" + resultIdList);
+			
+			if (resultIdList != null || resultIdList.size() > 0) {
+				for (Iterator iter = baseTemplateMapList.iterator(); iter.hasNext();) {
+					Map baseTemplateMap = (Map) iter.next();
+					String templateId = (String) baseTemplateMap.get("id");
+					if (resultIdList.contains(templateId)) {
+						resultMapList.add(baseTemplateMap);
+					}
+				}
+			}
+
+			//System.out.print("******resultMapList:" + resultMapList);
+
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		
+		return resultMapList;
+	}
+	
+    
+	public Object getAllSearchRouteTemplatesForSingle(Context context, String[] args) throws Exception {
+		MapList routeTemplateList = new MapList();
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		// System.out.println("JPO emxRouteTemplate getAllSearchRouteTemplates programMap:" + programMap);
+
+		String strRelatedObjectId = (String) programMap.get("objectId");
+		String sName = (String) programMap.get("txtName");
+		String sScope = (String) programMap.get("selScope");
+		//System.out.println("JPO emxRouteTemplate getAllSearchRouteTemplatesForSingle sScope:" + sScope);
+
+		String strState = (String) programMap.get("strState");
+
+		if (strRelatedObjectId == null || strRelatedObjectId.equals("")) {
+			//return super.getAllSearchRouteTemplates(context, args);
+		}
+
+		if (strState == null || strState.equals("")) {
+			throw new Exception("strState is null or empty.");
+		}
+
+		String typeFilter = "to[" + RouteTemplate.RELATIONSHIP_ROUTE_TEMPLATES + "].from.type";
+		String where = "(current == Active)";
+
+		//System.out.println("JPO emxRouteTemplate getAllSearchRouteTemplatesForSingle strRelatedObjectId:" + strRelatedObjectId);
+		//System.out.println("JPO emxRouteTemplate getAllSearchRouteTemplatesForSingle strState:" + strState);
+
+		try {
+			//System.out.println("JPO emxRouteTemplate getAllSearchRouteTemplatesForSingle strRelatedObjectId:" + strRelatedObjectId);
+
+			DomainObject relatedObject = new DomainObject(strRelatedObjectId);
+			String strType = relatedObject.getInfo(context, DomainObject.SELECT_TYPE);
+			String strPolicyName = relatedObject.getInfo(context, DomainObject.SELECT_POLICY);
+
+
+
+		//	String sRouteIdentifierMatch = "policy_" + strPolicyName + "state_" + strState;
+		//	sRouteIdentifierMatch = FrameworkUtil.findAndReplace(sRouteIdentifierMatch, " ", "");
+
+
+		//	String sRouteIdentifierTypeMatch = "Type" + FrameworkUtil.findAndReplace(strType, " ", "");
+
+
+			//String strType =programMap.get("strType").toString(); //relatedObject.getInfo(context, DomainObject.SELECT_TYPE);
+			//String strPolicyName = programMap.get("strPolicy").toString();//relatedObject.getInfo(context, DomainObject.SELECT_POLICY);
+			strType =  "type_"+FrameworkUtil.findAndReplace(strType, " ", "");
+			strPolicyName =  "policy_"+FrameworkUtil.findAndReplace(strPolicyName, " ", "");
+			strState =  "state_"+FrameworkUtil.findAndReplace(strState, " ", "");
+			
+			
+			String sRouteIdentifierMatch = "";
+			if (strPolicyName != null && !strPolicyName.equals("") && strState != null && !strState.equals(""))
+			{
+				
+				//where += " && (attribute[LS Route Identifier] ~~ '*" + sRouteIdentifierMatch + "*')";
+				sRouteIdentifierMatch = strType+"|"+strPolicyName+"|"+strState;
+
+			}
+			
+			//if (strPolicyName != null && !strPolicyName.equals("") && strState != null && !strState.equals("")) {
+			//	where += " && (attribute[LS Route Identifier] ~~ '*" + sRouteIdentifierMatch + "*')";
+			//}
+
+			String sRouteIdentifierValue = "";
+			String templateName = "";
+			String availability = "";
+			boolean checkName = false;
+			boolean checkAvailability = false;
+			MapList tempList = (MapList) getRouteTemplates(context, where);
+			Pattern namePattern = null;
+			if ((sName != null) && (!sName.equals("*"))) {
+				namePattern = new Pattern(sName);
+				checkName = true;
+			} else {
+				sName = "*";
+				namePattern = new Pattern(sName);
+				checkName = false;
+			}
+			Pattern availabilityPattern = null;
+			if ((sScope != null) && (!sScope.equals("*"))) {
+				if (sScope.equals("User")) {
+					sScope = DomainObject.TYPE_PERSON;
+				} else if (sScope.equals("Enterprise")) {
+					sScope = DomainObject.TYPE_COMPANY;
+				}
+				availabilityPattern = new Pattern(sScope);
+				checkAvailability = true;
+			} else {
+				sScope = "*";
+				availabilityPattern = new Pattern(sScope);
+				checkAvailability = false;
+			}
+			if (!checkName && !checkAvailability) {
+				return tempList;
+			} else {
+				Hashtable tempMap = null;
+				if (tempList != null) {
+					for (int i = 0; i < tempList.size(); i++) {
+						tempMap = (Hashtable) tempList.get(i);
+						String templateId = (String) tempMap.get(DomainObject.SELECT_ID);
+
+						templateName = (String) tempMap.get(DomainObject.SELECT_NAME);
+						availability = (String) tempMap.get(typeFilter);
+						sRouteIdentifierValue = (String) tempMap.get("attribute[LS Route Identifier]");
+						//System.out.println("sRouteIdentifierValue:" + sRouteIdentifierValue);
+
+						boolean isRouteIdentifierMatch = isRouteIdentifierMatch(context, strRelatedObjectId, strState, sRouteIdentifierValue);
+						//System.out.println("******isRouteIdentifierMatch:" + isRouteIdentifierMatch + "\n");
+
+						//TMT filter route templates
+
+						String filterResult = "true";
+						try {
+						DomainObject templateObject1 = new DomainObject(templateId);
+						
+						String filter = templateObject1.getInfo(context,"attribute[TMT Route Template Filter]");
+
+						filterResult = relatedObject.getInfo(context,"evaluate[" + filter + "]");
+
+						if (filterResult==null || "".equals(filterResult) || "null".equals(filterResult))
+							filterResult = "true";
+
+						
+						//System.out.println("FILTER OK: filter " + filter + " = " + filterResult);
+
+						}catch(Exception e){
+							System.out.println("ERROR: filter failed because of filter is wrong");
+						}
+
+						
+						
+						if (isRouteIdentifierMatch && "true".equalsIgnoreCase(filterResult)) {
+							if ((checkName) && (checkAvailability)) {
+								if ((namePattern.match(templateName)) && (availabilityPattern.match(availability))) {
+									routeTemplateList.add(tempMap);
+								}
+							} else if (checkName) {
+								if (namePattern.match(templateName)) {
+									routeTemplateList.add(tempMap);
+								}
+							} else if (checkAvailability) {
+								if (availabilityPattern.match(availability)) {
+									routeTemplateList.add(tempMap);
+								}
+							}
+						}
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return routeTemplateList;
+	} 
+
+	
+	public static boolean isRouteIdentifierMatch(Context context, String strRelatedObjectId, String strState, String sRouteIdentifierValue) throws Exception {
+		boolean isRouteIdentifierMatch = false;
+		try{
+			DomainObject relatedObject = new DomainObject(strRelatedObjectId);
+			String strType = relatedObject.getInfo(context, DomainObject.SELECT_TYPE);
+			String strPolicyName = relatedObject.getInfo(context, DomainObject.SELECT_POLICY);
+			
+			String sRouteIdentifierMatch = "Policy" + strPolicyName + "State" + strState;
+			sRouteIdentifierMatch = FrameworkUtil.findAndReplace(sRouteIdentifierMatch, " ", "");
+			//System.out.println("JPO emxRouteTemplate isRouteIdentifierMatch sRouteIdentifierMatch:" + sRouteIdentifierMatch);
+
+			String sRouteIdentifierTypeMatch = "Type" + FrameworkUtil.findAndReplace(strType, " ", "");
+			
+			if (sRouteIdentifierValue != null && !sRouteIdentifierValue.equals("")) {
+				StringList routeIdentifierList = FrameworkUtil.split(sRouteIdentifierValue, ",");
+				for (Iterator iter = routeIdentifierList.iterator(); iter.hasNext();) {
+					String sRouteIdentifier = (String) iter.next();
+					sRouteIdentifier = sRouteIdentifier.trim();
+					if (sRouteIdentifier != null && sRouteIdentifier.endsWith(sRouteIdentifierMatch)) {
+						if(sRouteIdentifier.equals(sRouteIdentifierMatch)){
+							isRouteIdentifierMatch = true;
+							break;
+						}
+						int beginIndex = 0;
+						int endIndex = sRouteIdentifier.indexOf(sRouteIdentifierMatch);
+						String sRouteIdentifierTypeString = sRouteIdentifier.substring(beginIndex, endIndex);
+						//System.out.println("sRouteIdentifierTypeString:" + sRouteIdentifierTypeString);
+
+						if (sRouteIdentifierTypeString != null && sRouteIdentifierTypeString.startsWith("Type")) {
+							if (sRouteIdentifierTypeString.equals(sRouteIdentifierTypeMatch)) {
+								//System.out.println("Exactly match!");
+								isRouteIdentifierMatch = true;
+								break;
+							} else {
+								String sRouteIdentifierType = sRouteIdentifierTypeString
+										.substring(4, sRouteIdentifierTypeString.length());
+								//System.out.println("sRouteIdentifierType:" + sRouteIdentifierType);
+
+								if (sRouteIdentifierType != null && !sRouteIdentifierType.equals("")) {
+									String sRouteIdentifierTypeSymbolicName = "type_" + sRouteIdentifierType;
+									String sRouteIdentifierTypeAbsoluteName = PropertyUtil
+											.getSchemaProperty(sRouteIdentifierTypeSymbolicName);
+									//System.out.println("sRouteIdentifierTypeAbsoluteName:" + sRouteIdentifierTypeAbsoluteName);
+									if (sRouteIdentifierTypeAbsoluteName != null
+											&& relatedObject.isKindOf(context, sRouteIdentifierTypeAbsoluteName)) {
+										//System.out.println("Match parent type!");
+										isRouteIdentifierMatch = true;
+										break;
+									}
+								}
+
+							}
+						}
+
+					}
+				}
+			}
+			//System.out.println("isRouteIdentifierMatch:" + isRouteIdentifierMatch);
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return isRouteIdentifierMatch;
+	} 
+	
+	public StringList getIdList(Context context, MapList sourceMapList) {
+		StringList resultList = new StringList();
+		try {
+			for (Iterator iter = sourceMapList.iterator(); iter.hasNext();) {
+				Map sourceMap = (Map) iter.next();
+				String id = (String) sourceMap.get("id");
+				if (id != null && !id.trim().equals("") && !resultList.contains(id)) {
+					resultList.addElement(id);
+				}
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return resultList;
+	}
+	
+	
+	
+	
+	public void addRouteMembers(Context context, String [] args) throws Exception {
+		DomainObject domainobject = DomainObject.newInstance(context);
+
+
+	java.util.HashMap hash1 = (java.util.HashMap)matrix.db.JPO.unpackArgs(args);
+	MapList maplist = (MapList)hash1.get("taskDetails");
+	HashMap hashmap = (HashMap)hash1.get("parallelNodeMap");
+	String objectId1 = (String)hash1.get("objectId");
+	setId(objectId1);
+
+
+		Iterator iterator = maplist.iterator();
+		Object obj = null;
+		boolean flag = false;
+		Object obj2 = null;
+		DomainObject domainobject1 = null;
+		Object obj3 = null;
+		Object obj4 = null;
+		Object obj5 = null;
+		Object obj6 = null;
+		Object obj7 = null;
+		Object obj8 = null;
+		Object obj9 = null;
+		Object obj10 = null;
+		Object obj11 = null;
+		Object obj12 = null;
+		Object obj13 = null;
+		String s11 = null;
+		String s12 = PropertyUtil
+				.getSchemaProperty("attribute_ParallelNodeProcessionRule");
+		do {
+			if (!iterator.hasNext()) {
+				break;
+			}
+			Map map = (Map) iterator.next();
+			String s13 = (String) map.get("PersonId");
+			String s14 = (String) map.get(DomainObject.RELATIONSHIP_ROUTE_NODE);
+			AttributeList attributelist = new AttributeList();
+			if (s14 != null) {
+				s14 = s14.trim();
+			}
+			if (s13 != null && !"".equals(s13)) {
+				Object obj1;
+				if ("Role".equals(s13)) {
+					s13 = (String) map.get("PersonName");
+					String s15 = FrameworkUtil.getAliasForAdmin(context,
+							"role", s13, true);
+					StringList stringlist = new StringList();
+					stringlist.addElement(s15);
+					try {
+						if (!flag) {
+							flag = true;
+							DomainObject _tmp = domainobject;
+							obj1 = domainobject.createAndConnect(context,
+									DomainObject.TYPE_ROUTE_TASK_USER,
+									DomainObject.RELATIONSHIP_ROUTE_NODE, this,
+									true);
+							BusinessObject businessobject = ((Relationship) (obj1))
+									.getTo();
+							domainobject1 = new DomainObject(businessobject);
+						} else {
+							obj1 = DomainRelationship.connect(context, this,
+									DomainObject.RELATIONSHIP_ROUTE_NODE,
+									domainobject1);
+						}
+						attributelist
+								.addElement(new Attribute(
+										new AttributeType(
+												DomainObject.ATTRIBUTE_ROUTE_TASK_USER),
+										s15));
+					} catch (Exception exception2) {
+						throw new FrameworkException(exception2.getMessage());
+					}
+				} else if ("Group".equals(s13)) {
+					s13 = (String) map.get("PersonName");
+					String s16 = FrameworkUtil.getAliasForAdmin(context,
+							"group", s13, true);
+					StringList stringlist1 = new StringList();
+					stringlist1.addElement(s16);
+					try {
+						if (!flag) {
+							flag = true;
+							DomainObject _tmp1 = domainobject;
+							obj1 = domainobject.createAndConnect(context,
+									DomainObject.TYPE_ROUTE_TASK_USER,
+									DomainObject.RELATIONSHIP_ROUTE_NODE, this,
+									true);
+							BusinessObject businessobject1 = ((Relationship) (obj1))
+									.getTo();
+							domainobject1 = new DomainObject(businessobject1);
+						} else {
+							obj1 = DomainRelationship.connect(context, this,
+									DomainObject.RELATIONSHIP_ROUTE_NODE,
+									domainobject1);
+						}
+						attributelist
+								.addElement(new Attribute(
+										new AttributeType(
+												DomainObject.ATTRIBUTE_ROUTE_TASK_USER),
+										s16));
+					} catch (Exception exception3) {
+						throw new FrameworkException(exception3.getMessage());
+					}
+				} else if ("none".equals(s13)) {
+					try {
+						if (!flag) {
+							flag = true;
+							DomainObject _tmp2 = domainobject;
+							obj1 = domainobject.createAndConnect(context,
+									DomainObject.TYPE_ROUTE_TASK_USER,
+									DomainObject.RELATIONSHIP_ROUTE_NODE, this,
+									true);
+							BusinessObject businessobject2 = ((Relationship) (obj1))
+									.getTo();
+							domainobject1 = new DomainObject(businessobject2);
+						} else {
+							obj1 = DomainRelationship.connect(context, this,
+									DomainObject.RELATIONSHIP_ROUTE_NODE,
+									domainobject1);
+						}
+					} catch (Exception exception) {
+						throw new FrameworkException(exception.getMessage());
+					}
+				} else {
+					domainobject.setId(s13.trim());
+					domainobject.open(context);
+					try {
+						obj1 = connect(context, new RelationshipType(
+								DomainObject.RELATIONSHIP_ROUTE_NODE), true,
+								domainobject);
+					} catch (Exception exception1) {
+						throw new FrameworkException(exception1.getMessage());
+					}
+					domainobject.close(context);
+				}
+				String s = (String) map
+						.get(DomainObject.ATTRIBUTE_ROUTE_SEQUENCE);
+				String s1 = (String) map
+						.get(DomainObject.ATTRIBUTE_ROUTE_ACTION);
+				String s2 = (String) map
+						.get(DomainObject.ATTRIBUTE_ROUTE_INSTRUCTIONS);
+				String s3 = (String) map.get(DomainObject.ATTRIBUTE_TITLE);
+				String s4 = (String) map
+						.get(DomainObject.ATTRIBUTE_SCHEDULED_COMPLETION_DATE);
+				String s5 = (String) map
+						.get(DomainObject.ATTRIBUTE_ALLOW_DELEGATION);
+				String s6 = (String) map
+						.get(DomainObject.ATTRIBUTE_ASSIGNEE_SET_DUEDATE);
+				String s7 = (String) map
+						.get(DomainObject.ATTRIBUTE_DUEDATE_OFFSET);
+				String s8 = (String) map
+						.get(DomainObject.ATTRIBUTE_DATE_OFFSET_FROM);
+				String s9 = (String) map
+						.get(DomainObject.ATTRIBUTE_REVIEW_TASK);
+				String s10 = (String) map.get("templateFlag");
+				String sx = (String) map.get("TMT Route Task Finish Checker");
+				String sy = (String) map.get("Route Branch");
+
+				
+				if (hashmap != null) {
+					s11 = (String) hashmap.get(s14);
+				}
+				((Relationship) (obj1)).open(context);
+				if (s3 != null) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_TITLE), s3));
+				}
+				if (s1 != null) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_ROUTE_ACTION), s1));
+				}
+				if (s != null) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_ROUTE_SEQUENCE), s));
+				}
+				if (s2 != null) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_ROUTE_INSTRUCTIONS), s2));
+				}
+				if (s11 != null) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							s12), s11));
+				}
+				if (s4 != null && (!"null".equals(s4)) & (!"".equals(s4))) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_SCHEDULED_COMPLETION_DATE),
+							s4.trim()));
+				}
+				if (s5 != null) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_ALLOW_DELEGATION), s5));
+				}
+				if (s9 == null || "".equals(s9) || "null".equals(s9)) {
+					s9 = "No";
+				}
+				if (s9 != null) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_REVIEW_TASK), s9));
+				}
+				if (s6 != null && (!"null".equals(s6)) & (!"".equals(s6))) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_ASSIGNEE_SET_DUEDATE), s6));
+				}
+				if (s7 != null && (!"null".equals(s7)) & (!"".equals(s7))) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_DUEDATE_OFFSET), s7));
+				}
+				if (s8 != null && (!"null".equals(s8)) & (!"".equals(s8))) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_DATE_OFFSET_FROM), s8));
+				}
+				if (s10 != null && (!"null".equals(s10)) & (!"".equals(s10))) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							DomainObject.ATTRIBUTE_TEMPLATE_TASK), s10));
+				}
+
+				if (sx != null && (!"null".equals(sx)) & (!"".equals(sx))) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							"TMT Route Task Finish Checker"), sx));
+				}
+
+				if (sy != null && (!"null".equals(sy)) & (!"".equals(sy))) {
+					attributelist.addElement(new Attribute(new AttributeType(
+							"Route Branch"), sy));
+				}
+
+				((Relationship) (obj1)).setAttributes(context, attributelist);
+				((Relationship) (obj1)).close(context);
+			}
+		} while (true);
+	}
+
+	//add by ryan 2017-03-27
+	public boolean showAddTemplateCommands(Context context, String args[])throws Exception
+	{
+		try
+		{
+			 
+			if(!new ${CLASS:emxLifecycle}(context, args).showAddApproverCommands(context, args))
+			{
+				return false;
+			}
+			
+			HashMap inputMap = (HashMap)JPO.unpackArgs(args);
+			String strObjectId = (String)inputMap.get("objectId");
+			String strLanguage = (String)inputMap.get("languageStr");
+			DomainObject domObj = DomainObject.newInstance(context, strObjectId);
+			
+			StringList busList = new StringList("id");
+			busList.addElement("attribute[Route Status]");
+     		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+			MapList routeList = domObj.getRelatedObjects(context,"Object Route","Route", busList, relList, false,true, (short)1, null, null);
+			for(int i = 0; i < routeList.size(); i ++)
+			{
+				Map routeMap = (Map)routeList.get(i);
+				String strRouteStatus = (String)routeMap.get("attribute[Route Status]");
+				if(strRouteStatus.equals("Started") || strRouteStatus.equals("Finished"))
+				{
+					return false;
+				}
+			}
+		}catch(Exception ex)
+		{
+			m_logger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+		return true;
+	}
+	//add end
+	
+	//add by zs 4/5/2017
+	public StringList includeRoutePerson(Context context,String[] args)throws Exception{
+    	StringList includeIdList = new StringList();
+    	try{   	
+    		
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);	
+			String routeId = (String) programMap.get("routeId");
+			DomainObject routeObj = new DomainObject(routeId);			
+			StringList busList = new StringList("id");
+			StringList relList = new StringList(DomainRelationship.SELECT_ID);
+			MapList mapList=routeObj.getRelatedObjects(context, "Object Route", "*",busList , relList, true, false, (short) 1, null, null);
+			if(mapList.size()>0){
+				for(int i =0;i<mapList.size();i++){
+					Map map = (Map)mapList.get(i);
+					String spdId = (String)map.get("id");
+					DomainObject spdObj = new DomainObject(spdId);
+					String spdType = spdObj.getType(context);
+					if("SEM Meeting Document".equals(spdType) || "SEM Project Document".equals(spdType)){
+						MapList mapList1=spdObj.getRelatedObjects(context, "Vaulted Documents Rev2", "Workspace Vault",busList , relList, true, false, (short) 1, null, null);
+						if(mapList1.size()>0){
+							for(int j=0;j<mapList1.size();j++){
+								Map map1 = (Map)mapList1.get(j);
+								String wvId = (String)map1.get("id");
+								DomainObject wvObj = new DomainObject(wvId);
+								MapList mapList2=wvObj.getRelatedObjects(context, "Data Vaults,Sub Vaults", "*",busList , relList, true, false, (short) 0, null, null);
+								if(mapList2.size()>0){
+									for(int k = 0;k<mapList2.size();k++){
+										Map map2 = (Map)mapList2.get(k);
+										String retuId = (String)map2.get("id");
+										String retuType = (String)map2.get("type");
+										if(retuType.equals("Project Space")){
+											DomainObject proObj = new DomainObject(retuId);
+											includeIdList = proObj.getInfoList(context, ProgramCentralConstants.SELECT_MEMBER_ID);
+					 	                }
+									}
+								}
+								
+							}
+						}
+					}else if("SEM Contact Order".equals(spdType)){
+						MapList mapList1=spdObj.getRelatedObjects(context, "SEM Meeting ContactOrder", "Meeting",busList , relList, true, false, (short) 1, null, null);
+						if(mapList1.size()>0){
+							for(int j=0;j<mapList1.size();j++){
+								Map map1 = (Map)mapList1.get(j);
+								String wvId = (String)map1.get("id");
+								DomainObject wvObj = new DomainObject(wvId);
+								MapList mapList2=wvObj.getRelatedObjects(context, "Meeting Context", "Project Space",busList , relList, true, false, (short) 1, null, null);
+								if(mapList2.size()>0){
+									for(int k = 0;k<mapList2.size();k++){
+										Map map2 = (Map)mapList2.get(k);
+										String retuId = (String)map2.get("id");				
+										DomainObject proObj = new DomainObject(retuId);
+										includeIdList = proObj.getInfoList(context, ProgramCentralConstants.SELECT_MEMBER_ID);
+					 	                
+									}
+								}
+								
+							}
+						}
+					}else{
+						MapList mapList1=spdObj.getRelatedObjects(context, "*", "Project Space",busList , relList, true, false, (short) 1, null, null);
+						if(mapList1.size()>0){
+							for(int j=0;j<mapList1.size();j++){
+								Map map1 = (Map)mapList1.get(j);
+								String wvId = (String)map1.get("id");
+								DomainObject wvObj = new DomainObject(wvId);
+								includeIdList = wvObj.getInfoList(context, ProgramCentralConstants.SELECT_MEMBER_ID);
+								
+							}
+						}
+					}
+					
+				}
+			}
+																		
+    	}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw e;
+		}
+    	return includeIdList;
+    }
+	//add end
+
+}
+
+

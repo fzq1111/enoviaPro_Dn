@@ -1,0 +1,12 @@
+Type	Name	Rev	New Name	New Rev	Policy	State	Vault	Owner	description	eService Next Number
+eService Number Generator	type_SEMApproveOrder		type_SEMApproveOrder		eService Object Generator	Exists	eService Administration	creator		0000001
+eService Number Generator	type_SEMPrjChangeRequest		type_SEMPrjChangeRequest		eService Object Generator	Exists	eService Administration	creator		0000001
+eService Number Generator	type_SEMBudgetChangeRequest		type_SEMBudgetChangeRequest		eService Object Generator	Exists	eService Administration	creator		0000001
+eService Number Generator	type_SEMCostRequest		type_SEMCostRequest		eService Object Generator	Exists	eService Administration	creator		0000107
+eService Number Generator	type_LSPropertyKey		type_LSPropertyKey		eService Object Generator	Exists	eService Administration	creator		000008
+eService Number Generator	type_Issue		type_Issue		eService Object Generator	Exists	eService Administration	creator		00001
+eService Number Generator	type_SEMTestCarNumbers		type_SEMTestCarNumbers		eService Object Generator	Exists	eService Administration	creator		000002
+eService Number Generator	type_LSNotificationRequest		type_LSNotificationRequest		eService Object Generator	Exists	eService Administration	creator		00000001
+eService Number Generator	type_SEMTaskItem		type_SEMTaskItem		eService Object Generator	Exists	eService Administration	creator		000001
+eService Number Generator	type_SEMContactOrder		type_SEMContactOrder		eService Object Generator	Exists	eService Administration	creator		0000008
+

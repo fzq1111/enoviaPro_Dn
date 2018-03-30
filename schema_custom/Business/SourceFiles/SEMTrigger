@@ -1,0 +1,239 @@
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Vector;
+import java.util.Date;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.User;
+import matrix.util.StringList;
+import org.apache.log4j.Logger;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.apps.common.Route;
+import com.matrixone.apps.common.InboxTask;
+import com.matrixone.apps.common.Person;
+
+public class ${CLASSNAME} extends  ${CLASS:emxChangeBase}
+{
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	public ${CLASSNAME}(Context context,String[] args)throws Exception 
+	{
+		super(context, args);
+	}
+
+	/**           
+	 * add by wangyitao autostartRoute	
+	 * @param context
+	 * @param args
+	 * @return
+	 * @throws Exception
+	 */
+		public int autoStartRoute(Context context,String[] args) throws Exception{
+			String objectId = args[0];  //object Id;
+			String routeBlockDocPolicyState = args[1]; //state_Review
+			if(objectId.equalsIgnoreCase(null) || objectId.equalsIgnoreCase(""))
+			{
+				String errorMsg ="Get the error ObjectId from the Trigger!";
+				throw new Exception(errorMsg);
+			}
+			if(routeBlockDocPolicyState.equalsIgnoreCase(null) || routeBlockDocPolicyState.equalsIgnoreCase(""))
+			{
+				String errorMsg ="Get the error State from the Trigger!";
+				throw new Exception(errorMsg);
+			}
+			DomainObject  objDoc = DomainObject.newInstance(context,objectId);
+			StringList busList = new StringList();
+			busList.add("id");
+			StringList relList = new StringList();
+			relList.add("id[connection]");
+			relList.add("attribute[Route Base State]");
+			MapList routeInfo = objDoc.getRelatedObjects(context,"Object Route","Route",busList,relList,false,true,(short)1,null,null);
+			Map getRouteInfo  = null;
+			for(Iterator itRouteInfo = routeInfo.iterator();itRouteInfo.hasNext();)
+			{
+				getRouteInfo = (Map) itRouteInfo.next();
+				String routeId = (String) getRouteInfo.get("id");
+				String routeRelId = (String) getRouteInfo.get("id[connection]");
+				String relAttrState = (String) getRouteInfo.get("attribute[Route Base State]");
+				if((relAttrState.equals(routeBlockDocPolicyState)))
+				{
+					DomainObject objRoute = DomainObject.newInstance(context,routeId);
+					String routeStatus = (String)objRoute.getAttributeValue(context, "Route Status");
+					if(routeStatus.equalsIgnoreCase("Not Started"))
+					{
+						startRoute(context,routeId);
+					}else if(routeStatus.equals("Stopped"))
+					{
+						Route routeIns = new Route(routeId);
+						routeIns.resume(context);
+		               // routeIns.startTasksOnCurrentLevel(context);
+		               // InboxTask.setTaskTitle(context, routeId);
+					}
+				}else
+				{
+					continue;
+				}
+			}
+			return 0;
+		}
+		
+	StringList busList = new StringList("id");
+	StringList relList = new StringList("id[connection]");
+	/**
+	 * add by wangyitao 2016-12-29
+	 * @param context
+	 * @param args
+	 * @return
+	 * @throws Exception
+	 */
+	public int promoteApproveOrderAffectedItem(Context context,String[] args)throws Exception
+	{
+		try{
+			String objectId = args[0];
+			DomainObject strObject = new DomainObject(objectId);
+			String strSEMApprovalType = strObject.getAttributeValue(context,"SEM Approval Type");
+			MapList affectedList = strObject.getRelatedObjects(context,"Affected Item","*",busList,relList,false,true,(short)1,null,null);
+
+			if("\u9879\u76EE\u8BA1\u5212\u5BA1\u6279".equals(strSEMApprovalType))
+			{
+				
+				Iterator it = affectedList.iterator();
+				while(it.hasNext())
+				{
+					Map map = (Map)it.next();
+					String affectedId = (String)map.get("id");
+					DomainObject strAffectedObj = new DomainObject(affectedId);
+					String strAffectedType = strAffectedObj.getType(context);
+					if("Project Space".equals(strAffectedType))
+					{
+						strAffectedObj.gotoState(context,"Assign");
+					}else if("Task".equals(strAffectedType)){
+						ContextUtil.pushContext(context);
+						strAffectedObj.gotoState(context,"Assign");
+						strAffectedObj.setAttributeValue(context,"SEM Edit Status","P5");
+						MapList subTaskList = strAffectedObj.getRelatedObjects(context,"Subtask","*",busList,relList,false,true,(short)0,null,null);
+
+						Iterator ite = subTaskList.iterator();
+
+						while(ite.hasNext())
+						{
+							Map taskMap = (Map)ite.next();
+							String subTaskId = (String)taskMap.get("id");
+							DomainObject subTaskObj = new DomainObject(subTaskId);
+							subTaskObj.gotoState(context,"Assign");
+							subTaskObj.setAttributeValue(context,"SEM Edit Status","P5");
+
+						}	
+						ContextUtil.popContext(context);
+					}
+				}
+			}else if("\u95EE\u9898\u5206\u914D\u5BA1\u6279".equals(strSEMApprovalType)){
+				
+				Iterator it = affectedList.iterator();
+				while(it.hasNext())
+				{
+					Map map = (Map)it.next();
+					String affectedId = (String)map.get("id");
+					DomainObject strAffectedObj = new DomainObject(affectedId);
+					String strAffectedType = strAffectedObj.getType(context);
+					if("Issue".equals(strAffectedType))
+					{
+						strAffectedObj.gotoState(context,"Assign");
+					}
+				}
+				
+			}else if("\u95EE\u9898\u5BF9\u7B56\u5BA1\u6279".equals(strSEMApprovalType)){
+				
+				Iterator it = affectedList.iterator();
+				while(it.hasNext())
+				{
+					Map map = (Map)it.next();
+					String affectedId = (String)map.get("id");
+					DomainObject strAffectedObj = new DomainObject(affectedId);
+					String strAffectedType = strAffectedObj.getType(context);
+					if("Issue".equals(strAffectedType))
+					{
+						strAffectedObj.gotoState(context,"Review");
+					}
+				}
+			}
+			
+			
+		}catch(Exception e){
+			
+			 m_logger.error(e.getMessage(), e);
+		}
+		return 0;
+	}
+	
+	
+	
+	public int setSubtaskP5(Context context,String[] args)throws Exception
+	{
+		String objectId = args[0];
+		if(objectId.length()>0)
+		{
+			DomainObject strObj = new DomainObject(objectId);
+			strObj.setAttributeValue(context,"SEM Edit Status","P5");
+
+		}
+		return 0;
+	}
+	//add by fzq  DOCUMENTS Create Trigger
+	public void setOwnerDepartment(Context context,String[]args)throws Exception
+	{
+		   	 String objID=args[0];
+		   	 System.out.println(" objID---"+ objID);
+			 DomainObject strObj=new DomainObject(objID);
+			 User owner=strObj.getOwner(context);
+			 String name=owner.getName();
+			 String ownerId="";
+			 System.out.println("name---"+name);
+			 try{
+			    ContextUtil.pushContext(context);
+		 	    if(name!=null||!name.equals("")){
+		 		 Person person =Person.getPerson(context,name);
+		 		 ownerId=person.getId(context); 
+		 		 DomainObject personId=new DomainObject(ownerId);
+				 MapList mapList=personId.getRelatedObjects(context,
+		 				"Member","Department", busList, relList,true,false,
+		 				(short)1,"", null);
+				 if(mapList.size()>0){
+					 Map map=(Map) mapList.get(0);
+					 String departmentId=(String) map.get("id");
+					 DomainObject departmentObj=new DomainObject(departmentId);
+					 strObj.setAttributeValue(context,"SEM Issue Owner Department",departmentObj.getName(context));
+				 }
+		 	    }
+		 	 }catch(Exception e){
+				  m_logger.error(e.getMessage(), e);
+			 }finally{
+				ContextUtil.popContext(context);
+			 }	
+			 
+	}
+	//Relationship Assigned Issue CreateAction
+	public void setSEMIssueSolutionDealerDepartment(Context context,String[]args)throws Exception
+	{
+		String personId=args[0];
+		String issueId=args[1];
+		DomainObject IssueObj=new DomainObject(issueId);
+		DomainObject personObj=new DomainObject(personId);
+		MapList mapList1=personObj.getRelatedObjects(context,"Member","Department", busList, relList,true,false,(short)1,"", null);
+        if(mapList1.size()>0){
+            Map map1=(Map) mapList1.get(0);
+            String departmentId=(String) map1.get("id");
+            DomainObject departmentObj=new DomainObject(departmentId);
+            IssueObj.setAttributeValue(context,"SEM IssueSolution Dealer Department",departmentObj.getName(context));
+        }  
+	}
+}
+

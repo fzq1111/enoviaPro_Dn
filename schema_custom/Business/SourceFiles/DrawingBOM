@@ -1,0 +1,52 @@
+//
+// $Id: emxProjectTemplate.java.rca 1.6 Wed Oct 22 16:21:23 2008 przemek Experimental przemek $ 
+//
+// emxProjectTemplate.java
+//
+// Copyright (c) 2002-2015 Dassault Systemes.
+// All Rights Reserved
+// This program contains proprietary and trade secret information of
+// MatrixOne, Inc.  Copyright notice is precautionary only and does
+// not evidence any actual or intended publication of such program.
+//
+
+import java.util.HashMap;
+
+import com.matrixone.apps.domain.util.MapList;
+
+import matrix.db.*;
+import matrix.util.StringList;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+/**
+ * The <code>emxProjectTemplate</code> class represents the Project Template JPO
+ * functionality for the AEF type.
+ *
+ * @version AEF 10.0.SP4 - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} 
+{
+
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF 10.0.SP4
+     * @grade 0
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      //super(context, args);
+    }
+       public MapList getSEMDrawingBOM(Context context, String[] args)throws Exception{
+    	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+		String objectId     = (String) programMap.get("objectId");
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		DomainObject strObj = new DomainObject(objectId);
+	    MapList mapList= strObj.getRelatedObjects(context, "SEM Project PartTask","SEM Part Task", busList, relList,false,true, (short)1, null, null);
+		return  mapList;
+    }
+}

@@ -1,0 +1,175 @@
+# *** Copyright Dassault Systemes 2014 ***
+
+tcl;
+
+
+proc checkMarkerStatus {sImplementationName bPrint} {
+# return code = 0 => migration already executed
+	set sReturnCode 0
+	set sResult [mql temp query bus VPLMDataMigration $sImplementationName ---]
+	if {$sResult == ""} {
+		set sReturnCode 1
+	} else {
+		set sStatus [mql print bus VPLMDataMigration $sImplementationName --- select attribute\[VPLMsys/MigrationStatus\] dump;];
+		if {$sStatus == "FINISHED"} {
+			set sReturnCode 0
+		} else {
+			set sReturnCode 2
+		}
+	}
+	return $sReturnCode
+}
+
+proc addMarker {sImplementationName state} {
+
+	puts "Adding marker $sImplementationName with state $state"
+	
+	set status [checkMarkerStatus $sImplementationName "true"]
+	
+	# 0 BO exists and in FINISHED state
+	# 1 BO doesn't exist
+	# 2 BO exists but not in FINISHED state
+	if {$status == "1"} {
+		set sStatus [mql add bus VPLMDataMigration $sImplementationName --- policy VPLMDataMigration_Policy vault vplm VPLMsys/MigrationStatus $state ;];
+	}
+	
+	if {$status == "2" && $state == "FINISHED"} {
+		set sStatus [mql mod bus VPLMDataMigration $sImplementationName --- VPLMsys/MigrationStatus $state ;];
+	}
+	
+	return 0
+}
+
+eval {
+
+	#necessaire pour avoir un context Matrix ad-hoc pour pouvoir faire des modifications
+	mql push context vault vplm;
+		
+	#Desactivation des triggers pour les operations  suivre.
+	mql trigger off;
+
+	mql verbose on;
+	
+	
+	proc mqlMigrateMappingReferencePolicy {}  {
+		# format attendu {{CATMpgReference} {name} {revision} {{V_SourceIdentifier}} {{V_TargetIdentifier}} {{V_ContextName}} {{id}}}
+		set MappingReferenceList [mql temp query bus CATMpgReference * *  where policy!=VPLM_Replication select attribute\[CATMpgReference.V_SourceIdentifier\] attribute\[CATMpgReference.V_TargetIdentifier\] attribute\[CATMpgReference.V_ContextName\] id dump tcl];
+		
+		set MpgRefDicoSrc [dict create];
+		set MpgRefDicoTgt [dict create];
+		set MpgRefDicoExcluded [dict create];
+		
+		foreach mpgRef ${MappingReferenceList} {
+			#puts "$mpgRef"
+			set SourceId [ join [lindex ${mpgRef} 3] ];
+			set TargetId [ join [lindex ${mpgRef} 4] ]
+			set ContextName [ join [lindex ${mpgRef} 5] ];
+			
+			set Id [ join [lindex ${mpgRef} 6] ];
+			
+			set KeySrc [concat $SourceId $ContextName];
+			set KeyTgt [concat $TargetId $ContextName];
+			
+			#puts "Id  $Id - Src $KeySrc - Tgt $KeyTgt"
+			
+			if {[dict exists $MpgRefDicoSrc $KeySrc]} {
+				set DupId [dict get $MpgRefDicoSrc $KeySrc]
+				# add in excluded dict
+				dict set MpgRefDicoExcluded $DupId $DupId
+				dict set MpgRefDicoExcluded $Id $Id
+			} else {
+				dict set MpgRefDicoSrc $KeySrc $Id;
+			}					
+			
+			if {[dict exists $MpgRefDicoTgt $KeyTgt]} {
+				set DupId [dict get $MpgRefDicoTgt $KeyTgt]
+				# add in excluded dict
+				dict set MpgRefDicoExcluded $DupId $DupId
+				dict set MpgRefDicoExcluded $Id $Id
+			} else {
+				dict set MpgRefDicoTgt $KeyTgt $Id;
+			}
+			
+		}
+		
+		foreach mpgRef ${MappingReferenceList} {
+			set ID [ join [lindex ${mpgRef} 6] ];
+			
+			if {[dict exists $MpgRefDicoExcluded $ID]} {
+				# excluded
+				puts "DUP $ID"
+			} else {
+				# migrate policy
+				puts "Migrate Policy on $ID"
+				mql mod bus $ID policy "VPLM_Replication"
+			}
+		}
+		
+	}
+	
+	proc mqlMigrateMappingRepresentationPolicy {}  {
+		# format attendu {{CATMpgRepresentation} {name} {revision} {{id}}}
+		set MappingRepresentationList [mql temp query bus CATMpgRepresentation * *  where policy!=VPLM_Replication select id dump tcl];
+		
+		foreach mpgRep ${MappingRepresentationList} {
+			set ID [ join [lindex ${mpgRep} 3] ];
+			puts "Migrate Policy on $ID"
+			mql mod bus $ID policy "VPLM_Replication"
+		}
+	}
+	
+	
+	puts "Start migrating Policy of Coexistence Mapping Table"
+	set ret [addMarker "CoexMappingTablePolicyMigration" "ON_GOING"]
+	set bError 0
+	
+	puts "----------------------------------------------------------"
+	puts "-- Migrate Policy on Reference object"
+	mql start transaction;
+	set mqlret [catch { 
+			mqlMigrateMappingReferencePolicy 
+		} sOut ]
+		
+	if {$mqlret == 0} {
+			# pas d'erreur, on commit
+			mql commit transaction;
+			puts "Migration Process Successful for Reference objects...Committing."
+	} else {
+		# une erreur, on abort
+		mql abort transaction;
+		puts "Error Migration Process failed for Reference objects: \n$sOut"
+		set bError 1
+	}
+	
+	puts "----------------------------------------------------------"
+	puts "-- Migrate Policy on Representation object"
+	mql start transaction;
+	set mqlret [catch { 
+			mqlMigrateMappingRepresentationPolicy 
+		} sOut ]
+	if {$mqlret == 0} {
+			# pas d'erreur, on commit
+			mql commit transaction;
+			puts "Migration Process Successful for Representation objects...Committing."
+	} else {
+		# une erreur, on abort
+		mql abort transaction;
+		puts "Error Migration Process failed for Representation objects: \n$sOut"
+		set bError 1
+	}
+	
+	if {$bError == 0} {
+		puts "Successfully end migrating Policy of Coexistence Mapping Table"
+		set ret [addMarker "CoexMappingTablePolicyMigration" "FINISHED"]
+	} else {
+		puts "Failed migrating Policy of Coexistence Mapping Table"
+	}
+	
+	puts "----------------------------------------------------------"
+
+	mql trigger on;
+	mql verbose off;
+	mql pop context; 
+}
+exit;
+

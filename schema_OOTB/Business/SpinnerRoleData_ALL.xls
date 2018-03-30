@@ -1,0 +1,253 @@
+Role Name	Registry Name	Description	Parent Roles (use "|" delim)	Child Roles (use "|" delim)	Assignments (use "|" delim)	Site	Hidden (boolean)	Role Type (Project/Org)	Icon File
+ctx::Release Manager.Company Name.GLOBAL			Company Name | GLOBAL | Release Manager				TRUE	
+ctx::Reviewer.Company Name.GLOBAL			Company Name | GLOBAL | Reviewer				TRUE	
+ctx::Advanced Quality Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Advanced Quality Engineer				TRUE	
+ctx::Buyer Administrator.Company Name.GLOBAL			Company Name | GLOBAL | Buyer Administrator				FALSE	
+ctx::Plant Representative.Company Name.GLOBAL			Company Name | GLOBAL | Plant Representative				TRUE	
+ctx::Quality Manager.Company Name.GLOBAL			Company Name | GLOBAL | Quality Manager				TRUE	
+ctx::Supplier Development Manager.Company Name.GLOBAL			Company Name | GLOBAL | Supplier Development Manager				TRUE	
+ctx::Service Administrator.Company Name.GLOBAL			Company Name | GLOBAL | Service Administrator				FALSE	
+ctx::Limited Author.Company Name.GLOBAL			Company Name | GLOBAL | Limited Author				TRUE	
+ctx::Supplier.Company Name.GLOBAL			Company Name | GLOBAL | Supplier				TRUE	
+ctx::Supplier Representative.Company Name.GLOBAL			Company Name | GLOBAL | Supplier Representative				FALSE	
+Test Everything_PRJ			User Projects	Grant.Company Name.Test Everything_PRJ			FALSE	Project
+Grant.Company Name.Test Everything_PRJ			Grant | Company Name | Test Everything_PRJ				TRUE	
+Corporate Plant							FALSE	Org
+WIP Plant							FALSE	Org
+Common Space		Common Space		ctx::VPLMProjectLeader.Company Name.Common Space | ctx::VPLMProjectAdministrator.Company Name.Common Space | ctx::VPLMCreator.Company Name.Common Space | ctx::VPLMExperimenter.Company Name.Common Space | ctx::VPLMViewer.Company Name.Common Space			FALSE	Project
+ctx::VPLMProjectLeader.Company Name.Common Space			VPLMProjectLeader | Company Name | Common Space				FALSE	
+ctx::VPLMProjectAdministrator.Company Name.Common Space			VPLMProjectAdministrator | Company Name | Common Space				FALSE	
+ctx::VPLMCreator.Company Name.Common Space			VPLMCreator | Company Name | Common Space				FALSE	
+ctx::VPLMExperimenter.Company Name.Common Space			VPLMExperimenter | Company Name | Common Space				FALSE	
+ctx::VPLMViewer.Company Name.Common Space			VPLMViewer | Company Name | Common Space				FALSE	
+TVC Manager	TVCVManager	Users assigned to this role will be able to create and modify administrative object used by TVC					FALSE	
+guozhaohui01_PRJ			User Projects	Grant.Company Name.guozhaohui01_PRJ			FALSE	Project
+Grant.Company Name.guozhaohui01_PRJ			Company Name | guozhaohui01_PRJ | Grant				TRUE	
+Default	Default	Default project.		ctx::VPLMAdmin.Company Name.Default | ctx::Domain Expert.Company Name.Default			FALSE	Project
+VPLM Matrix User	VPLM Matrix User	VPLM Matrix user role	Global User | Project User	VPLM Matrix Administrator | VPLMCatia			FALSE	
+VPLM Matrix Administrator	VPLM Matrix Administrator	VPLM administrator role	VPLM Matrix User | Administration Manager | Service Administrator | Company Representative	VPLMAdmin | Local Administrator			FALSE	
+ctx::VPLMAdmin.Company Name.Default	VPLMAdminCompanyNameDefault	VPLM administration context	VPLMAdmin | Company Name | Default				FALSE	
+admin_platform_PRJ			User Projects	Grant.Company Name.admin_platform_PRJ			TRUE	Project
+Grant.Company Name.admin_platform_PRJ			Grant | Company Name | admin_platform_PRJ				TRUE	
+VPLMCatia		VPLM Catia Express root role	VPLM Matrix User				FALSE	
+StandardTeam	StandardTeam	Standard root project					TRUE	Project
+ProtectedDesignTeam	ProtectedDesignTeam	Protected design root project					TRUE	Project
+PrivateDesignTeam	PrivateDesignTeam	Private design root project					TRUE	Project
+PublicDesignTeam	PublicDesignTeam	Public design root project					TRUE	Project
+Domain Expert	Domain Expert	Defines corporate knowledge across a domain to ensure compliance with best practices		ctx::Domain Expert.Company Name.Default			FALSE	
+ctx::Domain Expert.Company Name.Default		Domain expert context	Domain Expert | Company Name | Default				FALSE	
+3DIndexAdminUser_PRJ			User Projects	Grant.Company Name.3DIndexAdminUser_PRJ			TRUE	Project
+Grant.Company Name.3DIndexAdminUser_PRJ			Grant | Company Name | 3DIndexAdminUser_PRJ				TRUE	
+sem	sem			ctx::VPLMProjectLeader.Company Name.sem			FALSE	Project
+ctx::VPLMProjectLeader.Company Name.sem	VPLMProjectLeaderCompanyNamesem		Company Name | sem | VPLMProjectLeader				FALSE	
+guozhaohui02_PRJ			User Projects	Grant.Company Name.guozhaohui02_PRJ			FALSE	Project
+Grant.Company Name.guozhaohui02_PRJ			Company Name | guozhaohui02_PRJ | Grant				TRUE	
+Administration Manager	Administration Manager	has priviledge to create administration business objects like AutoName, etc.	Employee	ctx::Administration Manager.Company Name.GLOBAL | VPLM Matrix Administrator			TRUE	
+Global User	Global User	All users are assigned to this role in order to do global access grants		Change Administrator | Change Coordinator | Requirement Viewer | Specification User | Employee | Exchange User | VPLM Matrix User | Buyer | Customer | Basic User | Component User | Project User | Buyer Administrator | Supplier			TRUE	
+VPLMCreator	VPLMCreator	Defines quantitative technical product data (such as functions, composition, form, positions, product processes, ...)	VPLMExperimenter	VPLMProjectLeader | ctx::VPLMCreator.Company Name.Common Space			FALSE	
+VPLMExperimenter	VPLMExperimenter	Defines qualitative technical data related to product experiences (dedicated disciplines such as approval, review, functional simulation, physical simulation, ...).	VPLMViewer	VPLMCreator | ctx::VPLMExperimenter.Company Name.Common Space			FALSE	
+VPLMProjectAdministrator	VPLMProjectAdministrator	Defines specific project resources (such as people, role, security) and administrate any project data	VPLMReleaseManager | VPLMTeamManager	ctx::VPLMProjectAdministrator.Company Name.Common Space			FALSE	
+VPLMProjectLeader	VPLMProjectLeader	Defines product resources involved in creation or experience processes (such as libraries, template, materials, behaviors, ...), and Manage any kind of data sharing across disciplines	VPLMCreator	ctx::VPLMProjectLeader.Company Name.sem | ctx::VPLMProjectLeader.Company Name.Common Space			FALSE	
+VPLMViewer	VPLMViewer	This role is to Access and View project data.	VPLMLocalCrossPrjContextAccess | VPLMLocalCrossOrgContextAccess	VPLMExperimenter | VPLMReleaseManager | ctx::VPLMViewer.Company Name.Common Space			FALSE	
+VPLMLocalCrossPrjContextAccess	VPLMExternalAccess	Implement default cross project behavior relative to organizations (currently provided to Viewer)		VPLMViewer			TRUE	
+VPLMReleaseManager	VPLMReleaseManager	Implement data & release manager ability (such a fixing/promoting/demoting project data; currently provided to ProjectAdministrator)	VPLMViewer	VPLMProjectAdministrator			TRUE	
+VPLMTeamManager	VPLMTeamManager	Implement task & people management ability (such a fixing/promoting/demoting project data; currently provided ProjectAdministrator)	VPLMLocalCrossOrgContextAccess	VPLMProjectAdministrator			TRUE	
+VPLMLocalCrossOrgContextAccess	VPLMLocalCrossOrgContextAccess	Implement default cross organization behavior relative to projects (currently provided to Viewer)		VPLMTeamManager | VPLMViewer			TRUE	
+VPLMSecuredCrossAccess	VPLMSecuredCrossAccess	Invitee to explicitly Access to (organization project) Public data					TRUE	
+VPLMAdmin	VPLMAdmin	Administrates enterprise resources (Organizations, Person, Projects, Security Contexts...) and all types of applicative data for all organizations and projects	VPLM Matrix Administrator	ctx::VPLMAdmin.Company Name.Default			FALSE	
+Local Administrator	Local Administrator	Administrates enterprise resources (Organizations, Person, Projects, Security Contexts...) and all types of applicative data for a particular organization & project	VPLM Matrix Administrator				FALSE	
+Company Name	Company Name	enter your company name here		Grant.Company Name.guozhaohui02_PRJ | ctx::VPLMProjectLeader.Company Name.sem | Grant.Company Name.guozhaohui01_PRJ | ctx::Part Family Coordinator.Company Name.GLOBAL | ctx::Change Administrator.Company Name.GLOBAL | ctx::Change Coordinator.Company Name.GLOBAL | ctx::Financial Reviewer.Company Name.GLOBAL | ctx::Compliance Engineer.Company Name.GLOBAL | ctx::Senior Compliance Engineer.Company Name.GLOBAL | ctx::Compliance Administrator.Company Name.GLOBAL | ctx::Compliance Reviewer.Company Name.GLOBAL | ctx::Business Manager.Company Name.GLOBAL | ctx::Component Engineer.Company Name.GLOBAL | ctx::Administration Manager.Company Name.GLOBAL | ctx::Marketing Manager.Company Name.GLOBAL | ctx::Requirement Manager.Company Name.GLOBAL | ctx::Software Engineer Manager.Company Name.GLOBAL | ctx::Specification Manager.Company Name.GLOBAL | ctx::Specification Office Manager.Company Name.GLOBAL | ctx::Specification Restricted User.Company Name.GLOBAL | ctx::Global Template Administrator.Company Name.GLOBAL | ctx::System Engineer.Company Name.GLOBAL | ctx::Template Administrator.Company Name.GLOBAL | ctx::Template Header Administrator.Company Name.GLOBAL | ctx::Specification User.Company Name.GLOBAL | ctx::Design Reviewer.Company Name.GLOBAL | ctx::Designer.Company Name.GLOBAL | ctx::Design Manager.Company Name.GLOBAL | ctx::Supplier Quality Engineer.Company Name.GLOBAL | ctx::Quality Administrator.Company Name.GLOBAL | ctx::Resource Manager.Company Name.GLOBAL | ctx::Library User.Company Name.GLOBAL | ctx::Librarian.Company Name.GLOBAL | ctx::Request Reviewer.Company Name.GLOBAL | ctx::Record Retention Manager.Company Name.GLOBAL | ctx::RGNDesigner.Company Name.GLOBAL | ctx::MCO Coordinator.Company Name.GLOBAL | ctx::Organization Manager.Company Name.GLOBAL | ctx::Exchange User.Company Name.GLOBAL | ctx::Company Representative.Company Name.GLOBAL | ctx::Issue Manager.Company Name.GLOBAL | ctx::Accounting Clerk.Company Name.GLOBAL | ctx::Buyer.Company Name.GLOBAL | ctx::ECR Coordinator.Company Name.GLOBAL | ctx::Customer Representative.Company Name.GLOBAL | ctx::Customer.Company Name.GLOBAL | ctx::Design Engineer.Company Name.GLOBAL | ctx::ECR Chairman.Company Name.GLOBAL | ctx::ECR Evaluator.Company Name.GLOBAL | ctx::Manufacturing Engineer.Company Name.GLOBAL | ctx::Order Entry Clerk.Company Name.GLOBAL | ctx::Product Manager.Company Name.GLOBAL | ctx::Product Obsolescence Manager.Company Name.GLOBAL | ctx::Production Support Clerk.Company Name.GLOBAL | ctx::Senior Design Engineer.Company Name.GLOBAL | ctx::Senior Manufacturing Engineer.Company Name.GLOBAL | ctx::Shipping Clerk.Company Name.GLOBAL | ctx::Software Engineer.Company Name.GLOBAL | ctx::Software Project Manager.Company Name.GLOBAL | ctx::Supplier Engineer.Company Name.GLOBAL | ctx::Manufacturing Planner.Company Name.GLOBAL | ctx::Product Planner.Company Name.GLOBAL | ctx::Field Technician.Company Name.GLOBAL | ctx::Production Manager.Company Name.GLOBAL | ctx::Analyst.Company Name.GLOBAL | ctx::Project Lead.Company Name.GLOBAL | ctx::Sales Engineer.Company Name.GLOBAL | ctx::Component User.Company Name.GLOBAL | ctx::Component Author.Company Name.GLOBAL | ctx::Component Qualification Engineer.Company Name.GLOBAL | ctx::Program Lead.Company Name.GLOBAL | ctx::Project User.Company Name.GLOBAL | ctx::Release Manager.Company Name.GLOBAL | ctx::Reviewer.Company Name.GLOBAL | ctx::Advanced Quality Engineer.Company Name.GLOBAL | ctx::Buyer Administrator.Company Name.GLOBAL | ctx::Plant Representative.Company Name.GLOBAL | ctx::Quality Manager.Company Name.GLOBAL | ctx::Supplier Development Manager.Company Name.GLOBAL | ctx::Service Administrator.Company Name.GLOBAL | ctx::Limited Author.Company Name.GLOBAL | ctx::Supplier.Company Name.GLOBAL | ctx::Supplier Representative.Company Name.GLOBAL | Grant.Company Name.Test Everything_PRJ | Grant.Company Name.3DIndexAdminUser_PRJ | ctx::VPLMAdmin.Company Name.Default | Grant.Company Name.admin_platform_PRJ | ctx::VPLMProjectLeader.Company Name.Common Space | ctx::VPLMProjectAdministrator.Company Name.Common Space | ctx::VPLMCreator.Company Name.Common Space | ctx::VPLMExperimenter.Company Name.Common Space | ctx::VPLMViewer.Company Name.Common Space | ctx::Domain Expert.Company Name.Default			FALSE	Org
+Employee	Employee	has special permission to use info central	Global User | Public Employee	Part Family Coordinator | Compliance Engineer | Compliance Reviewer | Component Engineer | Administration Manager | Marketing Manager | Requirement Manager | Software Engineer Manager | System Engineer | Quality Administrator | Library User | Request Reviewer | Record Retention Manager | MCO Coordinator | Document Center Administrator | Subject Matter Expert | Organization Manager | Issue Manager | Accounting Clerk | ECR Coordinator | ECR Chairman | ECR Evaluator | Incident Entry Clerk | Manufacturing Engineer | Order Entry Clerk | Product Manager | Product Obsolescence Manager | Production Support Clerk | Senior Design Engineer | Senior Manufacturing Engineer | Senior Quality Engineer | Shipping Clerk | Software CCB Coordinator | Software Engineer | Software Engineering Manager | Software Project Manager | Software Quality Engineer | Software Quality Manager | Software Release Engineer | Software Release Manager | Technical Writer | Manufacturing Planner | Product Planner | Field Technician | Production Manager | Project Lead | Sales Engineer | Company Contact | Document Control | Document Control Manager | Engineering Manager | Manufacturing Manager | Team Design Engineer | Project Administrator | Program Lead | Document Management Administrator | Release Manager | Reviewer | Advanced Quality Engineer | Plant Representative | Quality Manager | Supplier Development Manager | Configuration Manager | Service Administrator			TRUE	
+Public Employee	Public Employee	Parent of Employee Role		Employee			TRUE	
+Grant	Grant	This role is used to create Grant Sequrity Context.		Grant.Company Name.guozhaohui02_PRJ | Grant.Company Name.guozhaohui01_PRJ | Grant.Company Name.Test Everything_PRJ | Grant.Company Name.3DIndexAdminUser_PRJ | Grant.Company Name.admin_platform_PRJ			TRUE	
+User Projects	User Projects	This role should be used as a parent to all User Specific projects used for granting		guozhaohui02_PRJ | guozhaohui01_PRJ | Test Everything_PRJ | 3DIndexAdminUser_PRJ | admin_platform_PRJ			TRUE	Project
+System Transition Manager	System Transition Manager	has special permission to correct data resulting from legacy system conversion					TRUE	
+System Conversion Manager	System Conversion Manager	has special permission to override and promote data resulting from legacy system conversion					TRUE	
+Organization Manager	Organization Manager	Responsible for administration of users, groups, and roles available in Profile Manager, including Companies, Persons, and Business Units	Employee	ctx::Organization Manager.Company Name.GLOBAL			TRUE	
+Exchange User	Exchange User	Exchange User	Global User	External Project User | Resource Manager | ctx::Exchange User.Company Name.GLOBAL | Company Representative | Analyst			FALSE	
+Company Representative	Company Representative	Company Representative	Exchange User	ctx::Company Representative.Company Name.GLOBAL | VPLM Matrix Administrator			FALSE	
+Access Grantor	Access Grantor	A custom-code role for granting access privileges					TRUE	
+Issue Manager	Issue Manager	Person responsible for Issues raised	Employee	ctx::Issue Manager.Company Name.GLOBAL			FALSE	
+Analyst	Analyst	This role is equivalent to Issue Manager role. This role is assigned to a Person belonging to external company to who is responsible for the resolution of the Issues raised	Exchange User	ctx::Analyst.Company Name.GLOBAL			FALSE	
+GLOBAL	GLOBAL	This role is used to create cse Sequrity Context.		ctx::Part Family Coordinator.Company Name.GLOBAL | ctx::Change Administrator.Company Name.GLOBAL | ctx::Change Coordinator.Company Name.GLOBAL | ctx::Financial Reviewer.Company Name.GLOBAL | ctx::Compliance Engineer.Company Name.GLOBAL | ctx::Senior Compliance Engineer.Company Name.GLOBAL | ctx::Compliance Administrator.Company Name.GLOBAL | ctx::Compliance Reviewer.Company Name.GLOBAL | ctx::Business Manager.Company Name.GLOBAL | ctx::Component Engineer.Company Name.GLOBAL | ctx::Administration Manager.Company Name.GLOBAL | ctx::Marketing Manager.Company Name.GLOBAL | ctx::Requirement Manager.Company Name.GLOBAL | ctx::Software Engineer Manager.Company Name.GLOBAL | ctx::Specification Manager.Company Name.GLOBAL | ctx::Specification Office Manager.Company Name.GLOBAL | ctx::Specification Restricted User.Company Name.GLOBAL | ctx::Global Template Administrator.Company Name.GLOBAL | ctx::System Engineer.Company Name.GLOBAL | ctx::Template Administrator.Company Name.GLOBAL | ctx::Template Header Administrator.Company Name.GLOBAL | ctx::Specification User.Company Name.GLOBAL | ctx::Design Reviewer.Company Name.GLOBAL | ctx::Designer.Company Name.GLOBAL | ctx::Design Manager.Company Name.GLOBAL | ctx::Supplier Quality Engineer.Company Name.GLOBAL | ctx::Quality Administrator.Company Name.GLOBAL | ctx::Resource Manager.Company Name.GLOBAL | ctx::Library User.Company Name.GLOBAL | ctx::Librarian.Company Name.GLOBAL | ctx::Request Reviewer.Company Name.GLOBAL | ctx::Record Retention Manager.Company Name.GLOBAL | ctx::RGNDesigner.Company Name.GLOBAL | ctx::MCO Coordinator.Company Name.GLOBAL | ctx::Organization Manager.Company Name.GLOBAL | ctx::Exchange User.Company Name.GLOBAL | ctx::Company Representative.Company Name.GLOBAL | ctx::Issue Manager.Company Name.GLOBAL | ctx::Accounting Clerk.Company Name.GLOBAL | ctx::Buyer.Company Name.GLOBAL | ctx::ECR Coordinator.Company Name.GLOBAL | ctx::Customer Representative.Company Name.GLOBAL | ctx::Customer.Company Name.GLOBAL | ctx::Design Engineer.Company Name.GLOBAL | ctx::ECR Chairman.Company Name.GLOBAL | ctx::ECR Evaluator.Company Name.GLOBAL | ctx::Manufacturing Engineer.Company Name.GLOBAL | ctx::Order Entry Clerk.Company Name.GLOBAL | ctx::Product Manager.Company Name.GLOBAL | ctx::Product Obsolescence Manager.Company Name.GLOBAL | ctx::Production Support Clerk.Company Name.GLOBAL | ctx::Senior Design Engineer.Company Name.GLOBAL | ctx::Senior Manufacturing Engineer.Company Name.GLOBAL | ctx::Shipping Clerk.Company Name.GLOBAL | ctx::Software Engineer.Company Name.GLOBAL | ctx::Software Project Manager.Company Name.GLOBAL | ctx::Supplier Engineer.Company Name.GLOBAL | ctx::Manufacturing Planner.Company Name.GLOBAL | ctx::Product Planner.Company Name.GLOBAL | ctx::Field Technician.Company Name.GLOBAL | ctx::Production Manager.Company Name.GLOBAL | ctx::Analyst.Company Name.GLOBAL | ctx::Project Lead.Company Name.GLOBAL | ctx::Sales Engineer.Company Name.GLOBAL | ctx::Component User.Company Name.GLOBAL | ctx::Component Author.Company Name.GLOBAL | ctx::Component Qualification Engineer.Company Name.GLOBAL | ctx::Program Lead.Company Name.GLOBAL | ctx::Project User.Company Name.GLOBAL | ctx::Release Manager.Company Name.GLOBAL | ctx::Reviewer.Company Name.GLOBAL | ctx::Advanced Quality Engineer.Company Name.GLOBAL | ctx::Buyer Administrator.Company Name.GLOBAL | ctx::Plant Representative.Company Name.GLOBAL | ctx::Quality Manager.Company Name.GLOBAL | ctx::Supplier Development Manager.Company Name.GLOBAL | ctx::Service Administrator.Company Name.GLOBAL | ctx::Limited Author.Company Name.GLOBAL | ctx::Supplier.Company Name.GLOBAL | ctx::Supplier Representative.Company Name.GLOBAL			FALSE	Project
+Basic User	Basic User	Basic User	Global User				FALSE	
+Service Administrator	Service Administrator	Manages service objects and performs deployment process	Employee	ctx::Service Administrator.Company Name.GLOBAL | VPLM Matrix Administrator			FALSE	
+Supplier	Supplier	The Supplier Company Person	Global User	Supplier Executive Contact | Supplier Quality Engineer | Supplier Quote Analyst | ctx::Supplier.Company Name.GLOBAL | Supplier Engineer | Supplier Representative			TRUE	
+Supplier Representative	Supplier Representative	A supplier who can register users	Supplier	ctx::Supplier Representative.Company Name.GLOBAL			FALSE	
+Compliance Engineer	Compliance Engineer	Checks the compliance of an assembly/component & responsible for importing supplier compliance data	Employee	Senior Compliance Engineer | Compliance Contact Representative | Compliance Executive Contact | ctx::Compliance Engineer.Company Name.GLOBAL			FALSE	
+Senior Compliance Engineer	Senior Compliance Engineer	Compliance Engineer functionality & exports, IMDS tasks	Compliance Engineer	Compliance Administrator | ctx::Senior Compliance Engineer.Company Name.GLOBAL			FALSE	
+Compliance Administrator	Compliance Administrator	Compliance Administrators manage Compliance Definitions, Import of external BOM and external data and export reports	Senior Compliance Engineer	ctx::Compliance Administrator.Company Name.GLOBAL			FALSE	
+Compliance Contact Representative	Compliance Contact Representative	Host company user responsible as contact for supplier using IPC format to submit compliance data	Compliance Engineer				FALSE	
+Compliance Executive Contact	Compliance Executive Contact	Host company user responsible as contact for supplier using IPC format to submit compliance data	Compliance Engineer				FALSE	
+Supplier Executive Contact	Supplier Executive Contact	This supplier contact is responsible for environmental compliance within the supplier organization	Supplier				TRUE	
+Compliance Reviewer	Compliance Reviewer	Gives user read only access to subset of MCC functionality and to perform local roll up	Employee	ctx::Compliance Reviewer.Company Name.GLOBAL			FALSE	
+Integration User	HarnessUser	User has access to Integration		Design Manager | Integration Bulk Loader			FALSE	
+Design Reviewer	IntegrationReviewer	Integration Reviewer		ctx::Design Reviewer.Company Name.GLOBAL			FALSE	
+Designer	Designer	Designer		ctx::Designer.Company Name.GLOBAL			FALSE	
+Design Manager	IntegrationManager	Integration Manager	Integration User	Integration Administrator | ctx::Design Manager.Company Name.GLOBAL			FALSE	
+Integration Administrator	IEFAdmin	User has administrator access to Integration	Design Manager				FALSE	
+Integration Bulk Loader	IEFBulkLoader	User has bulk loading access	Integration User				FALSE	
+CAD Revision Manager	CAD Revision Manager	Role which manages or controls Revision management of Released Nodes					FALSE	
+RGNDesigner	RGNDesigner	Designer for Report Generation		ctx::RGNDesigner.Company Name.GLOBAL			FALSE	
+Document Center Administrator	Document Center Administrator	Person Responsible for Managing Controlled Documents	Employee				FALSE	
+Subject Matter Expert	Subject Matter Expert	Person Responsible for Periodic Review of Controlled Documents	Employee				FALSE	
+Accounting Clerk	Accounting Clerk	The Accounting Clerk promotes the Sales Orders to the Payment Received state	Employee	ctx::Accounting Clerk.Company Name.GLOBAL			TRUE	
+Buyer	Buyer	The Buyer Company Person	Global User	ctx::Buyer.Company Name.GLOBAL			FALSE	
+ECR Coordinator	ECR Coordinator	each change board must have exactly one ECR Coordinator and one ECR Coordinator can belong to many ECR Boards	Employee	ctx::ECR Coordinator.Company Name.GLOBAL			TRUE	
+Customer Representative	Customer Representative	A customer who can register users	Customer	ctx::Customer Representative.Company Name.GLOBAL			TRUE	
+Customer	Customer	A customer to the host company	Global User	ctx::Customer.Company Name.GLOBAL | Customer Representative			FALSE	
+Design Engineer	Design Engineer	a person who creates and revises Parts, Drawing Prints, and ECR/ECOs	Team Design Engineer	ctx::Design Engineer.Company Name.GLOBAL | Senior Design Engineer			FALSE	
+ECR Chairman	ECR Chairman	each change board must have exactly one ECR Chairman and one ECR Chairman can belong to many ECR Boards	Employee	ctx::ECR Chairman.Company Name.GLOBAL			TRUE	
+ECR Evaluator	ECR Evaluator	a person who evaluates an ECR before it is sent the change board	Employee	ctx::ECR Evaluator.Company Name.GLOBAL			TRUE	
+Incident Entry Clerk	Incident Entry Clerk	Person who enters the data into the system	Employee				TRUE	
+Manufacturing Engineer	Manufacturing Engineer	a person who reviews, plans, and promotes Parts before they are released	Employee	ctx::Manufacturing Engineer.Company Name.GLOBAL | Senior Manufacturing Engineer			TRUE	
+Order Entry Clerk	Order Entry Clerk		Employee	ctx::Order Entry Clerk.Company Name.GLOBAL			TRUE	
+Product Manager	Product Manager	responsible for approving a product configurator rule set before release	Employee	ctx::Product Manager.Company Name.GLOBAL			FALSE	
+Product Obsolescence Manager	Product Obsolescence Manager	responsible for making Parts obsolete and reinstating obsolete Parts	Employee	ctx::Product Obsolescence Manager.Company Name.GLOBAL			TRUE	
+Production Support Clerk	Production Support Clerk	The Production Support Clerk promotes the Sale Order objects to the Shipping state	Employee	ctx::Production Support Clerk.Company Name.GLOBAL			TRUE	
+Senior Design Engineer	Senior Design Engineer	a person who creates, revises, and approves Parts, Drawing Prints, and ECR/ECOs	Design Engineer | Employee	ctx::Senior Design Engineer.Company Name.GLOBAL			FALSE	
+Senior Manufacturing Engineer	Senior Manufacturing Engineer	a person who reviews, plans, and approves Parts before they are released	Manufacturing Engineer | Employee	ctx::Senior Manufacturing Engineer.Company Name.GLOBAL			TRUE	
+Senior Quality Engineer	Senior Quality Engineer	Part of the Software Quality team and ensures that the output is of the desired quality levels, has the authority to approve	Employee				TRUE	
+Shipping Clerk	Shipping Clerk	The Shipping Clerk promotes the Sales Orders to the Shipped state	Employee	ctx::Shipping Clerk.Company Name.GLOBAL			TRUE	
+Software CCB Coordinator	Software CCB Coordinator	Heads the CCB team and coordinates the meetings	Employee				FALSE	
+Software Engineer	Software Engineer	Part of the Software development team	Employee	ctx::Software Engineer.Company Name.GLOBAL			FALSE	
+Software Engineering Manager	Software Engineering Manager	Person who creates the Features	Employee				FALSE	
+Software Project Manager	Software Project Manager	In-charge of a Software project	Employee	ctx::Software Project Manager.Company Name.GLOBAL			TRUE	
+Software Quality Engineer	Software Quality Engineer	Part of the Software Quality team and ensures that the output is of the desired quality levels	Employee				FALSE	
+Software Quality Manager	Software Quality Manager	Heads the Software Quality team	Employee				TRUE	
+Software Release Engineer	Software Release Engineer	In charge of creating s/w distribution objects	Employee				TRUE	
+Software Release Manager	Software Release Manager	In charge of creating and approving s/w distribution objects	Employee				FALSE	
+Supplier Engineer	Supplier Engineer	A supplier who performs engineering activities	Supplier	ctx::Supplier Engineer.Company Name.GLOBAL			FALSE	
+Technical Writer	Technical Writer	Person who corrects the document related errors	Employee				FALSE	
+Project Lead	Project Lead	Project Lead Role	Employee | Project User	ctx::Project Lead.Company Name.GLOBAL			FALSE	
+Sales Engineer	Sales Engineer	The Sales Engineer Person	Employee	ctx::Sales Engineer.Company Name.GLOBAL			TRUE	
+Company Contact	Company Contact	Company Contact Person at Given Company	Employee				TRUE	
+Document Control	Document Control	Document Control Person at Given Company	Employee				TRUE	
+Document Control Manager	Document Control Manager	Document Control Manager Person at Given Company	Employee				TRUE	
+Engineering Manager	Engineering Manager	Engineering Manager Person at Given Company	Employee				TRUE	
+Manufacturing Manager	Manufacturing Manager	Manufacturing Manager Person at Given Company	Employee				TRUE	
+Project Administrator	Project Administrator	Project Administrator	Employee | Project User				FALSE	
+Program Lead	Program Lead	Program Lead	Employee | Project User	ctx::Program Lead.Company Name.GLOBAL			FALSE	
+Project User	Project User	Project User	Global User	Financial Reviewer | Project Assessor | Business Manager | ctx::Project User.Company Name.GLOBAL | VPLM Matrix User | Project Lead | Project Administrator | Program Lead			FALSE	
+Document Management Administrator	Document Management Administrator	Document Management Administrator	Employee				FALSE	
+Release Manager	Release Manager	Release Manager	Employee	ctx::Release Manager.Company Name.GLOBAL			FALSE	
+Reviewer	Reviewer	Reviewer	Employee	ctx::Reviewer.Company Name.GLOBAL			FALSE	
+Author	Author	Author	Librarian				FALSE	
+Advanced Quality Engineer	Advanced Quality Engineer	Responsible for Quality Plan Creation and Management Process	Employee	ctx::Advanced Quality Engineer.Company Name.GLOBAL			TRUE	
+Buyer Administrator	Buyer Administrator	Buyer Administrator	Global User	ctx::Buyer Administrator.Company Name.GLOBAL			FALSE	
+Plant Representative	Plant Representative	Host Company Plant location personnel	Employee	ctx::Plant Representative.Company Name.GLOBAL			TRUE	
+Quality Manager	Quality Manager	Responsible for Quality Plan Template Creation and Management Process	Employee	ctx::Quality Manager.Company Name.GLOBAL			TRUE	
+Supplier Development Manager	Supplier Development Manager	Responsible for Managing Supplier Development Process	Employee	ctx::Supplier Development Manager.Company Name.GLOBAL			TRUE	
+Limited Author	Limited Author	Limited Author	Library User	Librarian | ctx::Limited Author.Company Name.GLOBAL			FALSE	
+Part Family Coordinator	Part Family Coordinator	has access to create modify and delete access to Part Families	Employee	ctx::Part Family Coordinator.Company Name.GLOBAL			TRUE	
+Financial Category Administrator	Financial Category Administrator	Administers the Financial Template Categories					FALSE	
+Financial Reviewer	Financial Reviewer	Role authorized to maintain and manage project budgets	Project User	ctx::Financial Reviewer.Company Name.GLOBAL			TRUE	
+Project Assessor	Project Assessor	Role authorized to maintain and manage project budgets	Project User				TRUE	
+Business Manager	Business Manager	Administrators of Business Goals	Project User	ctx::Business Manager.Company Name.GLOBAL			FALSE	
+External Project User	External Project User	Enables Program Central Application	Exchange User	External Program Lead | External Project Administrator | External Project Lead			TRUE	
+External Program Lead	External Program Lead	Enables the Management of Programs for a given Organization	External Project User				TRUE	
+External Project Administrator	External Project Administrator	Enables the Management of Project Templates for a given Organization	External Project User				TRUE	
+External Project Lead	External Project Lead	Enables the Creation of Projects	External Project User				TRUE	
+Component Engineer	Component Engineer	This new role is responsible for Manufacturer Equivalent Part Maintenance.	Employee	ctx::Component Engineer.Company Name.GLOBAL			TRUE	
+Marketing Manager	Marketing Manager	Role for managing the Marketing features and Marketing products	Employee	ctx::Marketing Manager.Company Name.GLOBAL			FALSE	
+Requirement Manager	Requirement Manager	Role for managing the Requirements	Employee | Requirement Viewer	ctx::Requirement Manager.Company Name.GLOBAL			FALSE	
+Software Engineer Manager	Software Engineer Manager	Role for managing the Software	Employee	ctx::Software Engineer Manager.Company Name.GLOBAL			FALSE	
+Specification Manager	Specification Manager	person for defining new Technical Specifications	Specification User	ctx::Specification Manager.Company Name.GLOBAL			TRUE	
+Specification Office Manager	Specification Office Manager	person responsible for managing SCO and Technical Specifications	Specification User	ctx::Specification Office Manager.Company Name.GLOBAL			TRUE	
+Specification Restricted User	Specification Restricted User	Specification Restricted User	Specification User	ctx::Specification Restricted User.Company Name.GLOBAL			TRUE	
+Global Template Administrator	Global Template Administrator	person for defining and managing Global Technical Specification Templates	Specification User	ctx::Global Template Administrator.Company Name.GLOBAL			TRUE	
+System Engineer	System Engineer	Administers the Product Lines, Models, Products, Features, Rules and Product Configurations	Employee	ctx::System Engineer.Company Name.GLOBAL			FALSE	
+Template Administrator	Template Administrator	person for defining and managing Technical Specification Templates	Specification User	ctx::Template Administrator.Company Name.GLOBAL			TRUE	
+Template Header Administrator	Template Header Administrator	Template Header Administrator	Specification User	ctx::Template Header Administrator.Company Name.GLOBAL			TRUE	
+Specification User	Specification User	Specification User	Global User	Specification Manager | Specification Office Manager | Specification Restricted User | Global Template Administrator | Template Administrator | Template Header Administrator | ctx::Specification User.Company Name.GLOBAL			TRUE	
+Supplier Quality Engineer	Supplier Quality Engineer	Supplier Quality Engineer	Supplier	ctx::Supplier Quality Engineer.Company Name.GLOBAL			TRUE	
+Supplier Quote Analyst	Supplier Quote Analyst	Supplier Quote Analyst	Supplier				TRUE	
+Quality Administrator	Quality Administrator	Quality Administrator	Employee	ctx::Quality Administrator.Company Name.GLOBAL			TRUE	
+Resource Manager	Resource Manager	responsible for approving resources	Exchange User	ctx::Resource Manager.Company Name.GLOBAL			FALSE	
+Library User	Library User	Required role to view and navigate Library content	Employee	ctx::Library User.Company Name.GLOBAL | Limited Author			FALSE	
+Librarian	Librarian	Required role for creating and maintaining the taxonomy	Limited Author	ctx::Librarian.Company Name.GLOBAL | Author			FALSE	
+Request Reviewer	Request Reviewer	The Request Reviewer reviews the Access Request on a Document. Person should have this role to review the Access Request object.	Employee	ctx::Request Reviewer.Company Name.GLOBAL			FALSE	
+Record Retention Manager	Record Retention Manager	Person responsible for Retention Records	Employee	ctx::Record Retention Manager.Company Name.GLOBAL			FALSE	
+MCO Coordinator	MCO Coordinator	This role is assigned to a person who assigns Responsible Manufacturing Engineer and Senior Responsible Manufacturing Engineer for an MCO	Employee	ctx::MCO Coordinator.Company Name.GLOBAL			FALSE	
+Manufacturing Planner	Manufacturing Planner	Person responsible for planning the manufacturing of builds. Creates Lots against shipped builds.	Employee	ctx::Manufacturing Planner.Company Name.GLOBAL			FALSE	
+Product Planner	Product Planner	Person responsibility for planning and shipping each unit shipped to a customer.	Employee	ctx::Product Planner.Company Name.GLOBAL			FALSE	
+Field Technician	Field Technician	Person responsible for maintaining and servicing shipped builds	Employee	ctx::Field Technician.Company Name.GLOBAL			FALSE	
+Production Manager	Production Manager	Person responsible for planning builds. Production managers plan and schedule the production of builds. Creates Lots and assigns them to a Field Technician.	Employee	ctx::Production Manager.Company Name.GLOBAL			FALSE	
+Component User	Component User	This role is intended to provide view access in the product	Global User	ctx::Component User.Company Name.GLOBAL | Component Author			FALSE	
+Component Author	Component Author	This role is intended to provide limited authoring capability in the product	Component User	ctx::Component Author.Company Name.GLOBAL | Component Qualification Engineer			FALSE	
+Component Qualification Engineer	Component Qualification Engineer	This role is intended to provide full features access in the product	Component Author	ctx::Component Qualification Engineer.Company Name.GLOBAL			FALSE	
+Team Design Engineer	Team Design Engineer	Role for handling the Development Process	Employee	Design Engineer			TRUE	
+Configuration Manager	Configuration Manager	responsible for creating Milestone Effectivity	Employee				FALSE	
+Change Administrator	Change Administrator	Responsible role for Change Administrator	Global User	ctx::Change Administrator.Company Name.GLOBAL			FALSE	
+Change Coordinator	Change Coordinator	Responsible role for Change Order	Global User	ctx::Change Coordinator.Company Name.GLOBAL			FALSE	
+Requirement Viewer	Requirement Viewer	This role is to Access and View Requirement data.	Global User	Requirement Manager			FALSE	
+ctx::Part Family Coordinator.Company Name.GLOBAL			Company Name | GLOBAL | Part Family Coordinator				TRUE	
+ctx::Change Administrator.Company Name.GLOBAL			Company Name | GLOBAL | Change Administrator				FALSE	
+ctx::Change Coordinator.Company Name.GLOBAL			GLOBAL | Company Name | Change Coordinator				FALSE	
+ctx::Financial Reviewer.Company Name.GLOBAL			Company Name | GLOBAL | Financial Reviewer				TRUE	
+ctx::Compliance Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Compliance Engineer				FALSE	
+ctx::Senior Compliance Engineer.Company Name.GLOBAL			GLOBAL | Company Name | Senior Compliance Engineer				FALSE	
+ctx::Compliance Administrator.Company Name.GLOBAL			Compliance Administrator | Company Name | GLOBAL				FALSE	
+ctx::Compliance Reviewer.Company Name.GLOBAL			Company Name | GLOBAL | Compliance Reviewer				FALSE	
+ctx::Business Manager.Company Name.GLOBAL			Company Name | GLOBAL | Business Manager				TRUE	
+ctx::Component Engineer.Company Name.GLOBAL			GLOBAL | Company Name | Component Engineer				TRUE	
+ctx::Administration Manager.Company Name.GLOBAL			GLOBAL | Company Name | Administration Manager				TRUE	
+ctx::Marketing Manager.Company Name.GLOBAL			Company Name | GLOBAL | Marketing Manager				TRUE	
+ctx::Requirement Manager.Company Name.GLOBAL			Company Name | GLOBAL | Requirement Manager				TRUE	
+ctx::Software Engineer Manager.Company Name.GLOBAL			Company Name | GLOBAL | Software Engineer Manager				TRUE	
+ctx::Specification Manager.Company Name.GLOBAL			Company Name | GLOBAL | Specification Manager				TRUE	
+ctx::Specification Office Manager.Company Name.GLOBAL			Company Name | GLOBAL | Specification Office Manager				TRUE	
+ctx::Specification Restricted User.Company Name.GLOBAL			Company Name | GLOBAL | Specification Restricted User				TRUE	
+ctx::Global Template Administrator.Company Name.GLOBAL			Company Name | GLOBAL | Global Template Administrator				TRUE	
+ctx::System Engineer.Company Name.GLOBAL			Company Name | GLOBAL | System Engineer				TRUE	
+ctx::Template Administrator.Company Name.GLOBAL			Company Name | GLOBAL | Template Administrator				TRUE	
+ctx::Template Header Administrator.Company Name.GLOBAL			Company Name | GLOBAL | Template Header Administrator				TRUE	
+ctx::Specification User.Company Name.GLOBAL			Company Name | GLOBAL | Specification User				TRUE	
+ctx::Design Reviewer.Company Name.GLOBAL			Company Name | GLOBAL | Design Reviewer				FALSE	
+ctx::Designer.Company Name.GLOBAL			Company Name | GLOBAL | Designer				FALSE	
+ctx::Design Manager.Company Name.GLOBAL			Company Name | GLOBAL | Design Manager				FALSE	
+ctx::Supplier Quality Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Supplier Quality Engineer				TRUE	
+ctx::Quality Administrator.Company Name.GLOBAL			Company Name | GLOBAL | Quality Administrator				TRUE	
+ctx::Resource Manager.Company Name.GLOBAL			Company Name | GLOBAL | Resource Manager				FALSE	
+ctx::Library User.Company Name.GLOBAL			Company Name | GLOBAL | Library User				FALSE	
+ctx::Librarian.Company Name.GLOBAL			Company Name | GLOBAL | Librarian				FALSE	
+ctx::Request Reviewer.Company Name.GLOBAL			Company Name | GLOBAL | Request Reviewer				FALSE	
+ctx::Record Retention Manager.Company Name.GLOBAL			Company Name | GLOBAL | Record Retention Manager				FALSE	
+ctx::RGNDesigner.Company Name.GLOBAL			Company Name | GLOBAL | RGNDesigner				FALSE	
+ctx::MCO Coordinator.Company Name.GLOBAL			Company Name | GLOBAL | MCO Coordinator				FALSE	
+ctx::Organization Manager.Company Name.GLOBAL			Company Name | GLOBAL | Organization Manager				TRUE	
+ctx::Exchange User.Company Name.GLOBAL			Company Name | GLOBAL | Exchange User				FALSE	
+ctx::Company Representative.Company Name.GLOBAL			Company Name | GLOBAL | Company Representative				FALSE	
+ctx::Issue Manager.Company Name.GLOBAL			Company Name | GLOBAL | Issue Manager				FALSE	
+ctx::Accounting Clerk.Company Name.GLOBAL			Company Name | GLOBAL | Accounting Clerk				TRUE	
+ctx::Buyer.Company Name.GLOBAL			Company Name | GLOBAL | Buyer				FALSE	
+ctx::ECR Coordinator.Company Name.GLOBAL			Company Name | GLOBAL | ECR Coordinator				TRUE	
+ctx::Customer Representative.Company Name.GLOBAL			Company Name | GLOBAL | Customer Representative				TRUE	
+ctx::Customer.Company Name.GLOBAL			Company Name | GLOBAL | Customer				TRUE	
+ctx::Design Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Design Engineer				TRUE	
+ctx::ECR Chairman.Company Name.GLOBAL			Company Name | GLOBAL | ECR Chairman				TRUE	
+ctx::ECR Evaluator.Company Name.GLOBAL			Company Name | GLOBAL | ECR Evaluator				TRUE	
+ctx::Manufacturing Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Manufacturing Engineer				TRUE	
+ctx::Order Entry Clerk.Company Name.GLOBAL			Company Name | GLOBAL | Order Entry Clerk				TRUE	
+ctx::Product Manager.Company Name.GLOBAL			Company Name | GLOBAL | Product Manager				TRUE	
+ctx::Product Obsolescence Manager.Company Name.GLOBAL			Company Name | GLOBAL | Product Obsolescence Manager				TRUE	
+ctx::Production Support Clerk.Company Name.GLOBAL			Company Name | GLOBAL | Production Support Clerk				TRUE	
+ctx::Senior Design Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Senior Design Engineer				TRUE	
+ctx::Senior Manufacturing Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Senior Manufacturing Engineer				TRUE	
+ctx::Shipping Clerk.Company Name.GLOBAL			Company Name | GLOBAL | Shipping Clerk				TRUE	
+ctx::Software Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Software Engineer				TRUE	
+ctx::Software Project Manager.Company Name.GLOBAL			Company Name | GLOBAL | Software Project Manager				TRUE	
+ctx::Supplier Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Supplier Engineer				FALSE	
+ctx::Manufacturing Planner.Company Name.GLOBAL			Company Name | GLOBAL | Manufacturing Planner				FALSE	
+ctx::Product Planner.Company Name.GLOBAL			Company Name | GLOBAL | Product Planner				FALSE	
+ctx::Field Technician.Company Name.GLOBAL			Company Name | GLOBAL | Field Technician				FALSE	
+ctx::Production Manager.Company Name.GLOBAL			Company Name | GLOBAL | Production Manager				FALSE	
+ctx::Analyst.Company Name.GLOBAL			Company Name | GLOBAL | Analyst				FALSE	
+ctx::Project Lead.Company Name.GLOBAL			Company Name | GLOBAL | Project Lead				TRUE	
+ctx::Sales Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Sales Engineer				TRUE	
+ctx::Component User.Company Name.GLOBAL			Company Name | GLOBAL | Component User				FALSE	
+ctx::Component Author.Company Name.GLOBAL			Company Name | GLOBAL | Component Author				FALSE	
+ctx::Component Qualification Engineer.Company Name.GLOBAL			Company Name | GLOBAL | Component Qualification Engineer				FALSE	
+ctx::Program Lead.Company Name.GLOBAL			Company Name | GLOBAL | Program Lead				TRUE	
+ctx::Project User.Company Name.GLOBAL			Company Name | GLOBAL | Project User				TRUE	
+

@@ -1,0 +1,1419 @@
+/*
+ *  emxInboxTask.java
+ *
+ * Copyright (c) 1992-2015 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ */
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.Vector;
+
+
+import matrix.db.Attribute;
+import matrix.db.AttributeItr;
+import matrix.db.AttributeList;
+import matrix.db.BusinessObject;
+import matrix.db.BusinessObjectAttributes;
+import matrix.db.Context;
+import matrix.db.ExpansionIterator;
+import matrix.db.Group;
+import matrix.db.JPO;
+import matrix.db.MQLCommand;
+import matrix.db.Relationship;
+import matrix.db.Role;
+import matrix.util.MatrixException;
+import matrix.util.Pattern;
+import matrix.util.SelectList;
+import matrix.util.StringList;
+
+import com.matrixone.apps.common.InboxTask;
+import com.matrixone.apps.common.Route;
+import com.matrixone.apps.common.util.ComponentsUtil;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MailUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+import org.apache.log4j.Logger;
+/**
+ * @version AEF Rossini - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxInboxTaskBase}
+{
+
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	private static final String sTypeWorkflowTask = PropertyUtil.getSchemaProperty("type_WorkflowTask");
+	private static final String sRelWorkflowTaskDeliverable = PropertyUtil
+			.getSchemaProperty("relationship_TaskDeliverable");
+	
+	private static final String strAttrBracket  = "attribute[";
+    private static final String strCloseBracket = "]";
+    private static final String strFromBracket = "from[";
+    private static final String strBracketToToBracket = "].to.to[";
+
+    private static final String sAttrReviewersComments = PropertyUtil.getSchemaProperty("attribute_ReviewersComments");
+    private static final String sAttrReviewTask = PropertyUtil.getSchemaProperty("attribute_ReviewTask");
+    private static final String sAttrReviewCommentsNeeded = PropertyUtil.getSchemaProperty("attribute_ReviewCommentsNeeded");
+    private static final String sAttrRouteAction = PropertyUtil.getSchemaProperty("attribute_RouteAction");
+    private static final String sAttrScheduledCompletionDate = PropertyUtil.getSchemaProperty("attribute_ScheduledCompletionDate");
+    private static final String sAttrTitle = PropertyUtil.getSchemaProperty("attribute_Title");
+    private static final String selTaskCompletedDate = PropertyUtil.getSchemaProperty("attribute_ActualCompletionDate");
+    private static final String sTypeInboxTask = PropertyUtil.getSchemaProperty("type_InboxTask");
+    private static final String sRelProjectTask = PropertyUtil.getSchemaProperty("relationship_ProjectTask");
+    private static final String sRelRouteTask = PropertyUtil.getSchemaProperty("relationship_RouteTask");
+    private static final String sRelProjectRouteTask = PropertyUtil.getSchemaProperty("relationship_ProjectRoute");
+    private static final String sRelRouteScope = PropertyUtil.getSchemaProperty("relationship_RouteScope");
+    private static final String policyTask = PropertyUtil.getSchemaProperty("policy_InboxTask");
+
+    private static final String strAttrRouteAction = "attribute["+sAttrRouteAction +"]";
+    private static final String strAttrCompletionDate ="attribute["+sAttrScheduledCompletionDate+"]";
+    private static final String strAttrTitle="attribute["+sAttrTitle+"]";
+    private static final String strAttrTaskCompletionDate ="attribute["+selTaskCompletedDate+"]";
+
+    private static String routeIdSelectStr="from["+sRelRouteTask+"].to.id";
+    private static String routeTypeSelectStr="from["+sRelRouteTask+"].to.type";
+    private static String routeNameSelectStr ="from["+sRelRouteTask+"].to.name";
+    private static String routeOwnerSelectStr="from["+sRelRouteTask+"].to.owner";
+    private static String objectNameSelectStr="from["+sRelRouteTask+"].to.to["+sRelRouteScope+"].from.name";
+    private static String objectIdSelectStr="from["+sRelRouteTask+"].to.to["+sRelRouteScope+"].from.id";
+    private i18nNow loc = new i18nNow();
+    protected String lang=null;
+    protected String rsBundle=null;
+
+    private static final String sRelAssignedTask = PropertyUtil.getSchemaProperty("relationship_AssignedTasks");
+    private static final String sRelSubTask = PropertyUtil.getSchemaProperty("relationship_Subtask");
+    private static final String sRelWorkflowTask = PropertyUtil.getSchemaProperty("relationship_WorkflowTask");
+    private static final String sRelWorkflowTaskAssinee = PropertyUtil.getSchemaProperty("relationship_WorkflowTaskAssignee");
+
+    private static final String workflowIdSelectStr = "to["+sRelWorkflowTask+"].from.id";
+    private static final String workflowNameSelectStr = "to["+sRelWorkflowTask+"].from.name";
+    private static final String workflowTypeSelectStr = "to["+sRelWorkflowTask+"].from.type";
+
+    private static final String sTypeWorkflow = PropertyUtil.getSchemaProperty("type_Workflow");
+
+    private static final String policyWorkflowTask = PropertyUtil.getSchemaProperty("policy_WorkflowTask");
+    private static final String attrworkFlowDueDate = PropertyUtil.getSchemaProperty("attribute_DueDate");
+    private static final String attrTaskEstinatedFinishDate = PropertyUtil.getSchemaProperty("attribute_TaskEstimatedFinishDate");
+    private static final String attrworkFlowActCompleteDate = PropertyUtil.getSchemaProperty("attribute_ActualCompletionDate");
+    private static final String attrworkFlowInstructions = PropertyUtil.getSchemaProperty("attribute_Instructions");
+    private static final String attrTaskFinishDate = PropertyUtil.getSchemaProperty("attribute_TaskActualFinishDate");
+
+    private static String strAttrworkFlowDueDate = "attribute[" + attrworkFlowDueDate + "]";
+    private static String strAttrTaskEstimatedFinishDate = "attribute[" + attrTaskEstinatedFinishDate + "]";
+    private static String strAttrTaskFinishDate = "attribute[" + attrTaskFinishDate + "]";
+    private static String strAttrworkFlowCompletinDate = "attribute[" + attrworkFlowActCompleteDate + "]";
+
+    private static final String TYPE_INBOX_TASK_STATE_REVIEW = PropertyUtil.getSchemaProperty("Policy", DomainObject.POLICY_INBOX_TASK, "state_Review");
+    private static final String TYPE_INBOX_TASK_STATE_ASSIGNED = PropertyUtil.getSchemaProperty("Policy", DomainObject.POLICY_INBOX_TASK, "state_Assigned");
+
+
+    // added for IR - 043921V6R2011
+    public static final String  SELECT_TEMPLATE_OWNING_ORG_ID =  "from["+ RELATIONSHIP_ROUTE_TASK + "].to.from[" + RELATIONSHIP_INITIATING_ROUTE_TEMPLATE
+                                                     + "].to.to[" + RELATIONSHIP_OWNING_ORGANIZATION + "].from.id";
+
+    public static final String SELECT_ROUTE_NODE_ID = getAttributeSelect(ATTRIBUTE_ROUTE_NODE_ID);
+    public static final String SELECT_TASK_ASSIGNEE_CONNECTION = "from[" + RELATIONSHIP_PROJECT_TASK + "].id";
+    protected static final String PERSON_WORKSPACE_LEAD_GRANTOR = PropertyUtil.getSchemaProperty("person_WorkspaceLeadGrantor");
+    protected static final String SELECT_TASK_ASSIGNEE_NAME = "from[" + RELATIONSHIP_PROJECT_TASK + "].to.name";
+	
+	private static final String TASK_PROJECT_ID = "to[" + DomainConstants.RELATIONSHIP_PROJECT_ACCESS_KEY + "].from.from[" + DomainConstants.RELATIONSHIP_PROJECT_ACCESS_LIST + "].to.id";
+    private static final String TASK_PROJECT_TYPE = "to[" + DomainConstants.RELATIONSHIP_PROJECT_ACCESS_KEY + "].from.from[" + DomainConstants.RELATIONSHIP_PROJECT_ACCESS_LIST + "].to.type";
+    private static final String TASK_PROJECT_NAME = "to[" + DomainConstants.RELATIONSHIP_PROJECT_ACCESS_KEY + "].from.from[" + DomainConstants.RELATIONSHIP_PROJECT_ACCESS_LIST + "].to.name";
+
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF Rossini
+     * @grade 0
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+    
+    
+    
+	   /**
+     * getTasksToBeAccepted - gets the list of Tasks assigned to any of the person assignments
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds the following input arguments:
+     *        0 - objectList MapList
+     * @returns Object
+     * @throws Exception if the operation fails
+     * @since AEF Rossini
+     * @grade 0
+     */
+    @com.matrixone.apps.framework.ui.ProgramCallable
+    public Object getTasksToBeAccepted(Context context, String[] args)
+          throws Exception
+      {
+        MapList taskMapList = new MapList();
+        try
+        {
+           final String POLICY_INBOX_TASK_STATE_COMPLETE = PropertyUtil.getSchemaProperty(context, "Policy", DomainObject.POLICY_INBOX_TASK, "state_Complete");
+
+           StringList selectTypeStmts = new StringList();
+           selectTypeStmts.add(SELECT_NAME);
+           selectTypeStmts.add(SELECT_ID);
+           selectTypeStmts.add(SELECT_DESCRIPTION);
+           selectTypeStmts.add(SELECT_OWNER);
+           selectTypeStmts.add(SELECT_CURRENT);
+           selectTypeStmts.add(strAttrRouteAction);
+           selectTypeStmts.add(strAttrCompletionDate);
+           selectTypeStmts.add(strAttrTaskCompletionDate);
+           selectTypeStmts.add("attribute[" + DomainObject.ATTRIBUTE_ROUTE_INSTRUCTIONS + "]");
+           selectTypeStmts.add(strAttrTitle);
+           selectTypeStmts.add(objectIdSelectStr);
+           selectTypeStmts.add(objectNameSelectStr);
+           selectTypeStmts.add(routeIdSelectStr);
+           selectTypeStmts.add(routeNameSelectStr);
+           selectTypeStmts.add(routeOwnerSelectStr);
+
+            selectTypeStmts.add(SELECT_TYPE);
+            selectTypeStmts.add(routeTypeSelectStr);
+            selectTypeStmts.add(workflowIdSelectStr);
+            selectTypeStmts.add(workflowNameSelectStr);
+            selectTypeStmts.add(workflowTypeSelectStr);
+            selectTypeStmts.add(strAttrworkFlowDueDate);
+            selectTypeStmts.add(strAttrTaskEstimatedFinishDate);
+            selectTypeStmts.add(strAttrworkFlowCompletinDate);
+            selectTypeStmts.add(strAttrTaskFinishDate);
+
+           String strPersonAssignments = "";
+           Vector groupAssignments = new Vector();
+           Vector personAssignments = PersonUtil.getAssignments(context);
+           personAssignments.remove(context.getUser());
+
+           Iterator assignmentsItr = personAssignments.iterator();
+           //Begin : Bug 346478
+           Role roleObj = null;
+           Group groupObj = null;
+           StringList slParents = new StringList();
+           StringList slParentRolesOrGroups = new StringList();
+           //End : Bug 346478
+           while(assignmentsItr.hasNext())
+           {
+               String assignment = (String)assignmentsItr.next();
+               //Added the below lines of code for the bug 344483, to handle persons under a group and role
+               /*String cmd = MqlUtil.mqlCommand(context, "print user \"" + assignment + "\" select isagroup isarole dump |");
+               boolean isGroup = "TRUE|FALSE".equalsIgnoreCase(cmd);
+               boolean isRole = "FALSE|TRUE".equalsIgnoreCase(cmd);
+               if(isGroup || isRole)
+               {
+                   if(isGroup)
+                   {
+                       groupAssignments = new Group(assignment).getAssignments(context);
+                   }
+                   else
+                   {
+                       groupAssignments = new Role(assignment).getAssignments(context);
+                   }
+                   Iterator assignmentsItrr = groupAssignments.iterator();
+                   while(assignmentsItrr.hasNext())
+                   {
+                        String grpAssignment = ((matrix.db.Person)assignmentsItrr.next()).getName();
+                        strPersonAssignments +=  grpAssignment + ",";
+                   }
+               }*/
+               //End of code for the bug 344483
+               //strPersonAssignments += assignment + ",";
+
+               //Begin : Bug 346478 code modification
+               // Is it role?
+               try {
+                   roleObj = new Role(assignment);
+                   roleObj.open(context);
+                   // Find all its parents
+                   slParents = roleObj.getParents(context, true);
+                   if (slParents != null) {
+                       slParentRolesOrGroups.addAll(slParents);
+                   }
+                   roleObj.close(context);
+               } catch (MatrixException me){
+                   // Is it group?
+                   try {
+                       groupObj = new Group(assignment);
+                       groupObj.open(context);
+
+                       // Find all its parents
+                       slParents = groupObj.getParents(context, true);
+                       if (slParents != null) {
+                           slParentRolesOrGroups.addAll(slParents);
+                       }
+
+                       groupObj.close(context);
+                   }
+                   catch (MatrixException me2){
+                       // This is neither role nor group, must be person
+                   }
+               }
+               //End : Bug 346478 code modification
+
+           }
+           //Remove the last ","
+           //strPersonAssignments = strPersonAssignments.substring(0,(strPersonAssignments.length())-1);
+
+           // Begin : Bug 346478 code modification
+           slParentRolesOrGroups.addAll(personAssignments);
+           strPersonAssignments = FrameworkUtil.join(slParentRolesOrGroups,",");
+           // End : Bug 346478 code modification
+           StringBuffer objWhere = new StringBuffer();
+           objWhere.append(DomainObject.SELECT_OWNER + " matchlist " + "\"" + strPersonAssignments + "\" \",\"");
+
+           // Bug 346478 : The "Notify Only" tasks whether assigned to role/group/person, are auto completed. If they are assigned to role/group then after completion
+           // they should not be visible in the Tasks to be Accepted list.
+           objWhere.append(" && current!=\"" + POLICY_INBOX_TASK_STATE_COMPLETE + "\"");
+
+
+            Pattern typePattern = new Pattern(TYPE_INBOX_TASK);
+            //typePattern.addPattern(TYPE_TASK);
+            //typePattern.addPattern(sTypeWorkflowTask);// For Bug 346478, we shall find the WF tasks later
+
+            taskMapList = DomainObject.findObjects(context,
+                                                 typePattern.getPattern(),
+                                                 null,
+                                                 objWhere.toString(),
+                                                 selectTypeStmts);
+
+            // Removing those 'Inbox Tasks' that satisfy the following criteria
+            // 1) The connected Route has a Route Template that has 'Owning Organization' relationship &
+            // 2) The context user is not a member of that Organization
+// IR-043921V6R2011 - Changes START
+            StringList slInboxTasks = new StringList( taskMapList.size() );
+            for( Iterator mlItr = taskMapList.iterator(); mlItr.hasNext(); ) {
+                Map mTask = (Map) mlItr.next();
+                if( TYPE_INBOX_TASK.equals( (String) mTask.get( SELECT_TYPE ) ) ) {
+                    slInboxTasks.addElement( (String) mTask.get( SELECT_ID ) );
+                }
+            }
+
+            StringList busSelects = new StringList(2);
+            busSelects.addElement( SELECT_ID );
+            busSelects.addElement( SELECT_TYPE );
+
+            DomainObject doPerson = PersonUtil.getPersonObject(context);
+            MapList mlOrganizations = doPerson.getRelatedObjects( context, RELATIONSHIP_MEMBER, TYPE_ORGANIZATION,
+                busSelects, new StringList( SELECT_RELATIONSHIP_ID ), true, false, (short) 1, "", "", 0 );
+
+            StringList slMember = new StringList( mlOrganizations.size() );
+            for( Iterator mlItr = mlOrganizations.iterator(); mlItr.hasNext(); ) {
+                Map mOrg = (Map) mlItr.next();
+                slMember.addElement( (String) mOrg.get( SELECT_ID ) );
+            }
+
+            busSelects.addElement( SELECT_TEMPLATE_OWNING_ORG_ID );
+            MapList mlIboxTasksInfo = DomainObject.getInfo(context, (String[])slInboxTasks.toArray(new String[slInboxTasks.size()]), busSelects );
+            StringList slToRemoveTask = new StringList( mlIboxTasksInfo.size() );
+            for( Iterator mlItr = mlIboxTasksInfo.iterator(); mlItr.hasNext(); ) {
+                Map mTask = (Map) mlItr.next();
+                String sOrgId = (String) mTask.get( SELECT_TEMPLATE_OWNING_ORG_ID );
+                if( sOrgId !=null && !"null".equals( sOrgId ) && !"".equals( sOrgId ) && !(slMember.contains( sOrgId ))) {
+                    slToRemoveTask.addElement( (String) mTask.get( SELECT_ID ) );
+                }
+            }
+            for( Iterator mlItr = taskMapList.iterator(); mlItr.hasNext(); ) {
+                Map mTask = (Map) mlItr.next();
+                if( slToRemoveTask.contains( (String) mTask.get( SELECT_ID ))) {
+                    mlItr.remove();
+                }
+            }
+// IR-043921V6R2011 - Changes END
+
+
+            // Added for 318463
+            // Get the context (top parent) object for WBS Tasks to dispaly appropriate tree for WBS Tasks
+            MQLCommand mql = new MQLCommand();
+            String sTaskType = "";
+            String sTaskId = "";
+            String sMql = "";
+            boolean bResult = false;
+            String sResult = "";
+            StringTokenizer sResultTkz = null;
+            MapList finalTaskMapList = new MapList();
+            Iterator objectListItr = taskMapList.iterator();
+            while(objectListItr.hasNext())
+            {
+              Map objectMap = (Map) objectListItr.next();
+              sTaskType = (String)objectMap.get(DomainObject.SELECT_TYPE);
+              // if Task is WBS then add the context (top) object information
+              if ((DomainObject.TYPE_TASK).equalsIgnoreCase(sTaskType))
+              {
+                  sTaskId = (String)objectMap.get(DomainObject.SELECT_ID);
+                  sMql = "expand bus "+sTaskId+" to rel "+sRelSubTask+" recurse to 1 select bus id dump |";
+                  bResult = mql.executeCommand(context, sMql);
+                  if(bResult) {
+                      sResult = mql.getResult().trim();
+                      //Bug 318325. Added if condition to check sResult object as not null and not empty.
+                      if(sResult!=null && !"".equals(sResult)) {
+                          sResultTkz = new StringTokenizer(sResult,"|");
+                          sResultTkz.nextToken();
+                          sResultTkz.nextToken();
+                          sResultTkz.nextToken();
+                          objectMap.put("Context Object Type",(String)sResultTkz.nextToken());
+                          objectMap.put("Context Object Name",(String)sResultTkz.nextToken());
+                          sResultTkz.nextToken();
+                          objectMap.put("Context Object Id",(String)sResultTkz.nextToken());
+                      }
+                  }
+              }
+              finalTaskMapList.add(objectMap);
+            }
+
+            //Begin : Bug 346478 code modification
+            // The Workflow Task objects are not having any infomration in them to know if they are assigned to any role or group.
+            // The owner for the tasks is the Workflow owner, the assignee is not set and state Started. Therefore, we shall find
+            // all the Workflow Task objects in Started state and then find out the assignee for these tasks from their activities
+            // These assignees will be either role or group, we shall check if the context user has these role/group.
+            final String POLICY_WORKFLOW_TASK = PropertyUtil.getSchemaProperty(context, "policy_WorkflowTask");
+            final String POLICY_WORKFLOW_TASK_STATE_STARTED = PropertyUtil.getSchemaProperty(context, "Policy", POLICY_WORKFLOW_TASK, "state_Started");
+            final String ATTRIBUTE_ACTIVITY = PropertyUtil.getSchemaProperty(context, "attribute_Activity");
+            final String ATTRIBUTE_PROCESS = PropertyUtil.getSchemaProperty(context, "attribute_Process");
+            final String SELECT_ATTRIBUTE_ACTIVITY = "attribute[" + ATTRIBUTE_ACTIVITY + "]";
+            final String SELECT_WORKFLOW_PROCESS_NAME = "to["+sRelWorkflowTask+"].from.attribute[" + ATTRIBUTE_PROCESS + "]";
+
+            selectTypeStmts.add(SELECT_ATTRIBUTE_ACTIVITY);
+            selectTypeStmts.add(SELECT_WORKFLOW_PROCESS_NAME);
+
+            typePattern = new Pattern(sTypeWorkflowTask);
+
+            taskMapList = DomainObject.findObjects(context,
+                                                    typePattern.getPattern(),
+                                                    null,
+                                                    "current==\"" + POLICY_WORKFLOW_TASK_STATE_STARTED + "\"",
+                                                    selectTypeStmts);
+            Map mapTaskInfo = null;
+            String strProcessName = null;
+            String strActivityName = null;
+            String strResult = null;
+            String strAssigneeName = null;
+            StringList slActivityAssignees = new StringList();
+            for (Iterator itrTasks = taskMapList.iterator(); itrTasks.hasNext();) {
+                mapTaskInfo = (Map) itrTasks.next();
+
+                strProcessName = (String)mapTaskInfo.get(SELECT_WORKFLOW_PROCESS_NAME);
+                strActivityName = (String)mapTaskInfo.get(SELECT_ATTRIBUTE_ACTIVITY);
+
+                // Get assignee for the activity
+                strResult = MqlUtil.mqlCommand(context, "print process \"" + strProcessName + "\" select interactive[" + strActivityName + "].assignee dump \"|\"", true);
+                slActivityAssignees = FrameworkUtil.split(strResult, "|");
+
+                for (Iterator itrAssignees = slActivityAssignees.iterator(); itrAssignees.hasNext();) {
+                    strAssigneeName = (String) itrAssignees.next();
+                    if (slParentRolesOrGroups.contains(strAssigneeName)) {
+                        finalTaskMapList.add(mapTaskInfo);
+                        break;
+                    }
+                }
+            }
+            //End : Bug 346478 code modification
+
+            return finalTaskMapList;
+
+      }
+      catch(Exception e)
+      {
+		  m_logger.error(e.getMessage(), e);
+          throw new FrameworkException(e.getMessage());
+      }
+    }
+    
+    
+    
+    public Object getAllNotifyTasks(Context context, String[] args) throws Exception
+    {
+	  StringBuffer sbf=new StringBuffer();
+	  sbf.append("attribute[Route Action] == 'Notify Only'");
+	  sbf.append(" && (!attribute[LS Is Readed] == 'YES')");
+	  return getTasks(context,sbf.toString());
+    }
+    
+    public Object getReadedNotifyTasks(Context context, String[] args) throws Exception
+    {
+	  StringBuffer sbf=new StringBuffer();
+	  sbf.append("attribute[Route Action] == 'Notify Only'");
+	  sbf.append(" && attribute[LS Is Readed] == 'YES'");
+	  return getTasks(context,sbf.toString());
+    }
+    public void readNotifyOnlyTask(Context context, String[] args) throws Exception
+    {
+  	  HashMap programMap = (HashMap) JPO.unpackArgs(args);
+  	  String[] objectId = (String[])programMap.get("objectId");
+  	  InboxTask task = null;
+  	  StringList objList ;
+  	  for(int i = 0; i < objectId.length; i++){
+  		objList = FrameworkUtil.split(objectId[i],"|");
+  		  task = new InboxTask((String)objList.get(0));
+  		  task.setAttributeValue(context, "LS Is Readed", "YES");
+  	  }
+    }
+    
+	 //add home pannel by fzq
+    public String[] getRouteTaskDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[1];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+		MapList mapList=(MapList)getActiveTasks(context,args);
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?program=emxInboxTask:getActiveTasks,emxInboxTask:getMyDeskTasks,emxInboxTask:getCompletedTasks,emxInboxTask:getTasksToBeAccepted&table=APPTaskSummary&programLabel=emxComponents.Filter.Active,emxComponents.Filter.AllTasks,emxComponents.Filter.Complete,emxComponents.Filter.TasksToBeAccepted&header=emxComponents.Common.Tasks&toolbar=APPTaskSummaryToolBar&sortColumnName=Name&sortDirection=ascending&selection=multiple&HelpMarker=emxhelptasks&selectedFilter=emxInboxTask:getActiveTasks&freezePane=Name&displayView=details&suiteKey=Components\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(mapList.size() == 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("purple");  }
+	    sbCounter.append("'><span class='counterText ");
+	    if(mapList.size() == 0){ sbCounter.append("grayBright");   }
+        else                        { sbCounter.append("purple");       }
+	    sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context,"Components", "emxComponents.Common.AssignedTasks", sLanguage)).append("</td>");         
+	       
+	    aResults[0]=sbCounter.toString();
+	    return aResults;
+	}
+	public MapList getPreallocatedTasks(Context context,String[] args)throws Exception
+	{
+    	/*MapList returnList=new MapList();
+    	try{
+    		StringList busList=new StringList("id");
+    		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+    		String currentUsername=context.getUser();
+    		busList.add("name");
+    		busList.add("type");
+    		busList.add("current");
+    		StringList busList1=new StringList("id");
+    		busList1.add("current");
+    		busList1.add("attribute[SEM Edit Status]");
+    		String where="name=='"+currentUsername+"'";
+    		MapList projectList=DomainObject.findObjects(context,"Project Space","*","",busList);
+    		Iterator items=projectList.iterator();
+    		while(items.hasNext()){
+    			Map map=(Map) items.next();
+    			String current=(String) map.get("current");
+    			String id=(String) map.get("id");
+    			if(current.equals("Hold")||current.equals("Cancel")){
+    				continue;
+    			}else{
+    				DomainObject projectObj=DomainObject.newInstance(context,id);
+    				MapList taskList=projectObj.getRelatedObjects(context,"Subtask","Task,Milestone,Gate,Phase",busList1,relList,false,true,(short)3,"","");
+    				Iterator items1=taskList.iterator();
+    	    		while(items1.hasNext()){
+    	    			Map map1=(Map)items1.next();
+    	    			String current1=(String) map1.get("current");
+    	    			String id1=(String) map1.get("id");
+    	    			String editStatus=(String) map1.get("attribute[SEM Edit Status]");
+    				    if(current1.equals("Create")&&(editStatus.equals("P1")||editStatus.equals("P3")||editStatus.equals("P4"))){
+    				    	DomainObject taskObj=DomainObject.newInstance(context,id1);
+    				    	MapList personList=taskObj.getRelatedObjects(context,"Assigned Tasks","Person",busList,relList,true,false,(short)1,where,"");
+    				    	if(personList.size()>0){
+								map1.remove("level");
+    				    		returnList.add(map1);
+    				    	}
+    				    }
+    			    }
+    			 }
+    		}
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+    	return returnList;*/
+		//mod by zs 6/5/2017
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String  personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+		String where = "current=='Create' && (attribute[SEM Edit Status]=='P1' || attribute[SEM Edit Status]=='P3' || attribute[SEM Edit Status]=='P4')";
+		DomainObject personObj = new DomainObject(personId);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList maplist1=personObj.getRelatedObjects(context,"Assigned Tasks","*", busList, relList, false, true, (short)1, where, "");
+		
+		return maplist1;
+		//mod end
+	}
+    public String[] getPreallocatedDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[2];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+		MapList mapList=(MapList)getPreallocatedTasks(context,args);
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?program=emxInboxTask:getPreallocatedTasks&showPageHeader=true&header=emxFramework.Common.PreallocatedTasks&table=SEMMyTaskSummary1&HelpMarker=emxhelptasks&suiteKey=Framework\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(mapList.size() == 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("purple");  }
+	    sbCounter.append("'><span class='counterText ");
+	    if(mapList.size() == 0){ sbCounter.append("grayBright");   }
+        else                        { sbCounter.append("purple");       }
+	    sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context,"Framework", "emxFramework.Common.PreallocatedTasks", sLanguage)).append("</td>");          
+	    aResults[0]=sbCounter.toString();
+		
+		StringBuilder sbUpdates = new StringBuilder();
+	    MapList mapList1=(MapList) getAllNotifyTasks(context,args);
+	    int iCountMRU=mapList1.size();
+        sbUpdates.append("<td ");
+        if(iCountMRU > 0) {
+            sbUpdates.append(" onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?program=emxInboxTask:getAllNotifyTasks,emxInboxTask:getReadedNotifyTasks&table=APPTaskSummary&programLabel=emxComponents.Filter.getAllNotifyTasks,emxComponents.Filter.getReadedNotifyTasks&header=emxComponents.Common.SEMTaskNotice&toolbar=CH_APPNotifyTaskToolBar&sortColumnName=Name&sortDirection=ascending&selection=multiple&HelpMarker=emxhelptasks&selectedFilter=emxInboxTask:getAllNotifyTasks&displayView=details&suiteKey=Components\")' ");
+            sbUpdates.append(" class='mruCell'><span style='color:#000000;font-weight:bold;'>").append(iCountMRU).append("</span> <span class='counterTextMRU'>");            
+            sbUpdates.append(EnoviaResourceBundle.getProperty(context, "Components", "emxComponents.Common.SEMNoticeTaskView"  , sLanguage)); 
+            sbUpdates.append("</span>");
+        } else {
+           sbUpdates.append(">");    
+        }
+        sbUpdates.append("</td>");    
+        aResults[1]=sbUpdates.toString();
+		
+	    return aResults;
+	}//
+	
+	//
+    
+    
+    public Vector showCHContentDescription(Context context, String[] args) throws Exception {
+		try {
+		    ContextUtil.pushContext(context);
+			Vector contentCheckbox = new Vector();
+			String compDate = "";
+			String Description = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList objectList = (MapList) programMap.get("objectList");
+			Map paramList = (Map) programMap.get("paramList");
+			boolean isExporting = (paramList.get("reportFormat") != null);
+			DomainObject boRoute = DomainObject.newInstance(context);
+			StringList objectSelects = new StringList();
+			objectSelects.add(DomainConstants.SELECT_ID);
+
+			Iterator objectListItr = objectList.iterator();
+			while (objectListItr.hasNext()) {
+				String sRouteId = null;
+				String sRelName = "";
+				boolean toSide = true;
+				boolean fromSide = true;
+				Map objectMap = (Map) objectListItr.next();
+				String objType = (String) objectMap.get(DomainObject.SELECT_TYPE);
+
+				MapList Maplist = new MapList();
+				if (TYPE_INBOX_TASK.equals(objType)) {
+					sRouteId = (String) objectMap.get("from[Route Task].to.id");
+					sRelName = DomainConstants.RELATIONSHIP_OBJECT_ROUTE;
+					fromSide = false;
+					if(sRouteId==null){
+						String id=(String) objectMap.get("id");
+						DomainObject Obj=new DomainObject(id);
+						StringList RouteIdList=Obj.getInfoList(context,"from[Route Task].to.id");
+						if(RouteIdList.size()>0){
+						  sRouteId=((String)RouteIdList.get(0)).trim();
+						}
+					}
+				} else if (sTypeWorkflowTask.equals(objType)) {
+					sRouteId = (String) objectMap.get(DomainObject.SELECT_ID);
+					sRelName = sRelWorkflowTaskDeliverable;
+					toSide = false;
+				}
+				if (sRouteId != null && !"".equals(sRouteId)) {
+					boRoute.setId(sRouteId);
+					Maplist = boRoute.getRelatedObjects(context, sRelName, "*", objectSelects, null, toSide, fromSide,
+							(short) 0, "", "");
+				}
+
+				if (isExporting) {
+					if (Maplist.size() > 0 && sTypeWorkflowTask.equals(objType)) {
+						compDate = String.valueOf(Maplist.size());
+					} else if (Maplist.size() == 1 && TYPE_INBOX_TASK.equals(objType)) {
+						Map map = (Map) Maplist.get(0);
+						String contentId = (String) map.get(DomainConstants.SELECT_ID);
+						DomainObject contentObj = DomainObject.newInstance(context, contentId);
+						String name = contentObj.getInfo(context, DomainObject.SELECT_NAME);
+						String type = contentObj.getInfo(context, DomainObject.SELECT_TYPE);
+						String typeName = com.matrixone.apps.domain.util.i18nNow.getTypeI18NString(type, context
+								.getSession().getLanguage());
+						String revision = contentObj.getInfo(context, DomainObject.SELECT_REVISION);
+						String desc = contentObj.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						compDate = typeName + "," + name + "," + revision + "," + desc;
+						Description = desc;
+					} else {
+						compDate = "";
+					}
+				} else {
+					if (Maplist.size() == 1 && TYPE_INBOX_TASK.equals(objType)) {
+						Map map = (Map) Maplist.get(0);
+						String contentId = (String) map.get(DomainConstants.SELECT_ID);
+
+						DomainObject contentObj = DomainObject.newInstance(context, contentId);
+						String name = contentObj.getInfo(context, DomainObject.SELECT_NAME);
+						String revision = contentObj.getInfo(context, DomainObject.SELECT_REVISION);
+						String type = contentObj.getInfo(context, DomainObject.SELECT_TYPE);
+						String typeName = com.matrixone.apps.domain.util.i18nNow.getTypeI18NString(type, context
+								.getSession().getLanguage());
+						String desc = contentObj.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						String additionalDesc = "";
+						String isKindOf = com.matrixone.apps.domain.util.MqlUtil.mqlCommand(context, "print type \""
+								+ type + "\" select kindOf dump");
+
+						compDate = "<a href=\"javascript:emxTableColumnLinkClick('../common/emxTree.jsp?objectId="
+								+ contentId + "','575','575', false,'popup','')\">" + name + "," + revision + ","
+								+ additionalDesc + "</a>" + addECOLink(context, contentId);
+						Description = contentObj.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+					}
+				}
+				contentCheckbox.add(Description);
+
+			}
+
+			return contentCheckbox;
+		} catch (Exception ex) {
+			m_logger.error(ex.getMessage(), ex);
+			throw ex;
+		}finally{
+			ContextUtil.popContext(context);
+		}
+	}
+
+	public Vector showCHContent(Context context, String[] args) throws Exception {
+		try {
+			Vector contentCheckbox = new Vector();
+			String compDate = "";
+            ContextUtil.pushContext(context);	
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList objectList = (MapList) programMap.get("objectList");
+			Map paramList = (Map) programMap.get("paramList");
+			boolean isExporting = (paramList.get("reportFormat") != null);
+			DomainObject boRoute = DomainObject.newInstance(context);
+			StringList objectSelects = new StringList();
+			objectSelects.add(DomainConstants.SELECT_ID);
+
+			Iterator objectListItr = objectList.iterator();
+			while (objectListItr.hasNext()) {
+				String sRouteId = null;
+				String sRelName = "";
+				boolean toSide = true;
+				boolean fromSide = true;
+				Map objectMap = (Map) objectListItr.next();
+				String objType = (String) objectMap.get(DomainObject.SELECT_TYPE);
+				MapList Maplist = new MapList();
+				if (TYPE_INBOX_TASK.equals(objType)) {
+
+					sRouteId = (String) objectMap.get("from[Route Task].to.id");
+					sRelName = DomainConstants.RELATIONSHIP_OBJECT_ROUTE;
+					fromSide = false;
+					if(sRouteId==null){
+						String id=(String) objectMap.get("id");
+						DomainObject Obj=new DomainObject(id);
+						StringList RouteIdList=Obj.getInfoList(context,"from[Route Task].to.id");
+						if(RouteIdList.size()>0){
+						  sRouteId=((String)RouteIdList.get(0)).trim();
+						}
+					}
+				} else if (sTypeWorkflowTask.equals(objType)) {
+					sRouteId = (String) objectMap.get(DomainObject.SELECT_ID);
+					sRelName = sRelWorkflowTaskDeliverable;
+					toSide = false;
+				}
+				if (sRouteId != null && !"".equals(sRouteId)) {
+					boRoute.setId(sRouteId);
+
+					Maplist = boRoute.getRelatedObjects(context, sRelName, "*", objectSelects, null, toSide, fromSide,
+							(short) 0, "", "");
+				}
+				if (isExporting) {
+					if (Maplist.size() > 0 && sTypeWorkflowTask.equals(objType)) {
+						compDate = String.valueOf(Maplist.size());
+					} else if (Maplist.size() == 1 && TYPE_INBOX_TASK.equals(objType)) {
+						Map map = (Map) Maplist.get(0);
+						String contentId = (String) map.get(DomainConstants.SELECT_ID);
+						DomainObject contentObj = DomainObject.newInstance(context, contentId);
+						String name = contentObj.getInfo(context, DomainObject.SELECT_NAME);
+						String type = contentObj.getInfo(context, DomainObject.SELECT_TYPE);
+						String typeName = com.matrixone.apps.domain.util.i18nNow.getTypeI18NString(type, context
+								.getSession().getLanguage());
+						String revision = contentObj.getInfo(context, DomainObject.SELECT_REVISION);
+						String desc = contentObj.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						//compDate = typeName + "," + name + "," + revision + "," + desc;
+						compDate =name;
+					} else {
+						compDate = "";
+					}
+				} else {
+					if (Maplist.size() == 1 && TYPE_INBOX_TASK.equals(objType)) {
+						Map map = (Map) Maplist.get(0);
+						String contentId = (String) map.get(DomainConstants.SELECT_ID);
+
+						DomainObject contentObj = DomainObject.newInstance(context, contentId);
+						String name = contentObj.getInfo(context, DomainObject.SELECT_NAME);
+						String revision = contentObj.getInfo(context, DomainObject.SELECT_REVISION);
+						String type = contentObj.getInfo(context, DomainObject.SELECT_TYPE);
+						String typeName = com.matrixone.apps.domain.util.i18nNow.getTypeI18NString(type, context
+								.getSession().getLanguage());
+						String desc = contentObj.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						String additionalDesc = "";
+						String isKindOf = com.matrixone.apps.domain.util.MqlUtil.mqlCommand(context, "print type \""
+								+ type + "\" select kindOf dump");
+
+						String url="";
+						if(contentObj.isKindOf(context,  "CH_DesignChange") )
+						{
+							url="../common/emxTree.jsp?objectId="+contentId+"&amp;DefaultCategory=CH_DesignChangeCommand";
+						}else if(contentObj.isKindOf(context,  "CH_DesignRelease")){
+							url="../common/emxTree.jsp?objectId="+contentId+"&amp;DefaultCategory=CH_DesignReleaseCommand";
+
+						}else if(contentObj.isKindOf(context,  "CH_DesignApprove")){
+							url="../common/emxTree.jsp?objectId="+contentId+"&amp;DefaultCategory=CH_DesignApproveCommand";
+
+							
+						}else if(contentObj.isKindOf(context,  "DOCUMENTS")){
+							url="../common/emxTree.jsp?objectId="+contentId+"&amp;DefaultCategory=APPDocumentFiles";
+						}else{
+							
+							url="../common/emxTree.jsp?objectId="+contentId;
+						}
+						/*compDate = "<a onClick=\"changeByteColor(this);\" href=\"javascript:emxTableColumnLinkClick('"
+								+ url + "','575','575', false,'popup','')\">" + name + "," + revision + ","
+								+ additionalDesc + "</a>" + addECOLink(context, contentId);*/  
+						compDate = "<a onClick=\"changeByteColor(this);\" href=\"javascript:emxTableColumnLinkClick('"
+								+ url + "','575','575', false,'popup','')\">" + name + "</a>" + addECOLink(context, contentId);
+
+					}else{ //add by caipan
+					compDate="";
+					}
+
+				}
+				contentCheckbox.add(compDate);
+			}
+
+			return contentCheckbox;
+		} catch (Exception ex) {
+			m_logger.error(ex.getMessage(), ex);
+			System.out.println("Error in getActualCompletionDate= Lanka " + ex.getMessage());
+			throw ex;
+		}finally{
+			ContextUtil.popContext(context);
+		}
+	}
+
+	public Vector showDocTitle(Context context, String[] args) throws Exception {
+		try {
+			Vector contentCheckbox = new Vector();
+			String compDate = "";
+
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList objectList = (MapList) programMap.get("objectList");
+			Map paramList = (Map) programMap.get("paramList");
+			boolean isExporting = (paramList.get("reportFormat") != null);
+			DomainObject boRoute = DomainObject.newInstance(context);
+
+			StringList objectSelects = new StringList();
+			objectSelects.add(DomainConstants.SELECT_ID);
+
+			Iterator objectListItr = objectList.iterator();
+			while (objectListItr.hasNext()) {
+				String sRouteId = null;
+				String sRelName = "";
+				boolean toSide = true;
+				boolean fromSide = true;
+				Map objectMap = (Map) objectListItr.next();
+				String objType = (String) objectMap.get(DomainObject.SELECT_TYPE);
+
+				MapList Maplist = new MapList();
+				if (TYPE_INBOX_TASK.equals(objType)) {
+
+					sRouteId = (String) objectMap.get("from[Route Task].to.id");
+					sRelName = DomainConstants.RELATIONSHIP_OBJECT_ROUTE;
+					fromSide = false;
+				} else if (sTypeWorkflowTask.equals(objType)) {
+					sRouteId = (String) objectMap.get(DomainObject.SELECT_ID);
+					sRelName = sRelWorkflowTaskDeliverable;
+					toSide = false;
+				}
+				if (sRouteId != null && !"".equals(sRouteId)) {
+					boRoute.setId(sRouteId);
+
+					Maplist = boRoute.getRelatedObjects(context, sRelName, "*", objectSelects, null, toSide, fromSide,
+							(short) 0, "", "");
+				}
+				if (isExporting) {
+					if (Maplist.size() > 0 && sTypeWorkflowTask.equals(objType)) {
+						compDate = String.valueOf(Maplist.size());
+					} else if (Maplist.size() == 1 && TYPE_INBOX_TASK.equals(objType)) {
+						Map map = (Map) Maplist.get(0);
+						String contentId = (String) map.get(DomainConstants.SELECT_ID);
+						DomainObject contentObj = DomainObject.newInstance(context, contentId);
+						String name = contentObj.getInfo(context, DomainObject.SELECT_NAME);
+						String type = contentObj.getInfo(context, DomainObject.SELECT_TYPE);
+						String typeName = com.matrixone.apps.domain.util.i18nNow.getTypeI18NString(type, context
+								.getSession().getLanguage());
+						String revision = contentObj.getInfo(context, DomainObject.SELECT_REVISION);
+						String desc = contentObj.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						compDate = typeName + "," + name + "," + revision + "," + desc;
+					} else {
+						compDate = "";
+					}
+				} else {
+					if (Maplist.size() == 1 && TYPE_INBOX_TASK.equals(objType)) {
+						Map map = (Map) Maplist.get(0);
+						String contentId = (String) map.get(DomainConstants.SELECT_ID);
+
+						DomainObject contentObj = DomainObject.newInstance(context, contentId);
+						String name = contentObj.getInfo(context, DomainObject.SELECT_NAME);
+						String revision = contentObj.getInfo(context, DomainObject.SELECT_REVISION);
+						String type = contentObj.getInfo(context, DomainObject.SELECT_TYPE);
+						String typeName = com.matrixone.apps.domain.util.i18nNow.getTypeI18NString(type, context
+								.getSession().getLanguage());
+						String desc = contentObj.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						compDate = contentObj.getAttributeValue(context, "CH_doc_name");
+
+					}
+
+				}
+				contentCheckbox.add(compDate);
+			}
+			return contentCheckbox;
+		} catch (Exception ex) {
+			m_logger.error(ex.getMessage(), ex);
+			System.out.println("Error in getActualCompletionDate= Lanka " + ex.getMessage());
+			throw ex;
+		}
+	}
+	
+	
+	protected String addECOLink(Context context, String objectId) throws Exception {
+
+		DomainObject dObj = new DomainObject(objectId);
+
+		StringList selectStmts = new StringList();
+		selectStmts.addElement(dObj.SELECT_ID);
+		selectStmts.addElement(dObj.SELECT_NAME);
+
+		MapList ecoList = dObj.getRelatedObjects(context, "Affected Item", "*", selectStmts, null, true, false,
+				(short) 1, null, null);
+
+		String url = "";
+		for (int i = 0; i < ecoList.size(); i++) {
+			java.util.Map map = (java.util.Map) ecoList.get(i);
+			String ecoName = (String) map.get(dObj.SELECT_NAME);
+			String ecoId = (String) map.get(dObj.SELECT_ID);
+
+			String ecoIcon = "../common/images/iconSmallECO.gif";
+
+			url = url + "<br><image src=\"" + ecoIcon
+					+ "\"><a href=\"javascript:emxTableColumnLinkClick('../common/emxTree.jsp?objectId=" + ecoId
+					+ "','575','575', false,'popup','')\">";
+			url = url + ecoName + "</a>";
+
+		}
+		return url;
+	}
+	//add filter  by fzq
+    public Object getSEMTasks(Context context, String busWhere ) throws Exception
+    {
+
+         try
+         {
+       long start=System.currentTimeMillis();
+             DomainObject taskObject = DomainObject.newInstance(context);
+             DomainObject boPerson     = PersonUtil.getPersonObject(context);
+             String stateInboxTaskReview = PropertyUtil.getSchemaProperty(context,"policy",DomainObject.POLICY_INBOX_TASK,"state_Review");
+             StringList selectTypeStmts = new StringList();
+             StringList selectRelStmts  = new StringList();
+       //Added for Bug No 338177 Begin
+             StringList selectTypeStmtId = new StringList();
+             selectTypeStmtId.add(taskObject.SELECT_ID);
+             //Added for Bug No 338177 End
+             selectTypeStmts.add(taskObject.SELECT_NAME);
+             selectTypeStmts.add(taskObject.SELECT_ID);
+             selectTypeStmts.add(taskObject.SELECT_DESCRIPTION);
+             selectTypeStmts.add(taskObject.SELECT_OWNER);
+             selectTypeStmts.add(taskObject.SELECT_CURRENT);
+             selectTypeStmts.add(strAttrRouteAction);
+             selectTypeStmts.add(strAttrCompletionDate);
+             selectTypeStmts.add(strAttrTaskCompletionDate);
+             selectTypeStmts.add("attribute[" + DomainObject.ATTRIBUTE_ROUTE_INSTRUCTIONS + "]");
+             selectTypeStmts.add(strAttrTitle);
+             selectTypeStmts.add(objectIdSelectStr);
+             selectTypeStmts.add(objectNameSelectStr);
+             selectTypeStmts.add(routeIdSelectStr);
+             selectTypeStmts.add(routeNameSelectStr);
+             selectTypeStmts.add(routeOwnerSelectStr);
+
+             selectTypeStmts.add(taskObject.SELECT_TYPE);
+             selectTypeStmts.add(routeTypeSelectStr);
+             selectTypeStmts.add(workflowIdSelectStr);
+             selectTypeStmts.add(workflowNameSelectStr);
+             selectTypeStmts.add(workflowTypeSelectStr);
+             selectTypeStmts.add(strAttrworkFlowDueDate);
+             selectTypeStmts.add(strAttrTaskEstimatedFinishDate);
+             selectTypeStmts.add(strAttrworkFlowCompletinDate);
+             selectTypeStmts.add(strAttrTaskFinishDate);
+             selectTypeStmts.add(TASK_PROJECT_ID);
+             selectTypeStmts.add(TASK_PROJECT_NAME);
+             selectTypeStmts.add(TASK_PROJECT_TYPE);
+
+             /*  selectTypeStmts.add(Route.SELECT_APPROVAL_STATUS);*/
+             String sPersonId = boPerson.getObjectId();
+
+             Pattern relPattern = new Pattern(sRelProjectTask);
+             relPattern.addPattern(sRelAssignedTask);
+             relPattern.addPattern(sRelWorkflowTaskAssinee);
+
+             Pattern typePattern = new Pattern(sTypeInboxTask);
+             typePattern.addPattern(DomainObject.TYPE_TASK);
+             typePattern.addPattern(sTypeWorkflowTask);
+             typePattern.addPattern(DomainObject.TYPE_CHANGE_TASK);
+
+             SelectList selectStmts = new SelectList();
+             taskObject.setId(sPersonId);
+            // get the list of tasks that needs owner review
+        //Added for bug 352071
+            String strResult = MqlUtil.mqlCommand(context,"temp query bus '"+sTypeInboxTask+"' * * where 'attribute["+sAttrReviewCommentsNeeded+"]==Yes && current=="+stateInboxTaskReview+" && from["+sRelRouteTask+"].to.owner==\""+context.getUser()+"\"' select id dump |");
+        //end of bug 352071
+             //Added for Bug No 338177 Begin
+       com.matrixone.apps.domain.util.MapList taskMapList =  taskObject.getRelatedObjects(context,
+                                                                                 relPattern.getPattern(),
+                                                                                 typePattern.getPattern(),
+                                                                                 selectTypeStmtId,
+                                                                                 selectRelStmts,
+                                                                                 true,
+                                                                                 true,
+                                                                                 (short)2,
+                                                                                 busWhere,
+                                                                                 null,
+                                                                                 null,
+                                                                                 null,
+                                                                                 null);
+
+        //Added for bug 352071
+       if(strResult!=null && !"".equals(strResult))
+             {
+                 String taskInbox = "";
+                 StringList strlResult = new StringList();
+                 String strTemp = "";
+                 StringList taskIds =FrameworkUtil.split(strResult,"\n");
+                 Iterator taskIdIterator=taskIds.iterator();
+                 while(taskIdIterator.hasNext())
+                 {
+                     Map tempMap= new HashMap();
+                     taskInbox=(String)taskIdIterator.next();
+                     strlResult = FrameworkUtil.split(taskInbox,"|");
+                     strTemp=(String)strlResult.get(3);
+                     tempMap.put("id",strTemp);
+                     taskMapList.add(tempMap);
+                 }
+             }
+        //end for bug 352071
+             String[] objectIds=new String[taskMapList.size()];
+             Iterator idsIterator=taskMapList.iterator();
+
+             for(int i=0;idsIterator.hasNext();i++){
+                 Map map=(Map)idsIterator.next();
+                 objectIds[i]=(String)map.get("id");
+             }
+             taskMapList=DomainObject.getInfo(context,objectIds,selectTypeStmts);
+             //Added for Bug No 338177 End
+
+
+             // Added for 318463
+             // Get the context (top parent) object for WBS Tasks to dispaly appropriate tree for WBS Tasks
+             MQLCommand mql = new MQLCommand();
+             String sTaskType = "";
+             MapList finalTaskMapList = new MapList();
+            Iterator objectListItr = taskMapList.iterator();
+
+             while(objectListItr.hasNext())
+             {
+
+                 Map objectMap = (Map) objectListItr.next();
+                 sTaskType = (String)objectMap.get(DomainObject.SELECT_TYPE);
+                 boolean isValidProject=true;  //modify by fzq 2017-2-18
+                 // if Task is WBS then add the context (top) object information
+                 if ((DomainObject.TYPE_TASK).equalsIgnoreCase(sTaskType))
+                 {
+                     objectMap.put("Context Object Type",(String)objectMap.get(TASK_PROJECT_TYPE));
+                     objectMap.put("Context Object Name",(String)objectMap.get(TASK_PROJECT_NAME));
+                     objectMap.put("Context Object Id",(String)objectMap.get(TASK_PROJECT_ID));
+                     String id=(String)objectMap.get(TASK_PROJECT_ID);
+                     DomainObject projectObj=new DomainObject(id);
+                     String currentStateName=projectObj.getCurrentState(context).getName();
+                     if(currentStateName.equals("Hold")||currentStateName.equals("Cancel")){
+                    	 isValidProject=false;
+                     }
+                 }
+                 if(isValidProject){
+                	   finalTaskMapList.add(objectMap);
+                 }
+
+             }
+       long end=System.currentTimeMillis();
+             return finalTaskMapList;
+         }
+         catch (Exception ex)
+         {
+			 m_logger.error(ex.getMessage(), ex);
+             System.out.println("Error in getTasks = " + ex.getMessage());
+             throw ex;
+         }
+    }
+    public Object getActiveTasks(Context context, String[] args) throws Exception
+    {
+
+         String stateInboxTaskAssigned = PropertyUtil.getSchemaProperty(context,"policy",DomainObject.POLICY_INBOX_TASK,"state_Assigned");
+         String stateWorkFlowTaskAssigned = PropertyUtil.getSchemaProperty(context,"policy", policyWorkflowTask, "state_Assigned");
+         String stateTaskAssign = PropertyUtil.getSchemaProperty(context,"policy",DomainObject.POLICY_PROJECT_TASK,"state_Assign");
+         String stateTaskActive = PropertyUtil.getSchemaProperty(context,"policy",DomainObject.POLICY_PROJECT_TASK,"state_Active");
+         String stateTaskReview = PropertyUtil.getSchemaProperty(context,"policy",DomainObject.POLICY_PROJECT_TASK,"state_Review");
+
+          //commented for Bug NO:338177
+         /* String WBSWhereExp = "(type == 'Task'";
+         if(stateTaskReview == null || "".equals(stateTaskReview) || "null".equals(stateTaskReview))
+         {
+           WBSWhereExp = WBSWhereExp+")";
+         } else {
+           WBSWhereExp = WBSWhereExp +" && current == " + stateTaskReview + ")";
+         }*/
+         StringBuffer sbf=new StringBuffer();
+         if(stateInboxTaskAssigned != null && !"".equals(stateInboxTaskAssigned))
+         {
+           sbf.append("current == "+stateInboxTaskAssigned);
+         }
+         if(stateWorkFlowTaskAssigned!=null &&!"".equals(stateWorkFlowTaskAssigned))
+         {
+             if(sbf.length()!=0) {
+               sbf.append(" || ");
+             }
+             sbf.append("current == "+stateWorkFlowTaskAssigned);
+          }
+         if( stateTaskAssign!=null &&!"".equals( stateTaskAssign))
+         {
+             if(sbf.length()!=0) {
+               sbf.append(" || ");
+             }
+             sbf.append("current == "+ stateTaskAssign);
+         }
+         if( stateTaskActive!=null &&!"".equals( stateTaskActive))
+         {
+             if(sbf.length()!=0) {
+               sbf.append(" || ");
+             }
+             sbf.append("current == "+ stateTaskActive);
+         }
+         if(stateTaskReview!=null &&!"".equals( stateTaskReview))
+         {
+             if(sbf.length()!=0) {
+               sbf.append(" || ");
+             }
+             sbf.append("current == "+ stateTaskReview);
+         }
+        // commented for Bug NO:338177
+         /*  if(  WBSWhereExp!=null &&!"".equals(  WBSWhereExp))
+         {
+             if(sbf.length()!=0) {
+               sbf.append(" || ");
+             }
+             sbf.append(WBSWhereExp);
+         }*/
+         return getSEMTasks(context,sbf.toString()) ;
+    }
+    @com.matrixone.apps.framework.ui.ProgramCallable
+    public Object getMyDeskTasks(Context context, String[] args)
+        throws Exception
+    {
+
+        try
+        {
+            HashMap programMap        = (HashMap) JPO.unpackArgs(args);
+            DomainObject taskObject = DomainObject.newInstance(context);
+            DomainObject boPerson     = PersonUtil.getPersonObject(context);
+            StringList selectTypeStmts = new StringList();
+            StringList selectRelStmts  = new StringList();
+            selectTypeStmts.add(taskObject.SELECT_NAME);
+            selectTypeStmts.add(taskObject.SELECT_ID);
+            selectTypeStmts.add(taskObject.SELECT_DESCRIPTION);
+            selectTypeStmts.add(taskObject.SELECT_OWNER);
+            selectTypeStmts.add(taskObject.SELECT_CURRENT);
+            selectTypeStmts.add(strAttrRouteAction);
+            selectTypeStmts.add(strAttrCompletionDate);
+            selectTypeStmts.add(strAttrTaskCompletionDate);
+            selectTypeStmts.add("attribute[" + DomainObject.ATTRIBUTE_ROUTE_INSTRUCTIONS + "]");
+            selectTypeStmts.add(strAttrTitle);
+            selectTypeStmts.add(objectIdSelectStr);
+            selectTypeStmts.add(objectNameSelectStr);
+            selectTypeStmts.add(routeIdSelectStr);
+            selectTypeStmts.add(routeNameSelectStr);
+            selectTypeStmts.add(routeOwnerSelectStr);
+
+            selectTypeStmts.add(taskObject.SELECT_TYPE);
+            selectTypeStmts.add(routeTypeSelectStr);
+            selectTypeStmts.add(workflowIdSelectStr);
+            selectTypeStmts.add(workflowNameSelectStr);
+            selectTypeStmts.add(workflowTypeSelectStr);
+            selectTypeStmts.add(strAttrworkFlowDueDate);
+            selectTypeStmts.add(strAttrTaskEstimatedFinishDate);
+            selectTypeStmts.add(strAttrworkFlowCompletinDate);
+            selectTypeStmts.add(strAttrTaskFinishDate);
+            selectTypeStmts.add(TASK_PROJECT_ID);
+            selectTypeStmts.add(TASK_PROJECT_TYPE);
+            selectTypeStmts.add(TASK_PROJECT_NAME);
+            /*  selectTypeStmts.add(Route.SELECT_APPROVAL_STATUS);*/
+            String sPersonId = boPerson.getObjectId();
+
+
+
+            Pattern relPattern = new Pattern(sRelProjectTask);
+            relPattern.addPattern(sRelAssignedTask);
+            relPattern.addPattern(sRelWorkflowTaskAssinee);
+
+            Pattern typePattern = new Pattern(sTypeInboxTask);
+            typePattern.addPattern(DomainObject.TYPE_TASK);
+            typePattern.addPattern(sTypeWorkflowTask);
+            typePattern.addPattern(DomainObject.TYPE_CHANGE_TASK);
+
+            SelectList selectStmts = new SelectList();
+            taskObject.setId(sPersonId);
+            String busWhere = null;
+
+            ContextUtil.startTransaction(context,false);
+            ExpansionIterator expItr = taskObject.getExpansionIterator(context,
+                                                                       relPattern.getPattern(),
+                                                                       typePattern.getPattern(),
+                                                                       selectTypeStmts,
+                                                                       selectRelStmts,
+                                                                       true,
+                                                                       true,
+                                                                       (short)2,
+                                                                       busWhere,
+                                                                       null,
+                                                                       (short)0,
+                                                                       false,
+                                                                       false,
+                                                                       (short)100,
+                                                                       false);
+
+            com.matrixone.apps.domain.util.MapList taskMapList = null;
+            try {
+                taskMapList = FrameworkUtil.toMapList(expItr,(short)0,null,null,null,null);
+            } finally {
+                expItr.close();
+            }
+            ContextUtil.commitTransaction(context);
+
+            // Added for 318463
+            // Get the context (top parent) object for WBS Tasks to dispaly appropriate tree for WBS Tasks
+            MQLCommand mql = new MQLCommand();
+            String sTaskType = "";
+            MapList finalTaskMapList = new MapList();
+            Iterator objectListItr = taskMapList.iterator();
+            while(objectListItr.hasNext())
+            {
+                Map objectMap = (Map) objectListItr.next();
+                sTaskType = (String)objectMap.get(DomainObject.SELECT_TYPE);
+                boolean isValidProject=true;  //modify by fzq 2017-2-18
+                // if Task is WBS then add the context (top) object information
+                if ((DomainObject.TYPE_TASK).equalsIgnoreCase(sTaskType))
+                {
+                    objectMap.put("Context Object Type",(String)objectMap.get(TASK_PROJECT_TYPE));
+                    objectMap.put("Context Object Name",(String)objectMap.get(TASK_PROJECT_NAME));
+                    objectMap.put("Context Object Id",(String)objectMap.get(TASK_PROJECT_ID));
+                    String id=(String)objectMap.get(TASK_PROJECT_ID);
+                    DomainObject projectObj=new DomainObject(id);
+                    String currentStateName=projectObj.getCurrentState(context).getName();
+                    if(currentStateName.equals("Hold")||currentStateName.equals("Cancel")){
+                   	 isValidProject=false;
+                    }
+                }
+                if(isValidProject){
+                	finalTaskMapList.add(objectMap);
+                }
+            }
+
+            return finalTaskMapList;
+        }
+        catch (Exception ex)
+        {
+			m_logger.error(ex.getMessage(), ex);
+            System.out.println("Error in getMyDeskTasks = " + ex.getMessage());
+            throw ex;
+        }
+  }
+   @com.matrixone.apps.framework.ui.ProgramCallable
+   public Object getCompletedTasks(Context context, String[] args) throws Exception
+   {
+
+         String stateInboxTaskComplete = PropertyUtil.getSchemaProperty(context,"policy", DomainObject.POLICY_INBOX_TASK,"state_Complete");
+     String stateWorkFlowTaskComplete = PropertyUtil.getSchemaProperty(context,"policy", policyWorkflowTask, "state_Completed");
+     String stateTaskComplete = PropertyUtil.getSchemaProperty(context,"policy",DomainObject.POLICY_PROJECT_TASK,"state_Complete");
+     //added for the 325218
+     StringBuffer sbf=new StringBuffer();
+     if(stateInboxTaskComplete !=null && !"".equals(stateInboxTaskComplete))
+       sbf.append("  current == "+ stateInboxTaskComplete);
+     if(stateWorkFlowTaskComplete!=null &&!"".equals(stateWorkFlowTaskComplete))
+      {
+       if(sbf.length()!=0)
+         sbf.append(" || ");
+       sbf.append("current == "+stateWorkFlowTaskComplete);
+      }
+     if(stateTaskComplete!=null&&!"".equals(stateTaskComplete))
+      {
+       if(sbf.length()!=0)
+         sbf.append(" || ");
+         sbf.append("current == "+stateTaskComplete);
+      }
+
+      return getSEMTasks(context,sbf.toString());
+     //till here
+    } // 
+	public Vector showProjectName(Context context, String[] args) throws Exception
+    {
+       try
+       {
+    	   ContextUtil.pushContext(context);	
+           HashMap programMap = (HashMap) JPO.unpackArgs(args);
+           HashMap paramMap = (HashMap) programMap.get("paramList");
+           MapList objectList = (MapList)programMap.get("objectList");
+
+           Map objectMap = null;
+           Vector showRoute = new Vector();
+           String statusImageString = "";
+           String sRouteString = "";
+           boolean isPrinterFriendly = false;
+           String strPrinterFriendly = (String)paramMap.get("reportFormat");
+           String languageStr = (String)paramMap.get("languageStr");
+
+           String sAccDenied = EnoviaResourceBundle.getProperty(context, "emxComponentsStringResource",new Locale(languageStr),"emxComponents.Common.AccessDenied");
+
+           if (strPrinterFriendly != null )
+           {
+               isPrinterFriendly = true;
+           }
+
+           int objectListSize = 0 ;
+           if(objectList != null)
+           {
+               objectListSize = objectList.size();
+           }
+           for(int i=0; i< objectListSize; i++)
+           {
+               statusImageString = "";
+               sRouteString = "";
+               try
+               {
+                   objectMap = (HashMap) objectList.get(i);
+               }
+               catch(ClassCastException cce)
+               {
+                   objectMap = (Hashtable) objectList.get(i);
+               }
+
+               String sTypeName = (String) objectMap.get(DomainObject.SELECT_TYPE);
+               String sObjectId = "";
+               String sObjectName = "";
+
+   			   StringList busList = new StringList("id");
+   			   busList.add(DomainConstants.SELECT_NAME);
+   			   busList.add(DomainConstants.SELECT_TYPE);
+   		       StringList relList = new StringList(DomainRelationship.SELECT_ID);
+               if (TYPE_INBOX_TASK.equalsIgnoreCase(sTypeName))
+               {
+            	   String sRelName = DomainConstants.RELATIONSHIP_OBJECT_ROUTE;
+            	   String routeId=(String)objectMap.get(routeIdSelectStr);
+            	   DomainObject routeObj=DomainObject.newInstance(context,routeId);
+            	   MapList mapList=routeObj.getRelatedObjects(context, sRelName, "*",busList, null,true, false,
+							(short) 0, "", "");
+            	   if(mapList.size()==1){
+            		   Map map=(Map)mapList.get(0);
+            		   DomainObject dzObj=DomainObject.newInstance(context,(String)map.get("id"));
+            		   String type=(String)map.get("type");
+            		   String rel="SEM Project Change";
+            		   if(type.equals("SEM Contact Order")){
+            			   rel="SEM Meeting ContactOrder,Meeting Context";
+            		   }
+            		   if(dzObj.isKindOf(context,"DOCUMENTS")){
+            			   rel="Reference Document,Subtask";
+            		   } 
+            		   MapList mapList1=dzObj.getRelatedObjects(context,rel, "*",busList,relList,true,false,(short)0, "", "");
+            		   Iterator items=mapList1.iterator();
+                	   while(items.hasNext()){
+                		   Map map1=(Map)items.next();
+                		   String type1=(String) map1.get("type");
+                		   if(type1.equals("Project Space")){
+                			   sObjectId=(String) map1.get("id");
+                			   sObjectName=(String) map1.get("name");
+                			   break;
+                		   }
+                		   
+                	   }
+            		   
+            	   }           	           	   
+               }
+               else if (TYPE_TASK.equalsIgnoreCase(sTypeName))
+               {
+                   //Bug 318463. Commented below two lines and added 2 new lines to read id and name from main list.
+                   sObjectId   =(String)objectMap.get("Context Object Id");
+                   sObjectName = (String)objectMap.get("Context Object Name");
+               }
+               else if (sTypeWorkflowTask.equalsIgnoreCase(sTypeName))
+               {
+                   sObjectId   =(String)objectMap.get(workflowIdSelectStr);
+                   sObjectName = (String)objectMap.get(workflowNameSelectStr);
+               }
+               //Bug 318325. If object id and Name are null don't show context object.
+               if(sObjectId != null && sObjectName != null )
+               {
+                   String sRouteNextUrl = "./emxTree.jsp?objectId=" + XSSUtil.encodeForJavaScript(context, sObjectId);
+                   //String sRouteUrl  = "javascript:showNonModalDialog('" + sRouteNextUrl + "',800,575)";
+                   // Changed for bug 346533
+                   String sRouteUrl  = "javascript:emxTableColumnLinkClick('" + sRouteNextUrl + "','800','575',false,'popup','')";
+
+
+                   if(!isPrinterFriendly)
+                   {
+                       // Added for the 341122
+                       sRouteString = "<a  href=\""+sRouteUrl+"\">"+XSSUtil.encodeForHTML(context,sObjectName)+"</a>&#160;";
+                   }
+                   else
+                   {
+                       sRouteString = sObjectName;
+                   }
+                   showRoute.add(sRouteString);
+               }
+               else
+               {
+                   showRoute.add(sAccDenied);
+               }
+           }
+
+           return showRoute;
+       }
+       catch (Exception ex)
+       {
+		   m_logger.error(ex.getMessage(), ex);
+           System.out.println("Error in showRoute= " + ex.getMessage());
+           throw ex;
+       }finally{
+    	   ContextUtil.popContext(context);
+       }
+   }
+}
+
+

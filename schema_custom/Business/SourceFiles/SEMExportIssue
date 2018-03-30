@@ -1,0 +1,2891 @@
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.log4j.Logger;
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UINavigatorUtil;
+
+public class ${CLASSNAME} {
+	private static final int slash = 92; // ASCII 92 == '\\'
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	public ${CLASSNAME}(Context context, String[] args)
+			throws Exception {
+
+	}
+
+	public static MapList searchSEMIssue(Context context, String[] args)
+			throws Exception {
+
+		MapList dataList = new MapList();
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+
+			StringList busList = new StringList(DomainConstants.SELECT_ID);
+			busList.add("current");
+			busList.add(DomainConstants.SELECT_NAME);
+			busList.add(DomainObject.SELECT_TYPE);
+			busList.add(DomainObject.SELECT_DESCRIPTION);
+			busList.add("attribute[SEM Issue Type]");
+			busList.add(DomainObject.SELECT_OWNER);
+			busList.add("attribute[SEM Issue Owner Department]");
+			busList.add("attribute[Originator]");
+			busList.add("originated");
+			busList.add("attribute[SEM Issue Submiter]");
+			busList.add("attribute[SEM Issue HappenDate]");
+			busList.add("attribute[Actual End Date]");
+			busList.add("attribute[SEM Remark]");
+
+			busList.add("attribute[SEM Issue Reason]");
+			busList.add("attribute[Estimated End Date]");
+			busList.add("attribute[Resolution Recommendation]");
+			busList.add("attribute[SEM SupplierResolution Recommendation]");
+			busList.add("attribute[Resolution Date]");
+			busList.add("attribute[SEM Issue Solution TestCarCode]");
+			busList.add("attribute[SEM Phase To Resolution]");
+			busList.add("attribute[SEM Issue EO]");
+			busList.add("attribute[SEM Issue SolutionProgress]");
+			busList.add("attribute[SEM Issue SolutionResult]");
+			busList.add("attribute[ResolutionStatement]");
+			busList.add("attribute[SEM IssueSolution Dealer]");
+			busList.add("attribute[SEM IssueSolution Dealer Department]");
+			busList.add("attribute[SEM Issue Undertaker]");
+			busList.add("attribute[SEM Supplier]");
+			busList.add("attribute[SEM TestIssue Number]");
+
+			busList.add("attribute[Priority]");
+			busList.add("attribute[SEM IssueImportance ID]");
+			busList.add("attribute[SEM Issue Phase]");
+			busList.add("attribute[SEM Issue Repeat]");
+			busList.add("attribute[SEM Issue Major]");
+			busList.add("attribute[SEM Issue Class]");
+			busList.add("attribute[SEM Issue Line]");
+			busList.add("attribute[SEM Issue PartType]");
+			busList.add("attribute[SEM Issue Section]");
+			busList.add("attribute[SEM Issue TestCarCode]");
+			busList.add("attribute[SEM IssueCar Number]");
+			busList.add("attribute[SEM IssuePoints Deduction]");
+			busList.add("attribute[SEM Production Related Issue]");
+			busList.add("attribute[SEM IssueCar Property]");
+			busList.add("attribute[SEM Car Leakage State]");
+			busList.add("attribute[SEM Equipment Type]");
+			busList.add("attribute[SEM Test Gearbox]");
+			busList.add("attribute[SEM Test Mileage]");
+			busList.add("attribute[SEM Test Item]");
+			busList.add("attribute[SEM ModelData Phase Version]");
+			busList.add("attribute[SEM DataRecieved Date]");
+			busList.add("attribute[SEM Production Date]");
+			busList.add("attribute[SEM UPG Part]");
+			busList.add("attribute[SEM Part]");
+			busList.add("attribute[SEM Body Code]");
+			busList.add("attribute[SEM Test Engine]");
+
+			// busList.add("Estimated Start Date");
+			// busList.add("Actual Start Date");
+			StringList relList = new StringList("id[connection]");
+			relList.add("attribute[SEM Sequence]");
+
+			String currentUser = context.getUser();
+			String[] emxTableRowId = (String[]) programMap.get("emxTableRowId");
+			String mode = (String) programMap.get("mode");
+			String sLanguage = (String) programMap.get("languageStr");
+			String objectId = (String) programMap.get("objectId");
+			DomainObject projectObj = new DomainObject(objectId);
+			MapList Issuelist = projectObj.getRelatedObjects(context, "Issue",
+					"Issue", busList, relList, false, true, (short) 1, "", "");
+
+			DomainObject issueObj = new DomainObject();
+			Map issuemap = null;
+			for (int i = 0; i < emxTableRowId.length; i++) {
+				String[] splitValue = emxTableRowId[i].split(String.format(
+						"%c", slash) + "|");
+				String issueId = splitValue[1];
+				for (int j = 0; j < Issuelist.size(); j++) {
+					Map issuemaptemp = (Map) Issuelist.get(j);
+					String issueIdtemp = (String) issuemaptemp.get("id");
+					if (issueId.equals(issueIdtemp)) {
+						issuemap = issuemaptemp;
+						issueObj = new DomainObject(issueId);
+					} else {
+						continue;
+					}
+
+					String current = (String) issuemap.get("current");
+					String zhcurrent = i18nNow.getStateI18NString("Issue",current, sLanguage);
+					issuemap.put("current",zhcurrent);
+					
+                    String owner=(String) issuemap.get("owner");
+                    issuemap.put("ownerName",owner);
+					Person person=Person.getPerson(context);
+					String fullName=person.getDisplayName(context,owner);
+					String[] names=fullName.split(" ");
+					issuemap.put("owner",names[1]);
+					
+					String SIP=(String) issuemap.get("attribute[SEM IssueCar Property]");
+					SIP=i18nNow.getRangeI18NString("SEM IssueCar Property", SIP,sLanguage); 
+					issuemap.put("attribute[SEM IssueCar Property]",SIP);
+					
+					StringList personIdList = issueObj.getInfoList(context,
+							"to[Assigned Issue].from.id");
+					if (personIdList.size() > 0) {
+						for (int m = 0; m < personIdList.size(); m++) {
+							String personId = (String) personIdList.get(m);
+							DomainObject personObj = new DomainObject(personId);
+							String strPerson = personObj.getName(context);
+							issuemap.put("strPerson", strPerson);
+							String strPersonLastName = personObj
+									.getAttributeValue(context, "Last Name");
+							if (strPersonLastName != null) {
+								issuemap.put(
+										"attribute[SEM IssueSolution Dealer]",
+										strPersonLastName);
+							}
+						}
+					}
+					dataList.add(issuemap);
+				}
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw (e);
+		}
+		return dataList;
+	}
+	// exprot
+		public void exportExcel(Context context, String[] args) {
+			try {
+				String errMsg = "";
+				HashMap programMap = (HashMap) JPO.unpackArgs(args);
+				MapList dataList = (MapList) programMap.get("dataList");
+				if (dataList == null || dataList.size() == 0) {
+					return;
+				}
+				HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+				String[] titles = {  "\u95EE\u9898\u7F16\u53F7", "\u72B6\u6001",
+						"\u6307\u6458\u65E5\u671F", "\u7C7B\u522B",
+						"\u91CF\u4EA7\u76F8\u5173", "\u533A\u5206",
+						"\u95EE\u9898\u63CF\u8FF0", "\u95EE\u9898\u539F\u56E0",
+						"\u5BF9\u7B56\u6539\u5584\u8BF4\u660E",
+						"\u5BF9\u7B56\u8FDB\u5EA6", "\u6240\u6709\u8005",
+						"\u5BF9\u7B56\u4EBA", "\u5BF9\u7B56\u4EBA\u7EC4",
+						"\u5BF9\u7B56\u65E5\u671F", "\u5BF9\u7B56\u8F66\u53F7",
+						"\u5BF9\u7B56\u5224\u5B9A\u7ED3\u679C",
+						"\u5BF9\u7B56\u5224\u5B9A\u8BF4\u660E",
+						"\u53D1\u751F\u8F66\u53F7", "\u53D1\u751F\u53F0\u6570",
+						"\u9636\u6BB5", "\u662F\u5426\u91CD\u590D\u53D1\u751F",
+						"\u96F6\u4EF6\u7CFB\u7EDF","\u56DE\u590D\u671F\u9650"};
+				fillSheetInfo(context, titles, dataList, workbook);
+				System.out.println("....exportExcel......end..");
+			} catch (Exception e) {
+				m_logger.error(e.getMessage(), e);
+			}
+		}
+	public void fillSheetInfo(Context context, String[] titles,
+			MapList dataList, HSSFWorkbook workbook) throws Exception {
+		try {
+			int curRowIndex = 0;
+			int curDataIndex = 0;
+			int maxRowCount = dataList.size();
+			int maxcolumnCount = titles.length;
+			int maxSheetRow = 60000;
+			int sheetNum = maxRowCount / maxSheetRow;
+			if (maxRowCount % maxSheetRow != 0) {
+				sheetNum = sheetNum + 1;
+			}
+			String sheetName="";
+
+			HSSFCell cell_name, SEMIssueHappenDate, cell_SEMIssueType, SEMProductionRelatedIssue, SEMIssueMajor, cell_description, SEMIssueReason, ResolutionRecommendation, SEMIssueSolutionProgress, cell_Owner, AssignedIssue, SEMIssueSolutionDealerDepartment, ResolutionDate, SEMIssueSolutionTestCarCode, SEMIssueSolutionResult, ResolutionStatement, SEMIssueTestCarCode, SEMIssueCarNumber, SEMIssuePhase, SEMIssueRepeat, SEMIssuePartType;
+
+			HSSFCellStyle sheetStyle = workbook.createCellStyle();
+			sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+
+			HSSFFont columnHeadFont = workbook.createFont();
+			columnHeadFont.setColor(HSSFFont.COLOR_RED);
+			columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			
+
+			HSSFFont font1 = workbook.createFont();
+			font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+			font1.setFontHeightInPoints((short) 14);
+			
+			HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+					.createCellStyle();
+			columnHeadStyle.setFont(font1);
+			columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+					.getIndex());
+			columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			
+			
+			for (int n = 1; n <= sheetNum; n++) {
+				Map tmap=(Map)dataList.get(0);
+				String issueType=(String)tmap.get("attribute[SEM Issue Type]");
+				sheetName=issueType +"\u6E05\u5355"+n;
+				HSSFSheet sheet = workbook.createSheet(sheetName);
+				sheet.createFreezePane(1, 1, 1, 1);
+				
+				for (int i = 0; i < maxcolumnCount; i++) {
+					sheet.setColumnWidth(i, 9000);
+				}
+				sheet.setColumnWidth(2, 3000);
+				sheet.setColumnWidth(3, 3000);
+				sheet.setColumnWidth(4, 3000);
+				HSSFRow row = sheet.createRow(curRowIndex);
+				row.setHeight((short) 600);
+				for (int i = 0; i < maxcolumnCount; i++) {
+					HSSFCell cell = row.createCell(i);
+					cell.setCellValue(titles[i]);
+					cell.setCellStyle(columnHeadStyle);
+				}
+				curRowIndex = curRowIndex + 1;
+
+				ContextUtil.pushContext(context);
+
+				for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+
+					row = sheet.createRow(curRowIndex);
+					Map map = (Map) dataList.get(curDataIndex);
+
+					cell_name = row.createCell(0);
+					cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_name.setCellValue((String) map.get("name"));
+					cell_name.setCellStyle(sheetStyle);
+
+					cell_name = row.createCell(1);
+					cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_name.setCellValue((String) map.get("current"));
+					cell_name.setCellStyle(sheetStyle);
+
+					SEMIssueHappenDate = row.createCell(2);
+					SEMIssueHappenDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueHappenDate.setCellValue(changeDate((String) map
+							.get("attribute[SEM Issue HappenDate]")));
+					SEMIssueHappenDate.setCellStyle(sheetStyle);
+
+					cell_SEMIssueType = row.createCell(3);
+					cell_SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_SEMIssueType.setCellValue((String) map
+							.get("attribute[SEM Issue Class]"));
+					cell_SEMIssueType.setCellStyle(sheetStyle);
+
+					SEMProductionRelatedIssue = row.createCell(4);
+					SEMProductionRelatedIssue
+							.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMProductionRelatedIssue.setCellValue((String) map
+							.get("attribute[SEM Production Related Issue]"));
+					SEMProductionRelatedIssue.setCellStyle(sheetStyle);
+
+					SEMIssueMajor = row.createCell(5);
+					SEMIssueMajor.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueMajor.setCellValue((String) map
+							.get("attribute[SEM Issue Major]"));
+					SEMIssueMajor.setCellStyle(sheetStyle);
+
+					cell_description = row.createCell(6);
+					cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_description.setCellValue((String) map
+							.get("description"));
+					cell_description.setCellStyle(sheetStyle);
+
+					SEMIssueReason = row.createCell(7);
+					SEMIssueReason.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueReason.setCellValue((String) map
+							.get("attribute[SEM Issue Reason]"));
+					SEMIssueReason.setCellStyle(sheetStyle);
+
+					ResolutionRecommendation = row.createCell(8);
+					ResolutionRecommendation
+							.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ResolutionRecommendation.setCellValue((String) map
+							.get("attribute[Resolution Recommendation]"));
+					ResolutionRecommendation.setCellStyle(sheetStyle);
+
+					SEMIssueSolutionProgress = row.createCell(9);
+					SEMIssueSolutionProgress
+							.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueSolutionProgress.setCellValue((String) map
+							.get("attribute[SEM Issue SolutionProgress]"));
+					SEMIssueSolutionProgress.setCellStyle(sheetStyle);
+
+					cell_Owner = row.createCell(10);
+					cell_Owner.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_Owner.setCellValue((String) map
+							.get(DomainObject.SELECT_OWNER));
+					cell_Owner.setCellStyle(sheetStyle);
+
+					AssignedIssue = row.createCell(11);
+					AssignedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+					AssignedIssue.setCellValue((String) map
+							.get("attribute[SEM IssueSolution Dealer]"));
+					AssignedIssue.setCellStyle(sheetStyle);
+
+					SEMIssueSolutionDealerDepartment = row.createCell(12);
+					SEMIssueSolutionDealerDepartment
+							.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueSolutionDealerDepartment
+							.setCellValue((String) map
+									.get("attribute[SEM IssueSolution Dealer Department]"));
+					SEMIssueSolutionDealerDepartment.setCellStyle(sheetStyle);
+
+					ResolutionDate = row.createCell(13);
+					ResolutionDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ResolutionDate.setCellValue(changeDate((String) map
+							.get("attribute[Resolution Date]")));
+					ResolutionDate.setCellStyle(sheetStyle);
+
+					SEMIssueSolutionTestCarCode = row.createCell(14);
+					SEMIssueSolutionTestCarCode
+							.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueSolutionTestCarCode.setCellValue((String) map
+							.get("attribute[SEM Issue Solution TestCarCode]"));
+					SEMIssueSolutionTestCarCode.setCellStyle(sheetStyle);
+
+					SEMIssueSolutionResult = row.createCell(15);
+					SEMIssueSolutionResult
+							.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueSolutionResult.setCellValue((String) map
+							.get("attribute[SEM Issue SolutionResult]"));
+					SEMIssueSolutionResult.setCellStyle(sheetStyle);
+
+					ResolutionStatement = row.createCell(16);
+					ResolutionStatement.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ResolutionStatement.setCellValue((String) map
+							.get("attribute[ResolutionStatement]"));
+					ResolutionStatement.setCellStyle(sheetStyle);
+
+					SEMIssueTestCarCode = row.createCell(17);
+					SEMIssueTestCarCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueTestCarCode.setCellValue((String) map
+							.get("attribute[SEM Issue TestCarCode]"));
+					SEMIssueTestCarCode.setCellStyle(sheetStyle);
+
+					SEMIssueCarNumber = row.createCell(18);
+					SEMIssueCarNumber.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueCarNumber.setCellValue((String) map
+							.get("attribute[SEM IssueCar Number]"));
+					SEMIssueCarNumber.setCellStyle(sheetStyle);
+
+					SEMIssuePhase = row.createCell(19);
+					SEMIssuePhase.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssuePhase.setCellValue((String) map
+							.get("attribute[SEM Issue Phase]"));
+					SEMIssuePhase.setCellStyle(sheetStyle);
+
+					SEMIssueRepeat = row.createCell(20);
+					SEMIssueRepeat.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssueRepeat.setCellValue((String) map
+							.get("attribute[SEM Issue Repeat]"));
+					SEMIssueRepeat.setCellStyle(sheetStyle);
+
+					SEMIssuePartType = row.createCell(21);
+					SEMIssuePartType.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIssuePartType.setCellValue((String) map
+							.get("attribute[SEM Issue PartType]"));
+					SEMIssuePartType.setCellStyle(sheetStyle);
+
+					cell_name = row.createCell(22);
+					cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_name.setCellValue(changeDate((String)map.get("attribute[Estimated End Date]")));
+					cell_name.setCellStyle(sheetStyle);
+					
+					curRowIndex = curRowIndex + 1;
+				}
+				curRowIndex = 0;
+				// Set the column size to auto-fit
+				for (int i = 0; i < maxcolumnCount; i++) {
+					sheet.autoSizeColumn(i);
+				}
+			}// for sheet
+			
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw new FrameworkException(e);
+		} finally {
+			ContextUtil.popContext(context);
+		}
+	}
+	public void exportExcel1(Context context, String[] args) {
+		System.out.println("....exportExcel......start..");
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList = (MapList) programMap.get("dataList");
+			if (dataList == null || dataList.size() == 0) {
+				return;
+			}
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			String[] titles = { "\u95EE\u9898\u7F16\u53F7", "\u72B6\u6001","\u95EE\u9898\u63CF\u8FF0", "\u95EE\u9898\u539F\u56E0",
+					"\u6240\u6709\u8005","\u5BF9\u7B56\u4EBA", "\u5BF9\u7B56\u4EBA\u7EC4",
+					"\u5BF9\u7B56\u6539\u5584\u8BF4\u660E","\u5BF9\u7B56\u65E5\u671F","\u56DE\u590D\u671F\u9650","\u5BF9\u7B56\u8FDB\u5EA6",
+					"\u5BF9\u7B56\u5224\u5B9A\u8BF4\u660E","\u5907\u6CE8", "\u627F\u529E","\u7D27\u6025\u5EA6", "\u91CD\u8981\u6807\u8BC6",
+					"\u95EE\u9898\u5206\u7C7B","\u521B\u5EFA\u4EBA","\u521B\u5EFA\u65F6\u95F4","\u6307\u6458\u4EBA",
+					"\u6307\u6458\u65E5\u671F","\u5173\u95ED\u65F6\u95F4"};
+			fillSheetInfo1(context, titles, dataList, workbook);
+			System.out.println("....exportExcel......end..");
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}
+   public void fillSheetInfo1(Context context, String[] titles,
+		MapList dataList, HSSFWorkbook workbook) throws Exception {
+	try {
+		int curRowIndex = 0;
+		int curDataIndex = 0;
+		int maxRowCount = dataList.size();
+		int maxcolumnCount = titles.length;
+		int maxSheetRow = 60000;
+		int sheetNum = maxRowCount / maxSheetRow;
+		if (maxRowCount % maxSheetRow != 0) {
+			sheetNum = sheetNum + 1;
+		}
+		String sheetName="";
+
+		HSSFCell cell_name, SEMIssueHappenDate, cell_SEMIssueType, SEMProductionRelatedIssue, SEMIssueMajor, cell_description, SEMIssueReason, ResolutionRecommendation, SEMIssueSolutionProgress, cell_Owner, AssignedIssue, SEMIssueSolutionDealerDepartment, ResolutionDate, SEMIssueSolutionTestCarCode, SEMIssueSolutionResult, ResolutionStatement, SEMIssueTestCarCode, SEMIssueCarNumber, SEMIssuePhase, SEMIssueRepeat, SEMIssuePartType;
+
+		HSSFCellStyle sheetStyle = workbook.createCellStyle();
+		sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+		sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+		sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+
+		HSSFFont columnHeadFont = workbook.createFont();
+		columnHeadFont.setColor(HSSFFont.COLOR_RED);
+		columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		
+
+		HSSFFont font1 = workbook.createFont();
+		font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+		font1.setFontHeightInPoints((short) 14);
+		
+		HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+				.createCellStyle();
+		columnHeadStyle.setFont(font1);
+		columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+		columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+		columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+		columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+		columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+		columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+				.getIndex());
+		columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+		
+		
+		for (int n = 1; n <= sheetNum; n++) {
+			Map tmap=(Map)dataList.get(0);
+			String issueType=(String)tmap.get("attribute[SEM Issue Type]");
+			sheetName=issueType +"\u6E05\u5355"+n;
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			sheet.createFreezePane(1, 1, 1, 1);
+			
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.setColumnWidth(i, 9000);
+			}
+			sheet.setColumnWidth(2, 3000);
+			sheet.setColumnWidth(3, 3000);
+			sheet.setColumnWidth(4, 3000);
+			HSSFRow row = sheet.createRow(curRowIndex);
+			row.setHeight((short) 600);
+			for (int i = 0; i < maxcolumnCount; i++) {
+				HSSFCell cell = row.createCell(i);
+				cell.setCellValue(titles[i]);
+				cell.setCellStyle(columnHeadStyle);
+			}
+			curRowIndex = curRowIndex + 1;
+
+			ContextUtil.pushContext(context);
+
+			for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+
+				row = sheet.createRow(curRowIndex);
+				Map map = (Map) dataList.get(curDataIndex);
+
+				cell_name = row.createCell(0);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("name"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(1);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("current"));
+				cell_name.setCellStyle(sheetStyle);
+
+				SEMIssueHappenDate = row.createCell(2);
+				SEMIssueHappenDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueHappenDate.setCellValue((String) map
+						.get("description"));
+				SEMIssueHappenDate.setCellStyle(sheetStyle);
+
+				cell_SEMIssueType = row.createCell(3);
+				cell_SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_SEMIssueType.setCellValue((String) map
+						.get("attribute[SEM Issue Reason]"));
+				cell_SEMIssueType.setCellStyle(sheetStyle);
+
+				SEMProductionRelatedIssue = row.createCell(4);
+				SEMProductionRelatedIssue
+						.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMProductionRelatedIssue.setCellValue((String) map
+						.get(DomainObject.SELECT_OWNER));
+				SEMProductionRelatedIssue.setCellStyle(sheetStyle);
+
+				SEMIssueMajor = row.createCell(5);
+				SEMIssueMajor.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueMajor.setCellValue((String) map
+						.get("attribute[SEM IssueSolution Dealer]"));
+				SEMIssueMajor.setCellStyle(sheetStyle);
+
+				cell_description = row.createCell(6);
+				cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_description.setCellValue((String) map
+						.get("attribute[SEM IssueSolution Dealer Department]"));
+				cell_description.setCellStyle(sheetStyle);
+
+				SEMIssueReason = row.createCell(7);
+				SEMIssueReason.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueReason.setCellValue((String) map
+						.get("attribute[Resolution Recommendation]"));
+				SEMIssueReason.setCellStyle(sheetStyle);
+                
+				cell_name = row.createCell(8);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue(changeDate((String) map.get("attribute[Resolution Date]")));
+				cell_name.setCellStyle(sheetStyle);
+				
+				ResolutionRecommendation = row.createCell(9);
+				ResolutionRecommendation
+						.setCellType(HSSFCell.CELL_TYPE_STRING);
+				ResolutionRecommendation.setCellValue(changeDate((String) map
+						.get("attribute[Estimated End Date]")));
+				ResolutionRecommendation.setCellStyle(sheetStyle);
+
+				SEMIssueSolutionProgress = row.createCell(10);
+				SEMIssueSolutionProgress
+						.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueSolutionProgress.setCellValue((String) map
+						.get("attribute[SEM Issue SolutionProgress]"));
+				SEMIssueSolutionProgress.setCellStyle(sheetStyle);
+
+				cell_Owner = row.createCell(11);
+				cell_Owner.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_Owner.setCellValue((String) map
+						.get("attribute[ResolutionStatement]"));
+				cell_Owner.setCellStyle(sheetStyle);
+
+				AssignedIssue = row.createCell(12);
+				AssignedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+				AssignedIssue.setCellValue((String) map
+						.get("attribute[SEM Remark]"));
+				AssignedIssue.setCellStyle(sheetStyle);
+
+				SEMIssueSolutionDealerDepartment = row.createCell(13);
+				SEMIssueSolutionDealerDepartment
+						.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueSolutionDealerDepartment
+						.setCellValue((String) map
+								.get("attribute[SEM Issue Undertaker]"));
+				SEMIssueSolutionDealerDepartment.setCellStyle(sheetStyle);
+
+				ResolutionDate = row.createCell(14);
+				ResolutionDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+				ResolutionDate.setCellValue((String) map
+						.get("attribute[Priority]"));
+				ResolutionDate.setCellStyle(sheetStyle);
+
+				SEMIssueSolutionTestCarCode = row.createCell(15);
+				SEMIssueSolutionTestCarCode
+						.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueSolutionTestCarCode.setCellValue((String) map
+						.get("attribute[SEM IssueImportance ID]"));
+				SEMIssueSolutionTestCarCode.setCellStyle(sheetStyle);
+
+				SEMIssueSolutionResult = row.createCell(16);
+				SEMIssueSolutionResult
+						.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueSolutionResult.setCellValue((String) map
+						.get("attribute[SEM Issue Type]"));
+				SEMIssueSolutionResult.setCellStyle(sheetStyle);
+
+				ResolutionStatement = row.createCell(17);
+				ResolutionStatement.setCellType(HSSFCell.CELL_TYPE_STRING);
+				ResolutionStatement.setCellValue((String) map
+						.get("attribute[Originator]"));
+				ResolutionStatement.setCellStyle(sheetStyle);
+
+				SEMIssueTestCarCode = row.createCell(18);
+				SEMIssueTestCarCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueTestCarCode.setCellValue(changeDate((String) map
+						.get("originated")));
+				SEMIssueTestCarCode.setCellStyle(sheetStyle);
+
+				SEMIssueCarNumber = row.createCell(19);
+				SEMIssueCarNumber.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueCarNumber.setCellValue((String) map
+						.get("attribute[SEM Issue Submiter]"));
+				SEMIssueCarNumber.setCellStyle(sheetStyle);
+
+				SEMIssuePhase = row.createCell(20);
+				SEMIssuePhase.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssuePhase.setCellValue(changeDate((String) map
+						.get("attribute[SEM Issue HappenDate]")));
+				SEMIssuePhase.setCellStyle(sheetStyle);
+
+				SEMIssueRepeat = row.createCell(21);
+				SEMIssueRepeat.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueRepeat.setCellValue(changeDate((String) map
+						.get("attribute[Actual End Date]")));
+				SEMIssueRepeat.setCellStyle(sheetStyle);
+
+				curRowIndex = curRowIndex + 1;
+			}
+			curRowIndex = 0;
+			// Set the column size to auto-fit
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.autoSizeColumn(i);
+			}
+		}// for sheet
+		
+	} catch (Exception e) {
+		m_logger.error(e.getMessage(), e);
+		throw new FrameworkException(e);
+	} finally {
+		ContextUtil.popContext(context);
+	}
+   }
+  public void exportExcel2(Context context, String[] args) {
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList = (MapList) programMap.get("dataList");
+			if (dataList == null || dataList.size() == 0) {
+				return;
+			}
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			String[] titles = {"\u95EE\u9898\u7F16\u53F7","\u72B6\u6001","\u5BF9\u7B56\u8FDB\u5EA6","\u521B\u5EFA\u65F6\u95F4","\u9020\u578B\u6570\u636E\u9636\u6BB5\u7248\u6B21",
+					"\u6307\u6458\u4EBA","\u53D1\u751F\u90E8\u4F4D","\u95EE\u9898\u63CF\u8FF0","\u6240\u6709\u8005","\u5BF9\u7B56\u4EBA", "\u5BF9\u7B56\u4EBA\u7EC4","\u5BF9\u7B56\u6539\u5584\u8BF4\u660E","\u5BF9\u7B56\u65E5\u671F","\u56DE\u590D\u671F\u9650","\u4F9B\u5E94\u5546","\u5382\u5546\u5BF9\u7B56\u8BF4\u660E",
+					"\u5BF9\u7B56\u5224\u5B9A\u7ED3\u679C","\u5BF9\u7B56\u5224\u5B9A\u8BF4\u660E","\u5907\u6CE8", "\u6570\u636E\u63A5\u6536\u65F6\u95F4","\u627F\u529E","\u5173\u95ED\u65F6\u95F4","UPG","\u4E00\u9636\u4EF6","\u7D27\u6025\u5EA6", "\u91CD\u8981\u6807\u8BC6",
+					"\u95EE\u9898\u5206\u7C7B","\u521B\u5EFA\u4EBA","\u6307\u6458\u65E5\u671F"};
+			fillSheetInfo2(context, titles, dataList, workbook);
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}
+   public void fillSheetInfo2(Context context, String[] titles,MapList dataList, HSSFWorkbook workbook) throws Exception {
+	try {
+		int curRowIndex = 0;
+		int curDataIndex = 0;
+		int maxRowCount = dataList.size();
+		int maxcolumnCount = titles.length;
+		int maxSheetRow = 60000;
+		int sheetNum = maxRowCount / maxSheetRow;
+		if (maxRowCount % maxSheetRow != 0) {
+			sheetNum = sheetNum + 1;
+		}
+		String sheetName="";
+
+		HSSFCell cell_name, SEMIssueHappenDate, cell_SEMIssueType, SEMProductionRelatedIssue, SEMIssueMajor, cell_description, SEMIssueReason, ResolutionRecommendation, SEMIssueSolutionProgress, cell_Owner, AssignedIssue, SEMIssueSolutionDealerDepartment, ResolutionDate, SEMIssueSolutionTestCarCode, SEMIssueSolutionResult, ResolutionStatement, SEMIssueTestCarCode, SEMIssueCarNumber, SEMIssuePhase, SEMIssueRepeat, SEMIssuePartType;
+
+		HSSFCellStyle sheetStyle = workbook.createCellStyle();
+		sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+		sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+		sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+
+		HSSFFont columnHeadFont = workbook.createFont();
+		columnHeadFont.setColor(HSSFFont.COLOR_RED);
+		columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		
+
+		HSSFFont font1 = workbook.createFont();
+		font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+		font1.setFontHeightInPoints((short) 14);
+		
+		HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+				.createCellStyle();
+		columnHeadStyle.setFont(font1);
+		columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+		columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+		columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+		columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+		columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+		columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+				.getIndex());
+		columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+		
+		
+		for (int n = 1; n <= sheetNum; n++) {
+			Map tmap=(Map)dataList.get(0);
+			String issueType=(String)tmap.get("attribute[SEM Issue Type]");
+			sheetName=issueType +"\u6E05\u5355"+n;
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			sheet.createFreezePane(1, 1, 1, 1);
+			
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.setColumnWidth(i, 9000);
+			}
+			sheet.setColumnWidth(2, 3000);
+			sheet.setColumnWidth(3, 3000);
+			sheet.setColumnWidth(4, 3000);
+			HSSFRow row = sheet.createRow(curRowIndex);
+			row.setHeight((short) 600);
+			for (int i = 0; i < maxcolumnCount; i++) {
+				HSSFCell cell = row.createCell(i);
+				cell.setCellValue(titles[i]);
+				cell.setCellStyle(columnHeadStyle);
+			}
+			curRowIndex = curRowIndex + 1;
+
+			ContextUtil.pushContext(context);
+
+			for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+
+				row = sheet.createRow(curRowIndex);
+				Map map = (Map) dataList.get(curDataIndex);
+
+				cell_name = row.createCell(0);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("name"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(1);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("current"));
+				cell_name.setCellStyle(sheetStyle);
+
+				SEMIssueHappenDate = row.createCell(2);
+				SEMIssueHappenDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueHappenDate.setCellValue((String) map
+						.get("attribute[SEM Issue SolutionProgress]"));
+				SEMIssueHappenDate.setCellStyle(sheetStyle);
+				
+				SEMIssueTestCarCode = row.createCell(3);
+				SEMIssueTestCarCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueTestCarCode.setCellValue(changeDate((String) map
+						.get("originated")));
+				SEMIssueTestCarCode.setCellStyle(sheetStyle);
+				
+
+				cell_SEMIssueType = row.createCell(4);
+				cell_SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_SEMIssueType.setCellValue((String) map
+						.get("attribute[SEM ModelData Phase Version]"));
+				cell_SEMIssueType.setCellStyle(sheetStyle);
+                
+				
+				cell_SEMIssueType = row.createCell(5);
+				cell_SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_SEMIssueType.setCellValue((String) map
+						.get("attribute[SEM Issue Submiter]"));
+				cell_SEMIssueType.setCellStyle(sheetStyle);
+				
+				cell_SEMIssueType = row.createCell(6);
+				cell_SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_SEMIssueType.setCellValue((String) map
+						.get("attribute[SEM Issue Section]"));
+				cell_SEMIssueType.setCellStyle(sheetStyle);
+				
+				cell_SEMIssueType = row.createCell(7);
+				cell_SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_SEMIssueType.setCellValue((String) map
+						.get("description"));
+				cell_SEMIssueType.setCellStyle(sheetStyle);
+				
+				SEMProductionRelatedIssue = row.createCell(8);
+				SEMProductionRelatedIssue
+						.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMProductionRelatedIssue.setCellValue((String) map
+						.get(DomainObject.SELECT_OWNER));
+				SEMProductionRelatedIssue.setCellStyle(sheetStyle);
+
+				SEMIssueMajor = row.createCell(9);
+				SEMIssueMajor.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueMajor.setCellValue((String) map
+						.get("attribute[SEM IssueSolution Dealer]"));
+				SEMIssueMajor.setCellStyle(sheetStyle);
+
+				cell_description = row.createCell(10);
+				cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_description.setCellValue((String) map
+						.get("attribute[SEM IssueSolution Dealer Department]"));
+				cell_description.setCellStyle(sheetStyle);
+
+				SEMIssueReason = row.createCell(11);
+				SEMIssueReason.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueReason.setCellValue((String) map
+						.get("attribute[Resolution Recommendation]"));
+				SEMIssueReason.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(12);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue(changeDate((String) map.get("attribute[Resolution Date]")));
+				cell_name.setCellStyle(sheetStyle);
+
+				ResolutionRecommendation = row.createCell(13);
+				ResolutionRecommendation.setCellType(HSSFCell.CELL_TYPE_STRING);
+				ResolutionRecommendation.setCellValue(changeDate((String) map
+						.get("attribute[Estimated End Date]")));
+				ResolutionRecommendation.setCellStyle(sheetStyle);
+
+				SEMIssueSolutionProgress = row.createCell(14);
+				SEMIssueSolutionProgress
+						.setCellType(HSSFCell.CELL_TYPE_STRING);
+				SEMIssueSolutionProgress.setCellValue((String) map
+						.get("attribute[SEM Supplier]"));
+				SEMIssueSolutionProgress.setCellStyle(sheetStyle);
+
+				cell_Owner = row.createCell(15);
+				cell_Owner.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_Owner.setCellValue((String) map
+						.get("attribute[SEM SupplierResolution Recommendation]"));
+				cell_Owner.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(16);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Issue SolutionResult]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(17);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[ResolutionStatement]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				AssignedIssue = row.createCell(18);
+				AssignedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+				AssignedIssue.setCellValue((String) map
+						.get("attribute[SEM Remark]"));
+				AssignedIssue.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(19);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue(changeDate((String) map.get("attribute[SEM DataRecieved Date]")));
+				cell_name.setCellStyle(sheetStyle);
+                
+				cell_name = row.createCell(20);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Issue Undertaker]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(21);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue(changeDate((String) map.get("attribute[Actual End Date]")));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(22);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map
+						.get("attribute[SEM UPG Part]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(23);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map
+						.get("attribute[SEM Part]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(24);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map
+						.get("attribute[Priority]"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(25);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM IssueImportance ID]"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(26);
+				cell_name
+						.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map
+						.get("attribute[SEM Issue Type]"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(27);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map
+						.get("attribute[Originator]"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name= row.createCell(28);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue(changeDate((String) map
+						.get("attribute[SEM Issue HappenDate]")));
+				cell_name.setCellStyle(sheetStyle);
+
+
+				curRowIndex = curRowIndex + 1;
+			}
+			curRowIndex = 0;
+			// Set the column size to auto-fit
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.autoSizeColumn(i);
+			}
+		}// for sheet
+		
+	} catch (Exception e) {
+		m_logger.error(e.getMessage(), e);
+		throw new FrameworkException(e);
+	} finally {
+		ContextUtil.popContext(context);
+	}
+	
+}
+   public void exportExcel11(Context context, String[] args) {
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList = (MapList) programMap.get("dataList");
+			if (dataList == null || dataList.size() == 0) {
+				return;
+			}
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			String[] titles = {"\u95EE\u9898\u7F16\u53F7","\u72B6\u6001","\u9636\u6BB5","\u8BD5\u9A8C\u9879\u76EE","\u95EE\u9898\u5206\u7C7B","\u95EE\u9898\u63CF\u8FF0","\u95EE\u9898\u539F\u56E0",
+					"\u5BF9\u7B56\u6539\u5584\u8BF4\u660E","\u6539\u5584\u5BF9\u5E94\u9636\u6BB5","\u53D1\u751F\u8F66\u53F7","\u8F66\u8EAB\u53F7","\u53D1\u52A8\u673A","\u53D8\u901F\u7BB1","\u91CC\u7A0B\u6216\u5FAA\u73AF",
+					"\u533A\u5206","\u6307\u6458\u65E5\u671F","\u6307\u6458\u4EBA","\u56DE\u590D\u671F\u9650","\u5BF9\u7B56\u65E5\u671F","\u5BF9\u7B56\u4EBA\u7EC4","\u5BF9\u7B56\u4EBA","\u5BF9\u7B56\u8F66\u53F7","\u5BF9\u7B56\u5224\u5B9A\u7ED3\u679C",
+					"\u5BF9\u7B56\u8FDB\u5EA6","\u5BF9\u7B56\u5224\u5B9A\u8BF4\u660E","\u627F\u529E","\u4F9B\u5E94\u5546",
+					"\u5173\u95ED\u65E5\u671F","EO\u7F16\u53F7","\u91CF\u4EA7\u76F8\u5173", "\u8F66\u8F86\u6027\u8D28","\u91CD\u8981\u6807\u8BC6","\u6240\u6709\u8005"};
+			fillSheetInfo11(context, titles, dataList, workbook);
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}
+  public void fillSheetInfo11(Context context, String[] titles,MapList dataList, HSSFWorkbook workbook) throws Exception {
+	try {
+		int curRowIndex = 0;
+		int curDataIndex = 0;
+		int maxRowCount = dataList.size();
+		int maxcolumnCount = titles.length;
+		int maxSheetRow = 60000;
+		int sheetNum = maxRowCount / maxSheetRow;
+		if (maxRowCount % maxSheetRow != 0) {
+			sheetNum = sheetNum + 1;
+		}
+		String sheetName="";
+
+		HSSFCell cell_name, SEMIssueHappenDate, cell_SEMIssueType, SEMProductionRelatedIssue, SEMIssueMajor, cell_description, SEMIssueReason, ResolutionRecommendation, SEMIssueSolutionProgress, cell_Owner, AssignedIssue, SEMIssueSolutionDealerDepartment, ResolutionDate, SEMIssueSolutionTestCarCode, SEMIssueSolutionResult, ResolutionStatement, SEMIssueTestCarCode, SEMIssueCarNumber, SEMIssuePhase, SEMIssueRepeat, SEMIssuePartType;
+
+		HSSFCellStyle sheetStyle = workbook.createCellStyle();
+		sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+		sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+		sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+
+		HSSFFont columnHeadFont = workbook.createFont();
+		columnHeadFont.setColor(HSSFFont.COLOR_RED);
+		columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		
+
+		HSSFFont font1 = workbook.createFont();
+		font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+		font1.setFontHeightInPoints((short) 14);
+		
+		HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+				.createCellStyle();
+		columnHeadStyle.setFont(font1);
+		columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+		columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+		columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+		columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+		columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+		columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+				.getIndex());
+		columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+		
+		
+		for (int n = 1; n <= sheetNum; n++) {
+			Map tmap=(Map)dataList.get(0);
+			String issueType=(String)tmap.get("attribute[SEM Issue Type]");
+			sheetName=issueType +"\u6E05\u5355"+n;
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			sheet.createFreezePane(1, 1, 1, 1);
+			
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.setColumnWidth(i, 9000);
+			}
+			sheet.setColumnWidth(2, 3000);
+			sheet.setColumnWidth(3, 3000);
+			sheet.setColumnWidth(4, 3000);
+			HSSFRow row = sheet.createRow(curRowIndex);
+			row.setHeight((short) 600);
+			for (int i = 0; i < maxcolumnCount; i++) {
+				HSSFCell cell = row.createCell(i);
+				cell.setCellValue(titles[i]);
+				cell.setCellStyle(columnHeadStyle);
+			}
+			curRowIndex = curRowIndex + 1;
+
+			ContextUtil.pushContext(context);
+
+			for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+
+				row = sheet.createRow(curRowIndex);
+				Map map = (Map) dataList.get(curDataIndex);
+
+				cell_name = row.createCell(0);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("name"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(1);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("current"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(2);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Issue Phase]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(3);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Test Item]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(4);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Issue Type]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(5);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("description"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(6);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Issue Reason]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(7);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[Resolution Recommendation]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(8);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Phase To Resolution]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(9);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Issue TestCarCode]"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_description = row.createCell(10);
+				cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_description.setCellValue((String) map
+						.get("attribute[SEM Body Code]"));
+				cell_description.setCellStyle(sheetStyle);
+
+				cell_description = row.createCell(11);
+				cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_description.setCellValue((String) map
+						.get("attribute[SEM Test Engine]"));
+				cell_description.setCellStyle(sheetStyle);
+				
+				cell_description = row.createCell(12);
+				cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_description.setCellValue((String) map
+						.get("attribute[SEM Test Gearbox]"));
+				cell_description.setCellStyle(sheetStyle);
+				
+				cell_description = row.createCell(13);
+				cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_description.setCellValue((String) map
+						.get("attribute[SEM Test Mileage]"));
+				cell_description.setCellStyle(sheetStyle);
+				
+				cell_Owner = row.createCell(14);
+				cell_Owner.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_Owner.setCellValue((String) map.get("attribute[SEM Issue Major]"));
+				cell_Owner.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(15);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue(changeDate((String) map.get("attribute[SEM Issue HappenDate]")));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(16);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Issue Submiter]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(17);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue(changeDate((String) map.get("attribute[Estimated End Date]")));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(18);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue(changeDate((String) map.get("attribute[Resolution Date]")));
+				cell_name.setCellStyle(sheetStyle);
+               
+				cell_name = row.createCell(19);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM IssueSolution Dealer Depar]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(20);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String)map.get("attribute[SEM IssueSolution Dealer]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(21);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map
+						.get("attribute[SEM Issue Solution TestCarCode]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(22);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map
+						.get("attribute[SEM Issue SolutionResult]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(23);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map
+						.get("attribute[SEM Issue SolutionProgress]"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(24);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[ResolutionStatement]"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(25);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Issue Undertaker]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name = row.createCell(26);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Supplier]"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name = row.createCell(27);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue(changeDate((String) map.get("attribute[Actual End Date]")));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name= row.createCell(28);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Issue EO]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name= row.createCell(29);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM Production Related Issue]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name= row.createCell(30);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("attribute[SEM IssueCar Property]"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				cell_name= row.createCell(31);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String)map.get("attribute[SEM IssueImportance ID]"));
+				cell_name.setCellStyle(sheetStyle);
+
+				cell_name= row.createCell(32);
+				cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell_name.setCellValue((String) map.get("owner"));
+				cell_name.setCellStyle(sheetStyle);
+				
+				curRowIndex = curRowIndex + 1;
+			}
+			curRowIndex = 0;
+			// Set the column size to auto-fit
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.autoSizeColumn(i);
+			}
+		}// for sheet
+		
+	} catch (Exception e) {
+		m_logger.error(e.getMessage(), e);
+		throw new FrameworkException(e);
+	} finally {
+		ContextUtil.popContext(context);
+	}
+	
+}
+        //exprot Assess 
+			public void exportExcel10(Context context, String[] args) {
+				System.out.println("....exportExcel......start..");
+				try {
+					String errMsg = "";
+					HashMap programMap = (HashMap) JPO.unpackArgs(args);
+					MapList dataList = (MapList) programMap.get("dataList");
+					if (dataList == null || dataList.size() == 0) {
+						return;
+					}
+					HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+					String[] titles = { "\u95EE\u9898\u7F16\u53F7","\u72B6\u6001",
+							"\u9636\u6BB5","\u8F66\u8F86\u6027\u8D28",					
+							"\u53D1\u751F\u8F66\u53F7","\u8F66\u8EAB\u53F7",
+							"\u6307\u6458\u65E5\u671F","\u6263\u5206",
+							"\u95EE\u9898\u63CF\u8FF0","\u95EE\u9898\u539F\u56E0",
+							"\u5BF9\u7B56\u6539\u5584\u8BF4\u660E","\u5BF9\u7B56\u65E5\u671F","\u6240\u6709\u8005",
+							"\u5BF9\u7B56\u4EBA","\u5BF9\u7B56\u4EBA\u7EC4",
+							"\u5BF9\u7B56\u8FDB\u5EA6","\u56DE\u590D\u671F\u9650",
+							"\u6539\u5584\u5BF9\u5E94\u9636\u6BB5","\u5BF9\u7B56\u8F66\u53F7",
+							"\u533A\u5206","\u91CD\u8981\u6807\u8BC6",
+							"\u91CF\u4EA7\u76F8\u5173","\u662F\u5426\u91CD\u590D\u53D1\u751F",
+							"\u53D1\u751F\u53F0\u6570","\u96F6\u4EF6\u7CFB\u7EDF",
+							"\u7C7B\u522B"};
+					fillSheetInfo10(context, titles, dataList, workbook);
+					System.out.println("....exportExcel......end..");
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+				}
+			}
+			public void fillSheetInfo10(Context context, String[] titles,
+					MapList dataList, HSSFWorkbook workbook) throws Exception {
+				try {
+					int curRowIndex = 0;
+					int curDataIndex = 0;
+					int maxRowCount = dataList.size();
+					int maxcolumnCount = titles.length;
+					int maxSheetRow = 60000;
+					int sheetNum = maxRowCount / maxSheetRow;
+					if (maxRowCount % maxSheetRow != 0) {
+						sheetNum = sheetNum + 1;
+					}
+					String sheetName="";
+
+					HSSFCell cell_name, SEMIssueHappenDate, cell_SEMIssueType, SEMProductionRelatedIssue, SEMIssueMajor, cell_description, SEMIssueReason, ResolutionRecommendation, SEMIssueSolutionProgress, cell_Owner, AssignedIssue, SEMIssueSolutionDealerDepartment, ResolutionDate, SEMIssueSolutionTestCarCode, SEMIssueSolutionResult, ResolutionStatement, SEMIssueTestCarCode, SEMIssueCarNumber, SEMIssuePhase, SEMIssueRepeat, SEMIssuePartType,SEMIssueImportanceID,SEMPhaseToResolution,EstimatedEndDate,SEMIssuePointsDeduction,SEMBodyCode,SEMIssueCarProperty;
+
+					HSSFCellStyle sheetStyle = workbook.createCellStyle();
+					sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+
+					HSSFFont columnHeadFont = workbook.createFont();
+					columnHeadFont.setColor(HSSFFont.COLOR_RED);
+					columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+					
+
+					HSSFFont font1 = workbook.createFont();
+					font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+					font1.setFontHeightInPoints((short) 14);
+					
+					HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+							.createCellStyle();
+					columnHeadStyle.setFont(font1);
+					columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+					columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+					columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+							.getIndex());
+					columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+					
+					
+					for (int n = 1; n <= sheetNum; n++) {
+						Map tmap=(Map)dataList.get(0);
+						String issueType=(String)tmap.get("attribute[SEM Issue Type]");
+						sheetName=issueType +"\u6E05\u5355"+n;
+						HSSFSheet sheet = workbook.createSheet(sheetName);
+						sheet.createFreezePane(1, 1, 1, 1);
+						
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.setColumnWidth(i, 9000);
+						}
+						sheet.setColumnWidth(2, 3000);
+						sheet.setColumnWidth(3, 3000);
+						sheet.setColumnWidth(4, 3000);
+						HSSFRow row = sheet.createRow(curRowIndex);
+						row.setHeight((short) 600);
+						for (int i = 0; i < maxcolumnCount; i++) {
+							HSSFCell cell = row.createCell(i);
+							cell.setCellValue(titles[i]);
+							cell.setCellStyle(columnHeadStyle);
+						}
+						curRowIndex = curRowIndex + 1;
+
+						ContextUtil.pushContext(context);
+
+						for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+
+							row = sheet.createRow(curRowIndex);
+							Map map = (Map) dataList.get(curDataIndex);
+
+							cell_name = row.createCell(0);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("name"));
+							cell_name.setCellStyle(sheetStyle);
+
+							cell_name = row.createCell(1);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("current"));
+							cell_name.setCellStyle(sheetStyle);
+
+							SEMIssuePhase = row.createCell(2);
+							SEMIssuePhase.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssuePhase.setCellValue((String) map
+									.get("attribute[SEM Issue Phase]"));
+							SEMIssuePhase.setCellStyle(sheetStyle);
+							
+							SEMIssueCarProperty = row.createCell(3);
+							SEMIssueCarProperty.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueCarProperty.setCellValue((String) map
+									.get("attribute[SEM IssueCar Property]"));
+							SEMIssueCarProperty.setCellStyle(sheetStyle);
+							
+							SEMIssueTestCarCode = row.createCell(4);
+							SEMIssueTestCarCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue TestCarCode]"));
+							SEMIssueTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMBodyCode = row.createCell(5);
+							SEMBodyCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMBodyCode.setCellValue((String) map
+									.get("attribute[SEM Body Code]"));
+							SEMBodyCode.setCellStyle(sheetStyle);
+							
+							SEMIssueHappenDate = row.createCell(6);
+							SEMIssueHappenDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueHappenDate.setCellValue(changeDate((String) map
+									.get("attribute[SEM Issue HappenDate]")));
+							SEMIssueHappenDate.setCellStyle(sheetStyle);
+							
+							SEMIssuePointsDeduction = row.createCell(7);
+							SEMIssuePointsDeduction.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssuePointsDeduction.setCellValue((String) map
+									.get("attribute[SEM IssuePoints Deduction]"));
+							SEMIssuePointsDeduction.setCellStyle(sheetStyle);
+							
+							cell_description = row.createCell(8);
+							cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_description.setCellValue((String) map
+									.get("description"));
+							cell_description.setCellStyle(sheetStyle);
+							
+							SEMIssueReason = row.createCell(9);
+							SEMIssueReason.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueReason.setCellValue((String) map
+									.get("attribute[SEM Issue Reason]"));
+							SEMIssueReason.setCellStyle(sheetStyle);
+							
+							ResolutionRecommendation = row.createCell(10);
+							ResolutionRecommendation
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionRecommendation.setCellValue((String) map
+									.get("attribute[Resolution Recommendation]"));
+							ResolutionRecommendation.setCellStyle(sheetStyle);
+							
+							cell_name = row.createCell(11);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue(changeDate((String) map.get("attribute[Resolution Date]")));
+							cell_name.setCellStyle(sheetStyle);
+							
+							cell_Owner = row.createCell(12);
+							cell_Owner.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_Owner.setCellValue((String) map
+									.get(DomainObject.SELECT_OWNER));
+							cell_Owner.setCellStyle(sheetStyle);
+							
+							AssignedIssue = row.createCell(13);
+							AssignedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+							AssignedIssue.setCellValue((String) map
+									.get("attribute[SEM IssueSolution Dealer]"));
+							AssignedIssue.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionDealerDepartment = row.createCell(14);
+							SEMIssueSolutionDealerDepartment
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionDealerDepartment
+									.setCellValue((String) map
+											.get("attribute[SEM IssueSolution Dealer Department]"));
+							SEMIssueSolutionDealerDepartment.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionProgress = row.createCell(15);
+							SEMIssueSolutionProgress
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionProgress.setCellValue((String) map
+									.get("attribute[SEM Issue SolutionProgress]"));
+							SEMIssueSolutionProgress.setCellStyle(sheetStyle);
+							
+							EstimatedEndDate = row.createCell(16);
+							EstimatedEndDate
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							EstimatedEndDate.setCellValue(changeDate((String) map
+									.get("attribute[Estimated End Date]")));
+							EstimatedEndDate.setCellStyle(sheetStyle);
+							
+							SEMPhaseToResolution = row.createCell(17);
+							SEMPhaseToResolution
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMPhaseToResolution.setCellValue((String) map
+									.get("attribute[SEM Phase To Resolution]"));
+							SEMPhaseToResolution.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionTestCarCode = row.createCell(18);
+							SEMIssueSolutionTestCarCode
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue Solution TestCarCode]"));
+							SEMIssueSolutionTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMIssueMajor = row.createCell(19);
+							SEMIssueMajor.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueMajor.setCellValue((String) map
+									.get("attribute[SEM Issue Major]"));
+							SEMIssueMajor.setCellStyle(sheetStyle);
+							
+							SEMIssueImportanceID = row.createCell(20);
+							SEMIssueImportanceID.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueImportanceID.setCellValue((String) map
+									.get("attribute[SEM IssueImportance ID]"));
+							SEMIssueImportanceID.setCellStyle(sheetStyle);
+							
+							SEMProductionRelatedIssue = row.createCell(21);
+							SEMProductionRelatedIssue
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMProductionRelatedIssue.setCellValue((String) map
+									.get("attribute[SEM Production Related Issue]"));
+							SEMProductionRelatedIssue.setCellStyle(sheetStyle);
+							
+							SEMIssueRepeat = row.createCell(22);
+							SEMIssueRepeat.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueRepeat.setCellValue((String) map
+									.get("attribute[SEM Issue Repeat]"));
+							SEMIssueRepeat.setCellStyle(sheetStyle);
+							
+							SEMIssueCarNumber = row.createCell(23);
+							SEMIssueCarNumber.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueCarNumber.setCellValue((String) map
+									.get("attribute[SEM IssueCar Number]"));
+							SEMIssueCarNumber.setCellStyle(sheetStyle);
+							
+							SEMIssuePartType = row.createCell(24);
+							SEMIssuePartType.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssuePartType.setCellValue((String) map
+									.get("attribute[SEM Issue PartType]"));
+							SEMIssuePartType.setCellStyle(sheetStyle);
+							
+							cell_SEMIssueType = row.createCell(25);
+							cell_SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_SEMIssueType.setCellValue((String) map
+									.get("attribute[SEM Issue Class]"));
+							cell_SEMIssueType.setCellStyle(sheetStyle);																											
+
+							curRowIndex = curRowIndex + 1;
+						}
+						curRowIndex = 0;
+						// Set the column size to auto-fit
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.autoSizeColumn(i);
+						}
+					}// for sheet
+					
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+					throw new FrameworkException(e);
+				} finally {
+					ContextUtil.popContext(context);
+				}
+			}
+			// exprot Stamping 
+			public void exportExcel5(Context context, String[] args) {
+				System.out.println("....exportExcel......start..");
+				try {
+					String errMsg = "";
+					HashMap programMap = (HashMap) JPO.unpackArgs(args);
+					MapList dataList = (MapList) programMap.get("dataList");
+					if (dataList == null || dataList.size() == 0) {
+						return;
+					}
+					HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+					String[] titles = { "\u95EE\u9898\u7F16\u53F7","\u72B6\u6001",
+							"\u9636\u6BB5","\u95EE\u9898\u63CF\u8FF0",
+							"\u7EBF\u522B","\u8BBE\u5907\u7C7B\u522B",
+							"\u533A\u5206","\u6307\u6458\u4EBA",
+							"\u6307\u6458\u65E5\u671F","\u56DE\u590D\u671F\u9650",
+							"\u7D27\u6025\u5EA6","\u95EE\u9898\u539F\u56E0",
+							"\u5BF9\u7B56\u6539\u5584\u8BF4\u660E","\u5BF9\u7B56\u65E5\u671F","\u5BF9\u7B56\u8F66\u53F7",
+							"\u5BF9\u7B56\u8FDB\u5EA6","\u5BF9\u7B56\u5224\u5B9A\u8BF4\u660E",
+							"\u6240\u6709\u8005","\u5BF9\u7B56\u4EBA",
+							"\u4F9B\u5E94\u5546","\u5173\u95ED\u65E5\u671F",
+							"EO\u7F16\u53F7","\u91CD\u8981\u6807\u8BC6",
+							"\u95EE\u9898\u5206\u7C7B","\u5382\u5546\u5BF9\u7B56\u8BF4\u660E",
+							"\u6539\u5584\u5BF9\u5E94\u9636\u6BB5","\u5BF9\u7B56\u5224\u5B9A\u7ED3\u679C",
+							"\u5BF9\u7B56\u4EBA\u7EC4","\u662F\u5426\u91CD\u590D\u53D1\u751F",
+							"\u7C7B\u522B","\u53D1\u751F\u53F0\u6570",
+							"\u53D1\u751F\u8F66\u53F7","\u91CF\u4EA7\u76F8\u5173",
+							"UPG","\u627F\u529E",
+							"\u521B\u5EFA\u4EBA","\u521B\u5EFA\u65F6\u95F4",
+							"\u5907\u6CE8" };
+					fillSheetInfo5(context, titles, dataList, workbook);
+					System.out.println("....exportExcel......end..");
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+				}
+			}
+			public void fillSheetInfo5(Context context, String[] titles,
+					MapList dataList, HSSFWorkbook workbook) throws Exception {
+				try {
+					int curRowIndex = 0;
+					int curDataIndex = 0;
+					int maxRowCount = dataList.size();
+					int maxcolumnCount = titles.length;
+					int maxSheetRow = 60000;
+					int sheetNum = maxRowCount / maxSheetRow;
+					if (maxRowCount % maxSheetRow != 0) {
+						sheetNum = sheetNum + 1;
+					}
+					String sheetName="";
+
+					HSSFCell cell_name,SEMIssuePhase,cell_description,SEMIssueLine,SEMEquipmentType,SEMIssueMajor,SEMIssueSubmiter,SEMIssueHappenDate,EstimatedEndDate,Priority,SEMIssueReason,ResolutionRecommendation,SEMIssueSolutionTestCarCode,SEMIssueSolutionProgress,ResolutionStatement,cell_Owner,AssignedIssue,SEMSupplier,ActualEndDate,SEMIssueEO,SEMIssueImportanceID,SEMIssueType,SEMSupplierResolutionRecommendation,SEMPhaseToResolution,SEMIssueSolutionResult,SEMIssueSolutionDealerDepartment,SEMIssueRepeat,cell_SEMIssueType,SEMIssueCarNumber,SEMIssueTestCarCode,SEMProductionRelatedIssue,SEMUPGPart,SEMIssueUndertaker,cell_originator,cell_originated,SEMRemark;
+
+					HSSFCellStyle sheetStyle = workbook.createCellStyle();
+					sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+
+					HSSFFont columnHeadFont = workbook.createFont();
+					columnHeadFont.setColor(HSSFFont.COLOR_RED);
+					columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+					
+
+					HSSFFont font1 = workbook.createFont();
+					font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+					font1.setFontHeightInPoints((short) 14);
+					
+					HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+							.createCellStyle();
+					columnHeadStyle.setFont(font1);
+					columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+					columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+					columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+							.getIndex());
+					columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+					
+					
+					for (int n = 1; n <= sheetNum; n++) {
+						Map tmap=(Map)dataList.get(0);
+						String issueType=(String)tmap.get("attribute[SEM Issue Type]");
+						sheetName=issueType +"\u6E05\u5355"+n;
+						HSSFSheet sheet = workbook.createSheet(sheetName);
+						sheet.createFreezePane(1, 1, 1, 1);
+						
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.setColumnWidth(i, 9000);
+						}
+						sheet.setColumnWidth(2, 3000);
+						sheet.setColumnWidth(3, 3000);
+						sheet.setColumnWidth(4, 3000);
+						HSSFRow row = sheet.createRow(curRowIndex);
+						row.setHeight((short) 600);
+						for (int i = 0; i < maxcolumnCount; i++) {
+							HSSFCell cell = row.createCell(i);
+							cell.setCellValue(titles[i]);
+							cell.setCellStyle(columnHeadStyle);
+						}
+						curRowIndex = curRowIndex + 1;
+
+						ContextUtil.pushContext(context);
+
+						for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+
+							row = sheet.createRow(curRowIndex);
+							Map map = (Map) dataList.get(curDataIndex);
+
+							cell_name = row.createCell(0);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("name"));
+							cell_name.setCellStyle(sheetStyle);
+
+							cell_name = row.createCell(1);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("current"));
+							cell_name.setCellStyle(sheetStyle);
+							
+							SEMIssuePhase = row.createCell(2);
+							SEMIssuePhase.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssuePhase.setCellValue((String) map
+									.get("attribute[SEM Issue Phase]"));
+							SEMIssuePhase.setCellStyle(sheetStyle);
+							
+							cell_description = row.createCell(3);
+							cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_description.setCellValue((String) map
+									.get("description"));
+							cell_description.setCellStyle(sheetStyle);
+							
+							SEMIssueLine = row.createCell(4);
+							SEMIssueLine.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueLine.setCellValue((String) map
+									.get("attribute[SEM Issue Line]"));
+							SEMIssueLine.setCellStyle(sheetStyle);
+							
+							SEMEquipmentType = row.createCell(5);
+							SEMEquipmentType.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMEquipmentType.setCellValue((String) map
+									.get("attribute[SEM Equipment Type]"));
+							SEMEquipmentType.setCellStyle(sheetStyle);
+							
+							SEMIssueMajor = row.createCell(6);
+							SEMIssueMajor.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueMajor.setCellValue((String) map
+									.get("attribute[SEM Issue Major]"));
+							SEMIssueMajor.setCellStyle(sheetStyle);
+							
+							SEMIssueSubmiter = row.createCell(7);
+							SEMIssueSubmiter.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSubmiter.setCellValue((String) map
+									.get("attribute[SEM Issue Submiter]"));
+							SEMIssueSubmiter.setCellStyle(sheetStyle);
+							
+							SEMIssueHappenDate = row.createCell(8);
+							SEMIssueHappenDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueHappenDate.setCellValue(changeDate((String) map
+									.get("attribute[SEM Issue HappenDate]")));
+							SEMIssueHappenDate.setCellStyle(sheetStyle);
+							
+							EstimatedEndDate = row.createCell(9);
+							EstimatedEndDate
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							EstimatedEndDate.setCellValue(changeDate((String) map
+									.get("attribute[Estimated End Date]")));
+							EstimatedEndDate.setCellStyle(sheetStyle);
+							
+							Priority = row.createCell(10);
+							Priority
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							Priority.setCellValue((String) map
+									.get("attribute[Priority]"));
+							Priority.setCellStyle(sheetStyle);
+							
+							SEMIssueReason = row.createCell(11);
+							SEMIssueReason.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueReason.setCellValue((String) map
+									.get("attribute[SEM Issue Reason]"));
+							SEMIssueReason.setCellStyle(sheetStyle);
+							
+							ResolutionRecommendation = row.createCell(12);
+							ResolutionRecommendation
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionRecommendation.setCellValue((String) map
+									.get("attribute[Resolution Recommendation]"));
+							ResolutionRecommendation.setCellStyle(sheetStyle);
+							
+							cell_name = row.createCell(13);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue(changeDate((String)map.get("attribute[Resolution Date]")));
+							cell_name.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionTestCarCode = row.createCell(14);
+							SEMIssueSolutionTestCarCode
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue Solution TestCarCode]"));
+							SEMIssueSolutionTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionProgress = row.createCell(15);
+							SEMIssueSolutionProgress
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionProgress.setCellValue((String) map
+									.get("attribute[SEM Issue SolutionProgress]"));
+							SEMIssueSolutionProgress.setCellStyle(sheetStyle);
+							
+							ResolutionStatement = row.createCell(16);
+							ResolutionStatement
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionStatement.setCellValue((String) map
+									.get("attribute[ResolutionStatement]"));
+							ResolutionStatement.setCellStyle(sheetStyle);
+							
+							cell_Owner = row.createCell(17);
+							cell_Owner.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_Owner.setCellValue((String) map
+									.get(DomainObject.SELECT_OWNER));
+							cell_Owner.setCellStyle(sheetStyle);
+							
+							AssignedIssue = row.createCell(18);
+							AssignedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+							AssignedIssue.setCellValue((String) map
+									.get("attribute[SEM IssueSolution Dealer]"));
+							AssignedIssue.setCellStyle(sheetStyle);
+							
+							SEMSupplier = row.createCell(19);
+							SEMSupplier.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMSupplier.setCellValue((String) map
+									.get("attribute[SEM Supplier]"));
+							SEMSupplier.setCellStyle(sheetStyle);
+							
+							ActualEndDate = row.createCell(20);
+							ActualEndDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ActualEndDate.setCellValue(changeDate((String) map
+									.get("attribute[Actual End Date]")));
+							ActualEndDate.setCellStyle(sheetStyle);					
+							
+							SEMIssueEO = row.createCell(21);
+							SEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueEO.setCellValue((String) map
+									.get("attribute[SEM Issue EO]"));
+							SEMIssueEO.setCellStyle(sheetStyle);	
+							
+							SEMIssueImportanceID = row.createCell(22);
+							SEMIssueImportanceID.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueImportanceID.setCellValue((String) map
+									.get("attribute[SEM IssueImportance ID]"));
+							SEMIssueImportanceID.setCellStyle(sheetStyle);
+							
+							SEMIssueType = row.createCell(23);
+							SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueType.setCellValue((String) map
+									.get("attribute[SEM Issue Type]"));
+							SEMIssueType.setCellStyle(sheetStyle);
+							
+							SEMSupplierResolutionRecommendation = row.createCell(24);
+							SEMSupplierResolutionRecommendation.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMSupplierResolutionRecommendation.setCellValue((String) map
+									.get("attribute[SEM SupplierResolution Recommendation]"));
+							SEMSupplierResolutionRecommendation.setCellStyle(sheetStyle);
+							
+							SEMPhaseToResolution = row.createCell(25);
+							SEMPhaseToResolution
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMPhaseToResolution.setCellValue((String) map
+									.get("attribute[SEM Phase To Resolution]"));
+							SEMPhaseToResolution.setCellStyle(sheetStyle);										
+						
+							SEMIssueSolutionResult = row.createCell(26);
+							SEMIssueSolutionResult
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionResult.setCellValue((String) map
+									.get("attribute[SEM Issue SolutionResult]"));
+							SEMIssueSolutionResult.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionDealerDepartment = row.createCell(27);
+							SEMIssueSolutionDealerDepartment
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionDealerDepartment
+									.setCellValue((String) map
+											.get("attribute[SEM IssueSolution Dealer Department]"));
+							SEMIssueSolutionDealerDepartment.setCellStyle(sheetStyle);
+							
+							SEMIssueRepeat = row.createCell(28);
+							SEMIssueRepeat.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueRepeat.setCellValue((String) map
+									.get("attribute[SEM Issue Repeat]"));
+							SEMIssueRepeat.setCellStyle(sheetStyle);
+							
+							cell_SEMIssueType = row.createCell(29);
+							cell_SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_SEMIssueType.setCellValue((String) map
+									.get("attribute[SEM Issue Class]"));
+							cell_SEMIssueType.setCellStyle(sheetStyle);
+							
+							SEMIssueCarNumber = row.createCell(30);
+							SEMIssueCarNumber.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueCarNumber.setCellValue((String) map
+									.get("attribute[SEM IssueCar Number]"));
+							SEMIssueCarNumber.setCellStyle(sheetStyle);
+							
+							SEMIssueTestCarCode = row.createCell(31);
+							SEMIssueTestCarCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue TestCarCode]"));
+							SEMIssueTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMProductionRelatedIssue = row.createCell(32);
+							SEMProductionRelatedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMProductionRelatedIssue.setCellValue((String)map.get("attribute[SEM Production Related Issue]"));
+							SEMProductionRelatedIssue.setCellStyle(sheetStyle);
+							
+							SEMUPGPart = row.createCell(33);
+							SEMUPGPart
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMUPGPart.setCellValue((String) map.get("attribute[SEM UPG Part]"));
+							SEMUPGPart.setCellStyle(sheetStyle);
+							
+							SEMIssueUndertaker = row.createCell(34);
+							SEMIssueUndertaker
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueUndertaker.setCellValue((String) map
+									.get("attribute[SEM Issue Undertaker]"));
+							SEMIssueUndertaker.setCellStyle(sheetStyle);
+							
+							cell_originator = row.createCell(35);
+							cell_originator.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_originator.setCellValue((String) map
+									.get("attribute[Originator]"));
+							cell_originator.setCellStyle(sheetStyle);
+							
+							cell_originated = row.createCell(36);
+							cell_originated.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_originated.setCellValue(changeDate((String) map
+									.get("originated")));
+							cell_originated.setCellStyle(sheetStyle);
+						
+							SEMRemark = row.createCell(37);
+							SEMRemark.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMRemark.setCellValue((String) map.get("attribute[SEM Remark]"));
+							SEMRemark.setCellStyle(sheetStyle);																																															
+
+							curRowIndex = curRowIndex + 1;
+						}
+						curRowIndex = 0;
+						// Set the column size to auto-fit
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.autoSizeColumn(i);
+						}
+					}// for sheet
+					
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+					throw new FrameworkException(e);
+				} finally {
+					ContextUtil.popContext(context);
+				}
+	}
+			// exprot Welding 
+			public void exportExcel6(Context context, String[] args) {
+				System.out.println("....exportExcel......start..");
+				try {
+					String errMsg = "";
+					HashMap programMap = (HashMap) JPO.unpackArgs(args);
+					MapList dataList = (MapList) programMap.get("dataList");
+					if (dataList == null || dataList.size() == 0) {
+						return;
+					}
+					HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+					String[] titles = { "\u95EE\u9898\u7F16\u53F7","\u72B6\u6001",
+							"\u9636\u6BB5","\u7EBF\u522B",
+							"\u53D1\u751F\u8F66\u53F7","\u53D1\u751F\u90E8\u4F4D",
+							"\u95EE\u9898\u5206\u7C7B","\u95EE\u9898\u63CF\u8FF0",
+							"\u95EE\u9898\u539F\u56E0","\u5BF9\u7B56\u6539\u5584\u8BF4\u660E",
+							"\u5382\u5546\u5BF9\u7B56\u8BF4\u660E","\u5BF9\u7B56\u65E5\u671F",
+							"\u5BF9\u7B56\u8F66\u53F7","\u6539\u5584\u5BF9\u5E94\u9636\u6BB5",
+							"\u5BF9\u7B56\u8FDB\u5EA6","\u56DE\u590D\u671F\u9650",
+							"\u5BF9\u7B56\u5224\u5B9A\u7ED3\u679C","\u5BF9\u7B56\u5224\u5B9A\u8BF4\u660E",
+							"\u5BF9\u7B56\u4EBA\u7EC4","\u5BF9\u7B56\u4EBA",
+							"\u6240\u6709\u8005","EO\u7F16\u53F7",
+							"\u627F\u529E","\u4F9B\u5E94\u5546",
+							"\u6307\u6458\u65E5\u671F" };
+					fillSheetInfo6(context, titles, dataList, workbook);
+					System.out.println("....exportExcel......end..");
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+				}
+			}
+			public void fillSheetInfo6(Context context, String[] titles,
+					MapList dataList, HSSFWorkbook workbook) throws Exception {
+				try {
+					int curRowIndex = 0;
+					int curDataIndex = 0;
+					int maxRowCount = dataList.size();
+					int maxcolumnCount = titles.length;
+					int maxSheetRow = 60000;
+					int sheetNum = maxRowCount / maxSheetRow;
+					if (maxRowCount % maxSheetRow != 0) {
+						sheetNum = sheetNum + 1;
+					}
+					String sheetName="";
+
+					HSSFCell cell_name,SEMIssuePhase,SEMIssueLine,SEMIssueTestCarCode,SEMIssueSection,SEMIssueType,cell_description,SEMIssueReason,ResolutionRecommendation,SEMSupplierResolutionRecommendation,ResolutionDate,SEMIssueSolutionTestCarCode,SEMPhaseToResolution,SEMIssueSolutionProgress,EstimatedEndDate,SEMIssueSolutionResult,ResolutionStatement,SEMIssueSolutionDealerDepartment,AssignedIssue,cell_Owner,SEMIssueEO,SEMIssueUndertaker,SEMSupplier,SEMIssueHappenDate;
+
+					HSSFCellStyle sheetStyle = workbook.createCellStyle();
+					sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+
+					HSSFFont columnHeadFont = workbook.createFont();
+					columnHeadFont.setColor(HSSFFont.COLOR_RED);
+					columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+					
+
+					HSSFFont font1 = workbook.createFont();
+					font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+					font1.setFontHeightInPoints((short) 14);
+					
+					HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+							.createCellStyle();
+					columnHeadStyle.setFont(font1);
+					columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+					columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+					columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+							.getIndex());
+					columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+					
+					
+					for (int n = 1; n <= sheetNum; n++) {
+						Map tmap=(Map)dataList.get(0);
+						String issueType=(String)tmap.get("attribute[SEM Issue Type]");
+						sheetName=issueType +"\u6E05\u5355"+n;
+						HSSFSheet sheet = workbook.createSheet(sheetName);
+						sheet.createFreezePane(1, 1, 1, 1);
+						
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.setColumnWidth(i, 9000);
+						}
+						sheet.setColumnWidth(2, 3000);
+						sheet.setColumnWidth(3, 3000);
+						sheet.setColumnWidth(4, 3000);
+						HSSFRow row = sheet.createRow(curRowIndex);
+						row.setHeight((short) 600);
+						for (int i = 0; i < maxcolumnCount; i++) {
+							HSSFCell cell = row.createCell(i);
+							cell.setCellValue(titles[i]);
+							cell.setCellStyle(columnHeadStyle);
+						}
+						curRowIndex = curRowIndex + 1;
+
+						ContextUtil.pushContext(context);
+
+						for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+
+							row = sheet.createRow(curRowIndex);
+							Map map = (Map) dataList.get(curDataIndex);
+
+							cell_name = row.createCell(0);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("name"));
+							cell_name.setCellStyle(sheetStyle);
+
+							cell_name = row.createCell(1);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("current"));
+							cell_name.setCellStyle(sheetStyle);
+							
+							SEMIssuePhase = row.createCell(2);
+							SEMIssuePhase.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssuePhase.setCellValue((String) map
+									.get("attribute[SEM Issue Phase]"));
+							SEMIssuePhase.setCellStyle(sheetStyle);
+							
+							SEMIssueLine = row.createCell(3);
+							SEMIssueLine.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueLine.setCellValue((String) map
+									.get("attribute[SEM Issue Line]"));
+							SEMIssueLine.setCellStyle(sheetStyle);
+							
+							SEMIssueTestCarCode = row.createCell(4);
+							SEMIssueTestCarCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue TestCarCode]"));
+							SEMIssueTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMIssueSection = row.createCell(5);
+							SEMIssueSection.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSection.setCellValue((String) map
+									.get("attribute[SEM Issue Section]"));
+							SEMIssueSection.setCellStyle(sheetStyle);
+							
+							SEMIssueType = row.createCell(6);
+							SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueType.setCellValue((String) map
+									.get("attribute[SEM Issue Type]"));
+							SEMIssueType.setCellStyle(sheetStyle);																	
+							
+							cell_description = row.createCell(7);
+							cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_description.setCellValue((String) map
+									.get("description"));
+							cell_description.setCellStyle(sheetStyle);
+							
+							SEMIssueReason = row.createCell(8);
+							SEMIssueReason.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueReason.setCellValue((String) map
+									.get("attribute[SEM Issue Reason]"));
+							SEMIssueReason.setCellStyle(sheetStyle);
+							
+							ResolutionRecommendation = row.createCell(9);
+							ResolutionRecommendation
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionRecommendation.setCellValue((String) map
+									.get("attribute[Resolution Recommendation]"));
+							ResolutionRecommendation.setCellStyle(sheetStyle);
+							
+							SEMSupplierResolutionRecommendation = row.createCell(10);
+							SEMSupplierResolutionRecommendation.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMSupplierResolutionRecommendation.setCellValue((String) map
+									.get("attribute[SEM SupplierResolution Recommendation]"));
+							SEMSupplierResolutionRecommendation.setCellStyle(sheetStyle);
+							
+							ResolutionDate = row.createCell(11);
+							ResolutionDate
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionDate.setCellValue(changeDate((String) map
+									.get("attribute[Resolution Date]")));
+							ResolutionDate.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionTestCarCode = row.createCell(12);
+							SEMIssueSolutionTestCarCode
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue Solution TestCarCode]"));
+							SEMIssueSolutionTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMPhaseToResolution = row.createCell(13);
+							SEMPhaseToResolution
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMPhaseToResolution.setCellValue((String) map
+									.get("attribute[SEM Phase To Resolution]"));
+							SEMPhaseToResolution.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionProgress = row.createCell(14);
+							SEMIssueSolutionProgress
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionProgress.setCellValue((String) map
+									.get("attribute[SEM Issue SolutionProgress]"));
+							SEMIssueSolutionProgress.setCellStyle(sheetStyle);
+							
+							EstimatedEndDate = row.createCell(15);
+							EstimatedEndDate
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							EstimatedEndDate.setCellValue(changeDate((String) map
+									.get("attribute[Estimated End Date]")));
+							EstimatedEndDate.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionResult = row.createCell(16);
+							SEMIssueSolutionResult
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionResult.setCellValue((String) map
+									.get("attribute[SEM Issue SolutionResult]"));
+							SEMIssueSolutionResult.setCellStyle(sheetStyle);
+							
+							ResolutionStatement = row.createCell(17);
+							ResolutionStatement
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionStatement.setCellValue((String) map
+									.get("attribute[ResolutionStatement]"));
+							ResolutionStatement.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionDealerDepartment = row.createCell(18);
+							SEMIssueSolutionDealerDepartment
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionDealerDepartment
+									.setCellValue((String) map
+											.get("attribute[SEM IssueSolution Dealer Department]"));
+							SEMIssueSolutionDealerDepartment.setCellStyle(sheetStyle);
+							
+							AssignedIssue = row.createCell(19);
+							AssignedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+							AssignedIssue.setCellValue((String) map
+									.get("attribute[SEM IssueSolution Dealer]"));
+							AssignedIssue.setCellStyle(sheetStyle);
+							
+							cell_Owner = row.createCell(20);
+							cell_Owner.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_Owner.setCellValue((String) map
+									.get(DomainObject.SELECT_OWNER));
+							cell_Owner.setCellStyle(sheetStyle);
+							
+							SEMIssueEO = row.createCell(21);
+							SEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueEO.setCellValue((String) map
+									.get("attribute[SEM Issue EO]"));
+							SEMIssueEO.setCellStyle(sheetStyle);
+							
+							SEMIssueUndertaker = row.createCell(22);
+							SEMIssueUndertaker
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueUndertaker.setCellValue((String) map
+									.get("attribute[SEM Issue Undertaker]"));
+							SEMIssueUndertaker.setCellStyle(sheetStyle);
+							
+							SEMSupplier = row.createCell(23);
+							SEMSupplier.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMSupplier.setCellValue((String) map
+									.get("attribute[SEM Supplier]"));
+							SEMSupplier.setCellStyle(sheetStyle);
+							
+							SEMIssueHappenDate = row.createCell(24);
+							SEMIssueHappenDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueHappenDate.setCellValue(changeDate((String) map
+									.get("attribute[SEM Issue HappenDate]")));
+							SEMIssueHappenDate.setCellStyle(sheetStyle);																																																																	
+
+							curRowIndex = curRowIndex + 1;
+						}
+						curRowIndex = 0;
+						// Set the column size to auto-fit
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.autoSizeColumn(i);
+						}
+					}// for sheet
+					
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+					throw new FrameworkException(e);
+				} finally {
+					ContextUtil.popContext(context);
+				}
+	}
+			// exprot Coating 
+			public void exportExcel7(Context context, String[] args) {
+				System.out.println("....exportExcel......start..");
+				try {
+					String errMsg = "";
+					HashMap programMap = (HashMap) JPO.unpackArgs(args);
+					MapList dataList = (MapList) programMap.get("dataList");
+					if (dataList == null || dataList.size() == 0) {
+						return;
+					}
+					HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+					String[] titles = { "\u95EE\u9898\u7F16\u53F7","\u72B6\u6001",
+							"\u9636\u6BB5","\u6307\u6458\u65E5\u671F",
+							"\u53D1\u751F\u8F66\u53F7","\u53D1\u751F\u90E8\u4F4D","\u533A\u5206",
+							"\u95EE\u9898\u5206\u7C7B","\u95EE\u9898\u63CF\u8FF0",
+							"\u95EE\u9898\u539F\u56E0","\u5BF9\u7B56\u6539\u5584\u8BF4\u660E",
+							"\u5BF9\u7B56\u4EBA","\u5BF9\u7B56\u4EBA\u7EC4",
+							"\u4F9B\u5E94\u5546","\u5BF9\u7B56\u65E5\u671F",
+							"\u5BF9\u7B56\u8F66\u53F7","\u6539\u5584\u5BF9\u5E94\u9636\u6BB5",
+							"\u5BF9\u7B56\u8FDB\u5EA6","\u5BF9\u7B56\u5224\u5B9A\u7ED3\u679C",
+							"\u56DE\u590D\u671F\u9650","\u5907\u6CE8",
+							"\u53D1\u751F\u53F0\u6570","\u662F\u5426\u91CD\u590D\u53D1\u751F",
+							"\u5355\u53F7","EO\u7F16\u53F7",
+							"\u91CF\u4EA7\u76F8\u5173","\u7D27\u6025\u5EA6",
+							"\u5173\u95ED\u65E5\u671F","\u91CD\u8981\u6807\u8BC6",
+							"\u521B\u5EFA\u4EBA","\u521B\u5EFA\u65F6\u95F4",
+							"\u6307\u6458\u4EBA","\u6240\u6709\u8005"};
+					fillSheetInfo7(context, titles, dataList, workbook);
+					System.out.println("....exportExcel......end..");
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+				}
+			}
+			public void fillSheetInfo7(Context context, String[] titles,
+					MapList dataList, HSSFWorkbook workbook) throws Exception {
+				try {
+					int curRowIndex = 0;
+					int curDataIndex = 0;
+					int maxRowCount = dataList.size();
+					int maxcolumnCount = titles.length;
+					int maxSheetRow = 60000;
+					int sheetNum = maxRowCount / maxSheetRow;
+					if (maxRowCount % maxSheetRow != 0) {
+						sheetNum = sheetNum + 1;
+					}
+					String sheetName="";
+
+					HSSFCell cell_name,SEMIssuePhase,SEMIssueHappenDate,SEMIssueTestCarCode,SEMIssueSection,SEMIssueType,cell_description,SEMIssueReason,ResolutionRecommendation,AssignedIssue,SEMIssueSolutionDealerDepartment,SEMSupplier,ResolutionDate,SEMIssueSolutionTestCarCode,SEMPhaseToResolution,SEMIssueSolutionProgress,SEMIssueSolutionResult,EstimatedEndDate,SEMRemark,SEMIssueCarNumber,SEMIssueRepeat,SEMTestIssueNumber,SEMIssueEO,SEMProductionRelatedIssue,Priority,ActualEndDate,SEMIssueImportanceID,cell_originator,cell_originated,SEMIssueSubmiter,cell_Owner;
+
+					HSSFCellStyle sheetStyle = workbook.createCellStyle();
+					sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+
+					HSSFFont columnHeadFont = workbook.createFont();
+					columnHeadFont.setColor(HSSFFont.COLOR_RED);
+					columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+					
+
+					HSSFFont font1 = workbook.createFont();
+					font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+					font1.setFontHeightInPoints((short) 14);
+					
+					HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+							.createCellStyle();
+					columnHeadStyle.setFont(font1);
+					columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+					columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+					columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+							.getIndex());
+					columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+					
+					
+					for (int n = 1; n <= sheetNum; n++) {
+						Map tmap=(Map)dataList.get(0);
+						String issueType=(String)tmap.get("attribute[SEM Issue Type]");
+						sheetName=issueType +"\u6E05\u5355"+n;
+						HSSFSheet sheet = workbook.createSheet(sheetName);
+						sheet.createFreezePane(1, 1, 1, 1);
+						
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.setColumnWidth(i, 9000);
+						}
+						sheet.setColumnWidth(2, 3000);
+						sheet.setColumnWidth(3, 3000);
+						sheet.setColumnWidth(4, 3000);
+						HSSFRow row = sheet.createRow(curRowIndex);
+						row.setHeight((short) 600);
+						for (int i = 0; i < maxcolumnCount; i++) {
+							HSSFCell cell = row.createCell(i);
+							cell.setCellValue(titles[i]);
+							cell.setCellStyle(columnHeadStyle);
+						}
+						curRowIndex = curRowIndex + 1;
+
+						ContextUtil.pushContext(context);
+
+						for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+
+							row = sheet.createRow(curRowIndex);
+							Map map = (Map) dataList.get(curDataIndex);
+
+							cell_name = row.createCell(0);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("name"));
+							cell_name.setCellStyle(sheetStyle);
+
+							cell_name = row.createCell(1);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("current"));
+							cell_name.setCellStyle(sheetStyle);
+							
+							SEMIssuePhase = row.createCell(2);
+							SEMIssuePhase.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssuePhase.setCellValue((String) map
+									.get("attribute[SEM Issue Phase]"));
+							SEMIssuePhase.setCellStyle(sheetStyle);
+							
+							SEMIssueHappenDate = row.createCell(3);
+							SEMIssueHappenDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueHappenDate.setCellValue(changeDate((String) map
+									.get("attribute[SEM Issue HappenDate]")));
+							SEMIssueHappenDate.setCellStyle(sheetStyle);
+							
+							SEMIssueTestCarCode = row.createCell(4);
+							SEMIssueTestCarCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue TestCarCode]"));
+							SEMIssueTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMIssueSection = row.createCell(5);
+							SEMIssueSection.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSection.setCellValue((String) map
+									.get("attribute[SEM Issue Section]"));
+							SEMIssueSection.setCellStyle(sheetStyle);
+							
+							cell_name = row.createCell(6);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("attribute[SEM Issue Major]"));
+							cell_name.setCellStyle(sheetStyle);
+							
+							SEMIssueType = row.createCell(7);
+							SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueType.setCellValue((String) map
+									.get("attribute[SEM Issue Type]"));
+							SEMIssueType.setCellStyle(sheetStyle);
+							
+							cell_description = row.createCell(8);
+							cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_description.setCellValue((String) map
+									.get("description"));
+							cell_description.setCellStyle(sheetStyle);
+							
+							SEMIssueReason = row.createCell(9);
+							SEMIssueReason.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueReason.setCellValue((String) map
+									.get("attribute[SEM Issue Reason]"));
+							SEMIssueReason.setCellStyle(sheetStyle);
+							
+							ResolutionRecommendation = row.createCell(10);
+							ResolutionRecommendation
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionRecommendation.setCellValue((String) map
+									.get("attribute[Resolution Recommendation]"));
+							ResolutionRecommendation.setCellStyle(sheetStyle);
+							
+							AssignedIssue = row.createCell(11);
+							AssignedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+							AssignedIssue.setCellValue((String) map
+									.get("attribute[SEM IssueSolution Dealer]"));
+							AssignedIssue.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionDealerDepartment = row.createCell(12);
+							SEMIssueSolutionDealerDepartment
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionDealerDepartment
+									.setCellValue((String) map
+											.get("attribute[SEM IssueSolution Dealer Department]"));
+							SEMIssueSolutionDealerDepartment.setCellStyle(sheetStyle);
+							
+							SEMSupplier = row.createCell(13);
+							SEMSupplier.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMSupplier.setCellValue((String) map
+									.get("attribute[SEM Supplier]"));
+							SEMSupplier.setCellStyle(sheetStyle);
+							
+							ResolutionDate = row.createCell(14);
+							ResolutionDate
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionDate.setCellValue(changeDate((String) map
+									.get("attribute[Resolution Date]")));
+							ResolutionDate.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionTestCarCode = row.createCell(15);
+							SEMIssueSolutionTestCarCode
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue Solution TestCarCode]"));
+							SEMIssueSolutionTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMPhaseToResolution = row.createCell(16);
+							SEMPhaseToResolution
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMPhaseToResolution.setCellValue((String) map
+									.get("attribute[SEM Phase To Resolution]"));
+							SEMPhaseToResolution.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionProgress = row.createCell(17);
+							SEMIssueSolutionProgress
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionProgress.setCellValue((String) map
+									.get("attribute[SEM Issue SolutionProgress]"));
+							SEMIssueSolutionProgress.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionResult = row.createCell(18);
+							SEMIssueSolutionResult
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionResult.setCellValue((String) map
+									.get("attribute[SEM Issue SolutionResult]"));
+							SEMIssueSolutionResult.setCellStyle(sheetStyle);
+							
+							EstimatedEndDate = row.createCell(19);
+							EstimatedEndDate
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							EstimatedEndDate.setCellValue(changeDate((String) map
+									.get("attribute[Estimated End Date]")));
+							EstimatedEndDate.setCellStyle(sheetStyle);
+							
+							SEMRemark = row.createCell(20);
+							SEMRemark.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMRemark.setCellValue((String) map
+									.get("attribute[SEM Remark]"));
+							SEMRemark.setCellStyle(sheetStyle);
+							
+							SEMIssueCarNumber = row.createCell(21);
+							SEMIssueCarNumber.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueCarNumber.setCellValue((String) map
+									.get("attribute[SEM IssueCar Number]"));
+							SEMIssueCarNumber.setCellStyle(sheetStyle);
+							
+							SEMIssueRepeat = row.createCell(22);
+							SEMIssueRepeat.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueRepeat.setCellValue((String) map
+									.get("attribute[SEM Issue Repeat]"));
+							SEMIssueRepeat.setCellStyle(sheetStyle);
+							
+							SEMTestIssueNumber = row.createCell(23);
+							SEMTestIssueNumber.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMTestIssueNumber.setCellValue((String) map
+									.get("attribute[SEM TestIssue Number]"));
+							SEMTestIssueNumber.setCellStyle(sheetStyle);
+							
+							SEMIssueEO = row.createCell(24);
+							SEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueEO.setCellValue((String) map
+									.get("attribute[SEM Issue EO]"));
+							SEMIssueEO.setCellStyle(sheetStyle);
+							
+							SEMProductionRelatedIssue = row.createCell(25);
+							SEMProductionRelatedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMProductionRelatedIssue.setCellValue((String) map
+									.get("attribute[SEM Production Related Issue]"));
+							SEMProductionRelatedIssue.setCellStyle(sheetStyle);
+							
+							Priority = row.createCell(26);
+							Priority.setCellType(HSSFCell.CELL_TYPE_STRING);
+							Priority.setCellValue((String) map
+									.get("attribute[Priority]"));
+							Priority.setCellStyle(sheetStyle);
+							
+							ActualEndDate = row.createCell(27);
+							ActualEndDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ActualEndDate.setCellValue(changeDate((String) map
+									.get("attribute[Actual End Date]")));
+							ActualEndDate.setCellStyle(sheetStyle);
+							
+							SEMIssueImportanceID = row.createCell(28);
+							SEMIssueImportanceID.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueImportanceID.setCellValue((String) map
+									.get("attribute[SEM IssueImportance ID]"));
+							SEMIssueImportanceID.setCellStyle(sheetStyle);
+							
+							cell_originator = row.createCell(29);
+							cell_originator.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_originator.setCellValue((String) map
+									.get("attribute[Originator]"));
+							cell_originator.setCellStyle(sheetStyle);
+							
+							cell_originated = row.createCell(30);
+							cell_originated.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_originated.setCellValue(changeDate((String) map
+									.get("originated")));
+							cell_originated.setCellStyle(sheetStyle);
+							
+							SEMIssueSubmiter = row.createCell(31);
+							SEMIssueSubmiter.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSubmiter.setCellValue((String) map
+									.get("attribute[SEM Issue Submiter]"));
+							SEMIssueSubmiter.setCellStyle(sheetStyle);
+							
+							cell_Owner = row.createCell(32);
+							cell_Owner.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_Owner.setCellValue((String) map
+									.get(DomainObject.SELECT_OWNER));
+							cell_Owner.setCellStyle(sheetStyle);																																																																													
+
+							curRowIndex = curRowIndex + 1;
+						}
+						curRowIndex = 0;
+						// Set the column size to auto-fit
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.autoSizeColumn(i);
+						}
+					}// for sheet
+					
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+					throw new FrameworkException(e);
+				} finally {
+					ContextUtil.popContext(context);
+				}
+			}
+			// exprot Assembly 
+			public void exportExcel8(Context context, String[] args) {
+				System.out.println("....exportExcel......start..");
+				try {
+					String errMsg = "";
+					HashMap programMap = (HashMap) JPO.unpackArgs(args);
+					MapList dataList = (MapList) programMap.get("dataList");
+					if (dataList == null || dataList.size() == 0) {
+						return;
+					}
+					HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+					String[] titles = { "\u95EE\u9898\u7F16\u53F7","\u72B6\u6001",
+							"\u9636\u6BB5","\u6307\u6458\u65E5\u671F",
+							"\u7EBF\u522B","\u95EE\u9898\u63CF\u8FF0",
+							"\u95EE\u9898\u539F\u56E0","\u5BF9\u7B56\u6539\u5584\u8BF4\u660E",
+							"\u5382\u5546\u5BF9\u7B56\u8BF4\u660E","EO\u7F16\u53F7",
+							"\u56DE\u590D\u671F\u9650","\u5BF9\u7B56\u4EBA\u7EC4",
+							"\u5BF9\u7B56\u4EBA","\u627F\u529E",
+							"\u4F9B\u5E94\u5546","\u5BF9\u7B56\u65E5\u671F",
+							"\u5BF9\u7B56\u8F66\u53F7","\u6539\u5584\u5BF9\u5E94\u9636\u6BB5",
+							"\u5BF9\u7B56\u8FDB\u5EA6","\u5BF9\u7B56\u5224\u5B9A\u7ED3\u679C",
+							"\u5BF9\u7B56\u5224\u5B9A\u8BF4\u660E","\u7C7B\u522B",
+							"\u7D27\u6025\u5EA6","\u91CD\u8981\u6807\u8BC6",
+							"\u533A\u5206","\u662F\u5426\u91CD\u590D\u53D1\u751F",
+							"UPG","\u4E00\u9636\u4EF6",
+							"\u91CF\u4EA7\u76F8\u5173","\u96F6\u4EF6\u7CFB\u7EDF",
+							"\u53D1\u751F\u90E8\u4F4D","\u53D1\u751F\u8F66\u53F7",
+							"\u53D1\u751F\u53F0\u6570","\u5907\u6CE8",
+							"\u5173\u95ED\u65E5\u671F","\u6307\u6458\u4EBA",
+							"\u95EE\u9898\u5206\u7C7B","\u521B\u5EFA\u65F6\u95F4",
+							"\u521B\u5EFA\u4EBA","\u6240\u6709\u8005" };
+					fillSheetInfo8(context, titles, dataList, workbook);
+					System.out.println("....exportExcel......end..");
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+				}
+			}
+			public void fillSheetInfo8(Context context, String[] titles,
+					MapList dataList, HSSFWorkbook workbook) throws Exception {
+				try {
+					int curRowIndex = 0;
+					int curDataIndex = 0;
+					int maxRowCount = dataList.size();
+					int maxcolumnCount = titles.length;
+					int maxSheetRow = 60000;
+					int sheetNum = maxRowCount / maxSheetRow;
+					if (maxRowCount % maxSheetRow != 0) {
+						sheetNum = sheetNum + 1;
+					}
+					String sheetName="";
+
+					HSSFCell cell_name,SEMIssuePhase,SEMIssueHappenDate,SEMIssueLine,cell_description,SEMIssueReason,ResolutionRecommendation,SEMSupplierResolutionRecommendation,SEMIssueEO,EstimatedEndDate,SEMIssueSolutionDealerDepartment,AssignedIssue,SEMIssueUndertaker,SEMSupplier,ResolutionDate,SEMIssueSolutionTestCarCode,SEMPhaseToResolution,SEMIssueSolutionProgress,SEMIssueSolutionResult,ResolutionStatement,SEMIssueClass,Priority,SEMIssueImportanceID,SEMIssueMajor,SEMIssueRepeat,SEMUPGPart,SEMPart,SEMProductionRelatedIssue,SEMIssuePartType,SEMIssueSection,SEMIssueTestCarCode,SEMIssueCarNumber,SEMRemark,ActualEndDate,SEMIssueSubmiter,SEMIssueType,cell_originated,cell_originator,cell_Owner;
+
+					HSSFCellStyle sheetStyle = workbook.createCellStyle();
+					sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+
+					HSSFFont columnHeadFont = workbook.createFont();
+					columnHeadFont.setColor(HSSFFont.COLOR_RED);
+					columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+					
+
+					HSSFFont font1 = workbook.createFont();
+					font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+					font1.setFontHeightInPoints((short) 14);
+					
+					HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+							.createCellStyle();
+					columnHeadStyle.setFont(font1);
+					columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+					columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+					columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+					columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+					columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+							.getIndex());
+					columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+					
+					
+					for (int n = 1; n <= sheetNum; n++) {
+						Map tmap=(Map)dataList.get(0);
+						String issueType=(String)tmap.get("attribute[SEM Issue Type]");
+						sheetName=issueType +"\u6E05\u5355"+n;
+						HSSFSheet sheet = workbook.createSheet(sheetName);
+						sheet.createFreezePane(1, 1, 1, 1);
+						
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.setColumnWidth(i, 9000);
+						}
+						sheet.setColumnWidth(2, 3000);
+						sheet.setColumnWidth(3, 3000);
+						sheet.setColumnWidth(4, 3000);
+						HSSFRow row = sheet.createRow(curRowIndex);
+						row.setHeight((short) 600);
+						for (int i = 0; i < maxcolumnCount; i++) {
+							HSSFCell cell = row.createCell(i);
+							cell.setCellValue(titles[i]);
+							cell.setCellStyle(columnHeadStyle);
+						}
+						curRowIndex = curRowIndex + 1;
+
+						ContextUtil.pushContext(context);
+
+						for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+
+							row = sheet.createRow(curRowIndex);
+							Map map = (Map) dataList.get(curDataIndex);
+
+							cell_name = row.createCell(0);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("name"));
+							cell_name.setCellStyle(sheetStyle);
+
+							cell_name = row.createCell(1);
+							cell_name.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_name.setCellValue((String) map.get("current"));
+							cell_name.setCellStyle(sheetStyle);
+							
+							SEMIssuePhase = row.createCell(2);
+							SEMIssuePhase.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssuePhase.setCellValue((String) map
+									.get("attribute[SEM Issue Phase]"));
+							SEMIssuePhase.setCellStyle(sheetStyle);
+							
+							SEMIssueHappenDate = row.createCell(3);
+							SEMIssueHappenDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueHappenDate.setCellValue(changeDate((String) map
+									.get("attribute[SEM Issue HappenDate]")));
+							SEMIssueHappenDate.setCellStyle(sheetStyle);
+							
+							SEMIssueLine = row.createCell(4);
+							SEMIssueLine.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueLine.setCellValue((String) map
+									.get("attribute[SEM Issue Line]"));
+							SEMIssueLine.setCellStyle(sheetStyle);
+							
+							cell_description = row.createCell(5);
+							cell_description.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_description.setCellValue((String) map
+									.get("description"));
+							cell_description.setCellStyle(sheetStyle);
+							
+							SEMIssueReason = row.createCell(6);
+							SEMIssueReason.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueReason.setCellValue((String) map
+									.get("attribute[SEM Issue Reason]"));
+							SEMIssueReason.setCellStyle(sheetStyle);
+							
+							ResolutionRecommendation = row.createCell(7);
+							ResolutionRecommendation
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionRecommendation.setCellValue((String) map
+									.get("attribute[Resolution Recommendation]"));
+							ResolutionRecommendation.setCellStyle(sheetStyle);
+							
+							SEMSupplierResolutionRecommendation = row.createCell(8);
+							SEMSupplierResolutionRecommendation
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMSupplierResolutionRecommendation.setCellValue((String) map
+									.get("attribute[SEM SupplierResolution Recommendation]"));
+							SEMSupplierResolutionRecommendation.setCellStyle(sheetStyle);
+							
+							SEMIssueEO = row.createCell(9);
+							SEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueEO.setCellValue((String) map
+									.get("attribute[SEM Issue EO]"));
+							SEMIssueEO.setCellStyle(sheetStyle);
+							
+							EstimatedEndDate = row.createCell(10);
+							EstimatedEndDate
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							EstimatedEndDate.setCellValue(changeDate((String) map
+									.get("attribute[Estimated End Date]")));
+							EstimatedEndDate.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionDealerDepartment = row.createCell(11);
+							SEMIssueSolutionDealerDepartment
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionDealerDepartment
+									.setCellValue((String) map
+											.get("attribute[SEM IssueSolution Dealer Department]"));
+							SEMIssueSolutionDealerDepartment.setCellStyle(sheetStyle);
+							
+							AssignedIssue = row.createCell(12);
+							AssignedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+							AssignedIssue.setCellValue((String) map
+									.get("attribute[SEM IssueSolution Dealer]"));
+							AssignedIssue.setCellStyle(sheetStyle);
+							
+							SEMIssueUndertaker = row.createCell(13);
+							SEMIssueUndertaker.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueUndertaker.setCellValue((String) map
+									.get("attribute[SEM Issue Undertaker]"));
+							SEMIssueUndertaker.setCellStyle(sheetStyle);
+							
+							SEMSupplier = row.createCell(14);
+							SEMSupplier.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMSupplier.setCellValue((String) map
+									.get("attribute[SEM Supplier]"));
+							SEMSupplier.setCellStyle(sheetStyle);
+							
+							ResolutionDate = row.createCell(15);
+							ResolutionDate
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionDate.setCellValue(changeDate((String) map
+									.get("attribute[Resolution Date]")));
+							ResolutionDate.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionTestCarCode = row.createCell(16);
+							SEMIssueSolutionTestCarCode
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue Solution TestCarCode]"));
+							SEMIssueSolutionTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMPhaseToResolution = row.createCell(17);
+							SEMPhaseToResolution
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMPhaseToResolution.setCellValue((String) map
+									.get("attribute[SEM Phase To Resolution]"));
+							SEMPhaseToResolution.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionProgress = row.createCell(18);
+							SEMIssueSolutionProgress
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionProgress.setCellValue((String) map
+									.get("attribute[SEM Issue SolutionProgress]"));
+							SEMIssueSolutionProgress.setCellStyle(sheetStyle);
+							
+							SEMIssueSolutionResult = row.createCell(19);
+							SEMIssueSolutionResult
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSolutionResult.setCellValue((String) map
+									.get("attribute[SEM Issue SolutionResult]"));
+							SEMIssueSolutionResult.setCellStyle(sheetStyle);
+							
+							ResolutionStatement = row.createCell(20);
+							ResolutionStatement
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ResolutionStatement.setCellValue((String) map
+									.get("attribute[ResolutionStatement]"));
+							ResolutionStatement.setCellStyle(sheetStyle);
+							
+							SEMIssueClass = row.createCell(21);
+							SEMIssueClass
+									.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueClass.setCellValue((String) map
+									.get("attribute[SEM Issue Class]"));
+							SEMIssueClass.setCellStyle(sheetStyle);
+							
+							Priority = row.createCell(22);
+							Priority.setCellType(HSSFCell.CELL_TYPE_STRING);
+							Priority.setCellValue((String) map
+									.get("attribute[Priority]"));
+							Priority.setCellStyle(sheetStyle);
+							
+							SEMIssueImportanceID = row.createCell(23);
+							SEMIssueImportanceID.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueImportanceID.setCellValue((String) map
+									.get("attribute[SEM IssueImportance ID]"));
+							SEMIssueImportanceID.setCellStyle(sheetStyle);
+							
+							SEMIssueMajor = row.createCell(24);
+							SEMIssueMajor.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueMajor.setCellValue((String) map
+									.get("attribute[SEM Issue Major]"));
+							SEMIssueMajor.setCellStyle(sheetStyle);
+							
+							SEMIssueRepeat = row.createCell(25);
+							SEMIssueRepeat.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueRepeat.setCellValue((String) map
+									.get("attribute[SEM Issue Repeat]"));
+							SEMIssueRepeat.setCellStyle(sheetStyle);
+							
+							SEMUPGPart = row.createCell(26);
+							SEMUPGPart.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMUPGPart.setCellValue((String) map
+									.get("attribute[SEM UPG Part]"));
+							SEMUPGPart.setCellStyle(sheetStyle);
+							
+							SEMPart = row.createCell(27);
+							SEMPart.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMPart.setCellValue((String) map
+									.get("attribute[SEM Part]"));
+							SEMPart.setCellStyle(sheetStyle);
+							
+							SEMProductionRelatedIssue = row.createCell(28);
+							SEMProductionRelatedIssue.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMProductionRelatedIssue.setCellValue((String) map
+									.get("attribute[SEM Production Related Issue]"));
+							SEMProductionRelatedIssue.setCellStyle(sheetStyle);
+							
+							SEMIssuePartType = row.createCell(29);
+							SEMIssuePartType.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssuePartType.setCellValue((String) map
+									.get("attribute[SEM Issue PartType]"));
+							SEMIssuePartType.setCellStyle(sheetStyle);
+							
+							SEMIssueSection = row.createCell(30);
+							SEMIssueSection.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSection.setCellValue((String) map
+									.get("attribute[SEM Issue Section]"));
+							SEMIssueSection.setCellStyle(sheetStyle);
+							
+							SEMIssueTestCarCode = row.createCell(31);
+							SEMIssueTestCarCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueTestCarCode.setCellValue((String) map
+									.get("attribute[SEM Issue TestCarCode]"));
+							SEMIssueTestCarCode.setCellStyle(sheetStyle);
+							
+							SEMIssueCarNumber = row.createCell(32);
+							SEMIssueCarNumber.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueCarNumber.setCellValue((String) map
+									.get("attribute[SEM IssueCar Number]"));
+							SEMIssueCarNumber.setCellStyle(sheetStyle);
+							
+							SEMRemark = row.createCell(33);
+							SEMRemark.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMRemark.setCellValue((String) map
+									.get("attribute[SEM Remark]"));
+							SEMRemark.setCellStyle(sheetStyle);
+							
+							ActualEndDate = row.createCell(34);
+							ActualEndDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+							ActualEndDate.setCellValue(changeDate((String) map
+									.get("attribute[Actual End Date]")));
+							ActualEndDate.setCellStyle(sheetStyle);
+							
+							SEMIssueSubmiter = row.createCell(35);
+							SEMIssueSubmiter.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueSubmiter.setCellValue((String) map
+									.get("attribute[SEM Issue Submiter]"));
+							SEMIssueSubmiter.setCellStyle(sheetStyle);
+							
+							SEMIssueType = row.createCell(36);
+							SEMIssueType.setCellType(HSSFCell.CELL_TYPE_STRING);
+							SEMIssueType.setCellValue((String) map
+									.get("attribute[SEM Issue Type]"));
+							SEMIssueType.setCellStyle(sheetStyle);
+							
+							cell_originated = row.createCell(37);
+							cell_originated.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_originated.setCellValue(changeDate((String) map
+									.get("originated")));
+							cell_originated.setCellStyle(sheetStyle);
+							
+							cell_originator = row.createCell(38);
+							cell_originator.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_originator.setCellValue((String) map
+									.get("attribute[Originator]"));
+							cell_originator.setCellStyle(sheetStyle);
+							
+							cell_Owner = row.createCell(39);
+							cell_Owner.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_Owner.setCellValue((String) map
+									.get(DomainObject.SELECT_OWNER));
+							cell_Owner.setCellStyle(sheetStyle);																																																																													
+
+							curRowIndex = curRowIndex + 1;
+						}
+						curRowIndex = 0;
+						// Set the column size to auto-fit
+						for (int i = 0; i < maxcolumnCount; i++) {
+							sheet.autoSizeColumn(i);
+						}
+					}// for sheet
+					
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+					throw new FrameworkException(e);
+				} finally {
+					ContextUtil.popContext(context);
+				}
+			}
+	public String changeDate(String strDate) throws Exception {
+		try {
+			if (strDate.length() > 0) {
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+				java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(
+						eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+				Date date2 = formatter.parse(strDate);
+				strDate = dateFormat.format(date2);
+				return strDate;
+			} else {
+				return "";
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw new Exception(e.getMessage());
+		}
+	}
+}

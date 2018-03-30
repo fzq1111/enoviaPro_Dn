@@ -1,0 +1,2035 @@
+import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Date;
+import java.util.Vector;
+import java.util.Set;
+import java.util.HashSet;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MessageUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+
+import org.apache.log4j.Logger;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.State;
+import matrix.util.MatrixException;
+import matrix.util.StringList;
+import java.util.Map;
+import com.matrixone.apps.program.Task;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.apps.common.Person; 
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.framework.ui.UIUtil;
+public class ${CLASSNAME} 
+{
+	private static Logger m_rootLogger = Logger.getLogger(${CLASS:emxProjectMember}.class);
+    private static final int slash = 92;   // ASCII 92 == '\\'
+	private static final int slash1 =47; // ASCII 47 == '/'
+    public ${CLASSNAME}(Context context, String[] args)throws Exception
+    {
+    }
+    
+    
+     public MapList getSEMTask(Context context, String[] args)throws Exception{
+     	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+ 		String objectId     = (String) programMap.get("objectId");
+
+ 		StringList busList = new StringList("id");
+ 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		String strExpandLevel = (String) programMap.get("expandLevel");
+		short recurseToLevel = ProgramCentralUtil.getExpandLevel(strExpandLevel);
+ 		DomainObject strObj = new DomainObject(objectId);
+ 		MapList mapList=new MapList();
+ 		if(strObj.getType(context).equals("SEM Part Task")){
+ 			mapList= strObj.getRelatedObjects(context,"SEM SubPart","*", busList, relList,false,true, (short)recurseToLevel, null, null);	
+ 		}else{
+             mapList= strObj.getRelatedObjects(context, "SEM Related DrwTask,SEM Project PartTask,SEM SubPart","SEM Part Task", busList, relList,false,true, (short)recurseToLevel, null, null);	
+ 		}
+ 	    return  mapList;
+      }
+    /**
+	 * Create new SEM Part Task.
+
+	 */
+	public Map createNewPartTask(Context context,String[]args)throws Exception
+	{
+	   	    Map returnMap=null;
+	   	    HashMap programMap = (HashMap)JPO.unpackArgs(args);	   	    
+	   		HashMap requestMap = (HashMap)programMap.get("RequestValuesMap");
+	   		String[] emxTableRowId = (String[])requestMap.get("emxTableRowId");
+	   		String strName=(String)programMap.get("Name");	
+	   		String assigneeId=(String) programMap.get("AssigneeOID");
+	   		String strType = "SEM Part Task";
+	     	String strPolicy ="SEM Part Task";
+	     	if(strName == null || strName =="" )
+	     	{	
+	     	  strName = FrameworkUtil.autoName(context,"type_SEMPartTask",null,"policy_SEMPartTask",null,null,true,true);
+	     	}
+	     	DomainObject strObj=null;
+	     	StringList busList=new StringList("id");
+	     	String where="name=='"+strName+"'";
+	     	MapList mapList=DomainObject.findObjects(context,"SEM Part Task","*",where,busList);
+	     	if(mapList.size()>0){
+	     		returnMap =(Map) mapList.get(0);
+	     		returnMap.put("isExist","true");//add by zhangshuai 3/25/2017
+	     		String id=(String) returnMap.get("id");
+	     		strObj=new DomainObject(id);     			     		
+	     		String  Msg = "\u8BE5\u96F6\u4EF6\u4EFB\u52A1\u5DF2\u7ECF\u5B58\u5728!";
+				${CLASS:emxContextUtilBase}.mqlNotice(context,Msg);
+	     	}else{
+	     	  DomainObject dom=new DomainObject();
+	   		  dom.createObject(context, strType,strName ,"-", strPolicy, "eService Production");
+	   		  String projectId =dom.getInfo(context, "id");
+	   		  strObj = new DomainObject(projectId);
+	   		  if(assigneeId!=null&&!assigneeId.equals("")){
+	   			DomainObject personObj=new DomainObject(assigneeId);
+	   			ContextUtil.pushContext(context);
+	   			personObj.connectTo(context,"Assigned Tasks",strObj);	
+	   			ContextUtil.popContext(context);
+	   		  }
+	     	  returnMap = new HashMap();
+	   		  returnMap.put("id", projectId);
+	   		  returnMap.put("isExist","false");//add by zhangshuai 3/25/2017
+	     	}
+	   		for(int i = 0 ; i< emxTableRowId.length; i++)
+	   		{
+	   			String rowId = emxTableRowId[i];
+	   			String[] tableId = rowId.split(String.format("%c", slash)+"|");
+	   			String selectedId = tableId[1];
+	   			DomainObject strFromObj = new DomainObject(selectedId); 			
+	   			String fromtype = strFromObj.getType(context);  			   			
+	   			try{
+	   				ContextUtil.pushContext(context);
+	   				
+	   				if("Project Space".equals(fromtype))
+	   				{
+	   					DomainRelationship rel = strFromObj.connectTo(context,"SEM Project PartTask",strObj);
+	   					//ContextUtil.popContext(context);
+	   				}
+	   			
+	   				if("SEM Part Task".equals(fromtype))
+	   				{
+	   					DomainRelationship rel = strFromObj.connectTo(context,"SEM SubPart",strObj);
+	   					//ContextUtil.popContext(context);
+	   				}
+	   			}
+	   			finally
+	   			{
+	   				ContextUtil.popContext(context);
+	   			}		
+	   		}
+	     	return returnMap;	
+	}
+	public MapList getSEMTaskItem(Context context, String[] args)throws Exception{
+    	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+		String objectId     = (String) programMap.get("objectId");
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		DomainObject strObj = new DomainObject(objectId);
+	    MapList mapList= strObj.getRelatedObjects(context, "SEM Related DrwTask","SEM Task Item", busList, relList,false,true, (short)1, null, null);
+		return  mapList;
+    }
+	//set Task Estimated Default Now Date
+	public void updateDefaultNowDate(Context context, String[] args)throws Exception{
+		   HashMap param=JPO.unpackArgs(args);
+		   HashMap paramMap=(HashMap) param.get("paramMap");
+		   HashMap fieldMap=(HashMap)param.get("fieldMap");
+		   HashMap settings=(HashMap)fieldMap.get("settings");
+		   String flag="";
+		   String attributeName="";
+		   flag=(String)settings.get("flag");
+		   if(flag.equals("false")){
+			   attributeName="Task Estimated Start Date";
+		   }else{
+			   attributeName="Task Estimated Finish Date";
+		   }
+		   String newValue=(String)paramMap.get("New Value");
+		   String objID=(String) paramMap.get("objectId");
+		   DomainObject strObj=new DomainObject(objID);
+		   
+		   SimpleDateFormat matter= new SimpleDateFormat("yyyy-MM-dd");
+		   java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+		   java.util.Date EsDate = new java.util.Date();
+		   if(newValue.equals("")){
+			   String Value= formatter.format(EsDate);
+			   strObj.setAttributeValue(context,attributeName,Value);  
+		   }else{
+			   EsDate = matter.parse(newValue);
+			   newValue= formatter.format(EsDate);
+			   strObj.setAttributeValue(context,attributeName,newValue);  
+		   }	
+	}
+	
+	
+	
+	 public MapList getSEMPlanTask(Context context, String[] args)throws Exception
+	 {
+	    	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+			String objectId     = (String) programMap.get("objectId");
+			StringList busList = new StringList("id");
+			StringList relList = new StringList(DomainRelationship.SELECT_ID);
+			String strExpandLevel = (String) programMap.get("expandLevel");
+			short recurseToLevel = ProgramCentralUtil.getExpandLevel(strExpandLevel);
+			DomainObject strObj = new DomainObject(objectId);
+			MapList mapList=new MapList();
+			
+			
+	        mapList= strObj.getRelatedObjects(context, "SEM Project PartTask,SEM SubPart","SEM Part Task", busList, relList,false,true, (short)recurseToLevel, null, null);		
+			
+		    return  mapList;
+	 }
+	 
+	 StringList busList = new StringList("id");
+	 StringList relList = new StringList("id[connection]");
+	 
+	 
+	
+	 
+	 public Vector getTaskPlanFinishDate(Context context, MapList objectList,String where,String attrName)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 Iterator it = objectList.iterator();
+		 while(it.hasNext())
+		 {
+			 Map objectMap = (Map)it.next();
+			 String strObjectId = (String)objectMap.get("id");
+			 DomainObject strObject = new DomainObject(strObjectId);
+			 String strType = strObject.getType(context);
+			 if(strType.equals("Project Space"))
+			 {
+				 vector.add("");
+			 }else{
+				 
+			     MapList mapList= strObject.getRelatedObjects(context, "SEM Related DrwTask","*", busList, relList,false,true, (short)1, where, null);		
+			     if(mapList !=null && mapList.size()>0)
+			     {
+			    	 Iterator ite = mapList.iterator();
+					 while(ite.hasNext())
+					 {
+						 Map taskMap = (Map)ite.next();
+						 String taskId = (String)taskMap.get("id");
+						 DomainObject taskObj = new DomainObject(taskId);
+						 String attrValue =  taskObj.getAttributeValue(context,attrName);
+						 vector.add(attrValue);
+					 } 
+			     }else{
+			    	 vector.add("");
+			     }
+			     
+			 }
+		 }
+		 return vector;
+	 }
+	 
+	 public void updateTaskAttrValue(Context context,String objectId,String newValue,String attrName,String where)throws Exception
+	 {
+		 DomainObject strObject = new DomainObject(objectId);
+		 java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+		 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
+		 newValue =  formatter.format(dateFormat.parse(newValue));
+	     MapList mapList= strObject.getRelatedObjects(context, "SEM Related DrwTask","*", busList, relList,false,true, (short)1, where, null);		
+	     Iterator ite = mapList.iterator();
+		 while(ite.hasNext())
+		 {
+			 Map taskMap = (Map)ite.next();
+			 String taskId = (String)taskMap.get("id");
+			 DomainObject taskObj = new DomainObject(taskId);
+			 taskObj.setAttributeValue(context,attrName,newValue);			 
+		 } 
+	 }
+	 
+	 public Vector getSEMZulituPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where =  "name=='\u7EC4\u7ACB\u56FE'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Estimated Finish Date");
+	     
+	     return vector;
+	 }
+	 
+	 public void updateSEMZulituPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Estimated Finish Date";
+	     String where="name=='\u7EC4\u7ACB\u56FE'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 
+	 public Vector getZulituFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where =  "name=='\u7EC4\u7ACB\u56FE'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Actual Finish Date");
+	     return vector;
+	 }
+	 
+	 public void updateSEMZulituFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Actual Finish Date";
+	     String where="name=='\u7EC4\u7ACB\u56FE'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }
+	 //end for zulitu;
+	 
+	 //start for changshangdingdian
+	 public Vector getCsddPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where =  "name=='\u5382\u5546\u5B9A\u70B9'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Estimated Finish Date");
+	     
+	     return vector;
+	 }
+	 
+	 public void updateCsddPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Estimated Finish Date";
+	     String where="name=='\u5382\u5546\u5B9A\u70B9'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 public Vector getCsddFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where =  "name=='\u5382\u5546\u5B9A\u70B9'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Actual Finish Date");
+	     return vector;
+	 }
+	 
+	 public void updateCsddFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Actual Finish Date";
+	     String where="name=='\u5382\u5546\u5B9A\u70B9'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 //end for changshangdingdian
+	 
+	 
+	 //start for shejigouxiangshu
+	 public Vector getSJGXSPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='\u8BBE\u8BA1\u6784\u60F3\u4E66'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Estimated Finish Date");
+	     
+	     return vector;
+	 }
+	 
+	 public void updateSJGXSPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Estimated Finish Date";
+	     String where="name=='\u8BBE\u8BA1\u6784\u60F3\u4E66'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 public Vector getSJGXSFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='\u8BBE\u8BA1\u6784\u60F3\u4E66'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Actual Finish Date");
+	     return vector;
+	 }
+	 
+	 public void updateSJGXSFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Actual Finish Date";
+	     String where="name=='\u8BBE\u8BA1\u6784\u60F3\u4E66'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 //end for shejigouxiangshu
+	 
+	 //start for 3D-F/3D-P
+	 public Vector get3DFPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='3D-F'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Estimated Finish Date");
+	     
+	     return vector;
+	 }
+	 
+	 public void update3DFlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Estimated Finish Date";
+	     String where="name=='3D-F'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 public Vector get3DPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='3D-P'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Estimated Finish Date");
+	     
+	     return vector;
+	 }
+	 
+	 public void update3DPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Estimated Finish Date";
+	     String where="name=='3D-P'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }
+	 
+	 public Vector get3DFFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='3D-F'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Actual Finish Date");
+	     return vector;
+	 }
+	 
+	 public void update3DFFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Actual Finish Date";
+	     String where="name=='3D-F'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 public Vector get3DPFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='3D-P'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Actual Finish Date");
+	     return vector;
+	 }
+	 
+	 public void update3DPFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Actual Finish Date";
+	     String where="name=='3D-P'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }
+	 
+	 //end for 3D-F/3D-P
+	 
+	 
+	 //start for SJSYT
+	 public Vector getSJSYTPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='\u8BBE\u8BA1\u4ED5\u6837\u56FE'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Estimated Finish Date");
+	     
+	     return vector;
+	 }
+	 
+	 public void updateSJSYTPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Estimated Finish Date";
+	     String where="name=='\u8BBE\u8BA1\u4ED5\u6837\u56FE'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 public Vector getSJSYTFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='\u8BBE\u8BA1\u4ED5\u6837\u56FE'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Actual Finish Date");
+	     return vector;
+	 }
+	 
+	 public void updateSJSYTFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Actual Finish Date";
+	     String where="name=='\u8BBE\u8BA1\u4ED5\u6837\u56FE'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 //end for SJSYT
+	 
+	 
+	 //start for BPT
+	 public Vector getBPTPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='\u90E8\u54C1\u56FE'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Estimated Finish Date");
+	     
+	     return vector;
+	 }
+	 
+	 public void updateBPTPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Estimated Finish Date";
+	     String where="name=='\u90E8\u54C1\u56FE'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 public Vector getBPTFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='\u90E8\u54C1\u56FE'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Actual Finish Date");
+	     return vector;
+	 }
+	 
+	 public void updateBPTFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Actual Finish Date";
+	     String where="name=='\u90E8\u54C1\u56FE'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 //end for BPT
+	 
+	 
+	 //start for CRT
+	 public Vector getCRTPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='\u627F\u8BA4\u56FE'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Estimated Finish Date");
+	     
+	     return vector;
+	 }
+	 
+	 public void updateCRTPlanFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Estimated Finish Date";
+	     String where="name=='\u627F\u8BA4\u56FE'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 public Vector getCRTFinishDate(Context context, String[] args)throws Exception
+	 {
+		 Vector vector = new Vector();
+		 HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+	     MapList objectList = (MapList)programMap.get("objectList");
+	     String where="name=='\u627F\u8BA4\u56FE'";
+	     vector = getTaskPlanFinishDate(context,objectList,where,"Task Actual Finish Date");
+	     return vector;
+	 }
+	 
+	 public void updateCRTFinishDate(Context context, String[] args)throws Exception
+	 {
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String) paramMap.get("objectId");	    
+	     String newValue = (String)paramMap.get("New Value");
+	     String attrName="Task Actual Finish Date";
+	     String where="name=='\u627F\u8BA4\u56FE'";
+	     updateTaskAttrValue(context,objectId,newValue,attrName,where);
+
+	 }	
+	 
+	 //end for CRT
+	 //SEMTaskMonitoringViewTable  get Assigned Person  add fzq
+	   public Vector getSEMTaskLeader(Context context, String args[])throws Exception{
+		   Vector vc=new Vector();
+		   HashMap programMap = JPO.unpackArgs(args);
+		   MapList objectList = (MapList)programMap.get("objectList");		
+		   Iterator it = objectList.iterator();
+		   while(it.hasNext())
+			{
+			    String content="";
+				Map map = (Map)it.next();
+				String objectId =(String)map.get("id");
+				DomainObject strObj = new DomainObject(objectId);
+	        	MapList mapList=strObj.getRelatedObjects(context,
+	    				"Assigned Tasks","Person", busList, relList,true,false,
+	    				(short)1,null, null);
+	        	for(int i=0;i<mapList.size();i++){
+	        		Map map1 = (Map)mapList.get(i);
+	    			String personId =(String)map1.get("id");
+	    			DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					Person person = new Person(personId);
+	        		if(i==mapList.size()-1){
+	        			content+=person.getDisplayName(context,strPersonName);
+	        		}else{
+	        			content+=person.getDisplayName(context,strPersonName)+",";
+	        		}
+	        	}
+				vc.add(content);
+			}
+	        return vc;
+	   }
+	 //get Task Reviewer
+	   public Vector getSEMTaskReviewer(Context context, String args[])throws Exception{
+		   Vector vc=new Vector();
+		   HashMap programMap = JPO.unpackArgs(args);
+		   MapList objectList = (MapList)programMap.get("objectList");		
+		   Iterator it = objectList.iterator();
+		   while(it.hasNext())
+			{
+			    String content="";
+				Map map = (Map)it.next();
+				String objectId =(String)map.get("id");
+				DomainObject strObj = new DomainObject(objectId);
+	        	MapList mapList=strObj.getRelatedObjects(context,
+	    				"SEM Task Reviewer","Person", busList, relList,false,true,
+	    				(short)1,null, null);
+	        	for(int i=0;i<mapList.size();i++){
+	        		Map map1 = (Map)mapList.get(i);
+	    			String personId =(String)map1.get("id");
+	    			DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					Person person = new Person(personId);
+	        		if(i==mapList.size()-1){
+	        			content+=person.getDisplayName(context,strPersonName);
+	        		}else{
+	        			content+=person.getDisplayName(context,strPersonName)+",";
+	        		}
+	        	}
+				vc.add(content);
+			}
+	        return vc;
+	   }//end  
+	   //
+	   public MapList getPTMProjectSpace(Context context, String[] args)
+				throws Exception {
+	    	Person person =Person.getPerson(context);
+	    	String personId = person.getId(context); 
+	    	String buswhere="policy=='Project Space'&&current!='Complete'&&current!='Archive'";
+	    	String relwhere="attribute[Project Role]=='SEM_StrategyProjectLeader'||attribute[Project Role]~~'SEM*PM'";
+	    	DomainObject personObj = new DomainObject(personId); 
+			MapList mapList =personObj.getRelatedObjects(context,"Member",
+					"Project Space", busList,relList,true,
+					false, (short)2,buswhere,relwhere);
+			return mapList;
+		} 
+	    public MapList getPTMCurrentTask(Context context, String[] args)
+				throws Exception {
+	    	MapList returnList=new MapList();
+	    	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+			String objectId     = (String) programMap.get("objectId");
+			String where="current=='Assign'||"+"current=='Active'";
+			returnList=findPTMTask(context,args,objectId,where);
+			return returnList;
+		}
+	    public MapList getPTMReviewTask(Context context, String[] args)
+				throws Exception {
+	    	MapList returnList=new MapList();
+	    	String where="current=='Review'";
+	    	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+			String objectId     = (String) programMap.get("objectId");
+			returnList=findPTMTask(context,args,objectId,where);
+			return returnList;
+		}
+	    public MapList getPTMClosedTask(Context context, String[] args)
+				throws Exception {
+	    	MapList returnList=new MapList();
+			String where="current=='Closed'";
+	    	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+			String objectId     = (String) programMap.get("objectId");
+			returnList=findPTMTask(context,args,objectId,where);
+			return returnList;
+		}
+	    public MapList findPTMTask(Context context, String[] args,String projectId,String busWhere)throws Exception {
+	    	MapList returnMapList=new MapList();
+	    	Set<String> set=new HashSet<String>();
+	    	Set<String> taskIdsSet=new HashSet<String>();
+	    	String personName=context.getUser();
+	    	DomainObject  Obj=new DomainObject(projectId); 
+	    	MapList taskmapList=Obj.getRelatedObjects(context,"Subtask","Task Management", busList,relList,false,
+					true, (short)3,null,"");
+	    	Iterator taskitems=taskmapList.iterator();
+	    	while(taskitems.hasNext()){
+	    		Map taskmap=(Map)taskitems.next();
+	    		taskIdsSet.add((String)taskmap.get("id"));
+	    	}
+	    	String where="name=='"+personName+"'";
+	    	MapList mapList=Obj.getRelatedObjects(context,"Member","Person", busList,relList,false,
+					true, (short)1,where,"");
+	    	String parentPMS="";
+	    	if(mapList.size()>0){
+	    		Map map=(Map) mapList.get(0);
+	    		String relId=(String) map.get("id[connection]");
+	    		DomainRelationship relObj=new DomainRelationship(relId);
+	    		parentPMS=relObj.getAttributeValue(context,"SEM PrjMemberStruct");
+	    	}
+	    	MapList mapList1=Obj.getRelatedObjects(context,"Member","Person", busList,relList,false,
+					true, (short)1,"","");
+	    	Iterator it=mapList1.iterator();
+	 	    while(it.hasNext())
+	 		{
+	 			Map map1=(Map)it.next();
+	 			String relId1=(String)map1.get("id[connection]");
+	 			String objId=(String)map1.get("id");
+	    		DomainRelationship relObj=new DomainRelationship(relId1);
+	    		String onePMS=relObj.getAttributeValue(context,"SEM PrjMemberStruct").trim();
+	    	    if(!parentPMS.equals("")&&onePMS.startsWith(parentPMS)){
+	    	    	DomainObject obj=new DomainObject(objId);   
+	    	    	MapList mapList2=obj.getRelatedObjects(context,"Assigned Tasks","Task Management", busList, relList,false,true, (short)1,busWhere,"");
+	    	    	Iterator items=mapList2.iterator();
+	    	        while(items.hasNext())
+	    	 		{
+	    	        	Map map2=(Map)items.next();
+	    	        	String id=(String) map2.get("id");
+	    	        	if(taskIdsSet.contains(id)&&!set.contains(id)){
+	    	        		 set.add(id);
+	    	        		 returnMapList.add(map2);   
+	    	        	}	
+	    	 		}
+	    	    }
+	 		}
+	    	return  returnMapList;
+	    }
+	    public MapList getOTMCurrentTask(Context context, String[] args)
+				throws Exception {
+	    	MapList returnList=new MapList();
+	    	String where="current=='Assign'||"+"current=='Active'";
+			returnList=findOTMTask(context,args,where);
+			return returnList;
+		}
+	    public MapList getOIMReviewTask(Context context, String[] args)
+				throws Exception {
+	    	MapList returnList=new MapList();
+	    	String where="current=='Review'";
+			returnList=findOTMTask(context,args,where);
+			return returnList;
+		}
+	    public MapList getOTMClosedTask(Context context, String[] args)
+				throws Exception {
+	    	MapList returnList=new MapList();
+	    	String where="current=='Closed'";
+			returnList=findOTMTask(context,args,where);
+			return returnList;
+		}
+	    public MapList findOTMTask(Context context, String[] args,String busWhere)throws Exception {
+	    	MapList returnMapList=new MapList();
+	    	Set<String> set=new HashSet<String>();
+	    	Person person =Person.getPerson(context);
+	    	String personId = person.getId(context); 
+	    	DomainObject  Obj=new DomainObject(personId); 
+	    	MapList mapList=Obj.getRelatedObjects(context,"Member","Department", busList,relList,true,
+					false, (short)1,"","");
+	    	if(mapList.size()>0){
+	    		Map map=(Map) mapList.get(0);
+	    		String departmentId=(String) map.get("id");
+	    		DomainObject departmentObj=new DomainObject(departmentId);
+	    	    MapList mapList1=departmentObj.getRelatedObjects(context,"Member,Company Department","Person,Department", busList,relList,false,
+					true,(short)3,"","");
+	    	    Iterator it=mapList1.iterator();
+	 	        while(it.hasNext())
+	 		    {
+	 			   Map map1=(Map)it.next();
+	 			   String objId=(String)map1.get("id");
+	    		   DomainObject personObj=new DomainObject(objId); 
+	    		   String type=personObj.getType(context);
+	    		   if(type.equals("Person")){
+	    	           MapList mapList2=personObj.getRelatedObjects(context,"Assigned Tasks","Task Management", busList, relList,false,true, (short)1,busWhere,"");
+	    	           Iterator items=mapList2.iterator();
+	    	           while(items.hasNext())
+	    	 	       {
+	    	        	   Map map2=(Map)items.next();
+	    	        	   String id=(String) map2.get("id");
+	    	        	   if(!set.contains(id)){
+	    	        		 set.add(id);
+	    	        		 returnMapList.add(map2);   
+	    	        	   }	
+	    	 	       }
+	    		   }
+	    	    }
+	 		}
+	    	return  returnMapList;
+	    }//end
+		 /*
+	     * Related send email
+	     * get Task Assigned
+	     */
+	    public StringList getTaskAssigned(Context context, String[] args)throws MatrixException {
+	    	StringList  TaskAssignedList = new StringList();
+			try {
+				HashMap programMap = (HashMap) JPO.unpackArgs(args);
+				String objectId = (String) programMap.get("id");
+				DomainObject taskObj = DomainObject.newInstance(context, objectId);
+				StringList personIdList = taskObj.getInfoList(context,"to[Assigned Tasks].from.id");
+				
+				if(personIdList.size()>0)
+				{
+					for(int i = 0 ; i < personIdList.size(); i++)
+					{
+						String personId = (String)personIdList.get(i);
+						DomainObject personObj = new DomainObject(personId);
+						String strPersonName = personObj.getName(context);
+						if(strPersonName!=null){
+							TaskAssignedList.add(strPersonName);
+						}
+					}					
+				}
+				
+			}catch(Exception e){
+				m_rootLogger.error(e.getMessage(), e);
+				throw new MatrixException(e.getMessage());
+			}
+			return (TaskAssignedList);
+	    }
+	    public StringList getTaskReviewer(Context context, String[] args)throws MatrixException {
+	    	StringList  TaskReviewerList = new StringList();
+			try {
+				HashMap programMap = (HashMap) JPO.unpackArgs(args);
+				String objectId = (String) programMap.get("id");
+				DomainObject taskObj = DomainObject.newInstance(context, objectId);
+				StringList personIdList = taskObj.getInfoList(context,"from[SEM Task Reviewer].to.id");
+				if(personIdList.size()>0)
+				{
+					for(int i = 0 ; i < personIdList.size(); i++)
+					{
+						String personId = (String)personIdList.get(i);
+						DomainObject personObj = new DomainObject(personId);
+						String strPersonName = personObj.getName(context);
+						if(strPersonName!=null){
+							TaskReviewerList .add(strPersonName);
+						}
+					}					
+				}	
+			}catch(Exception e){
+				m_rootLogger.error(e.getMessage(), e);
+				throw new MatrixException(e.getMessage());
+			}
+			return (TaskReviewerList);
+	    }
+		//get owner and department  assigned and Department
+	    public String[] getOwnerAssignedAndDepartment(Context context,String id)
+			throws Exception {
+		String[] res=new String[4];
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		try {
+			DomainObject strObj = new DomainObject(id);
+			String owner = strObj.getOwner(context).getName();
+			res[0]=owner;
+			Person person = Person.getPerson(context, owner);
+			MapList departmentList = person.getRelatedObjects(context,
+					"Member", "Department", busList1, relList, true, false,
+					(short) 1, "", null);
+			if (departmentList.size() > 0) {
+				Map map = (Map) departmentList.get(0);
+				res[1]=(String) map.get("name");
+			}
+			
+			StringBuffer sb = new StringBuffer();
+			StringBuffer sb1 = new StringBuffer();
+			StringList personIdList = strObj.getInfoList(context,
+					"to[Assigned Tasks].from.id");
+			StringList busList = new StringList("id");
+			busList.add("name");
+			if (personIdList.size() > 0) {
+				String personName = "";
+				for (int i = 0; i < personIdList.size(); i++) {
+					String personId = (String) personIdList.get(i);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					Person person1 = new Person(personId);
+					String fullName = person.getDisplayName(context,
+							strPersonName);
+					sb.append(fullName+",");
+					MapList departmentList1 = person1.getRelatedObjects(context,
+							"Member", "Department", busList, relList, true,
+							false, (short) 1, "", null);
+					if (departmentList1.size() > 0) {
+						Map map = (Map) departmentList1.get(0);
+						String departmentName = (String) map.get("name");
+						sb1.append(departmentName + ",");
+					}
+				}
+			}
+			String assigneds=sb.toString();
+			String department = sb1.toString();
+			if (!assigneds.equals("")) {
+				assigneds = assigneds.substring(0, assigneds.length() - 1);
+			}
+			if (!department.equals("")) {
+				department = department.substring(0, department.length() - 1);
+			}
+		    res[2]=assigneds;
+		    res[3]=department;
+			
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return res;
+	    }
+	   /**
+	 * @param context
+	 * @param args
+	 * @return
+	 * @throws Exception
+	 * @author watts get assign html content
+	 */
+	public String getSEMProjectTaskAssignedMessageHTML(Context context,
+			String args[]) throws Exception {
+		String message = "";
+		StringList busList1 = new StringList("id");
+		busList1.add(DomainConstants.SELECT_NAME);
+		busList1.add(DomainConstants.SELECT_TYPE);
+		try {
+            String TaskInProject="";
+			String taskType = "";
+			String taskName = "";
+			String TaskOwner="";
+			String TaskOwnerDepartment="";
+			String TaskEstStartDate="";
+			String TaskEstFinishDate="";
+			String TaskAssignee="";
+			String TaskAssigneeDepartment="";
+			String TaskSEMDeliverable="";
+			String TaskSEMIsKeytask="";
+			String taskURL = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String objectId = (String) programMap.get("id");
+			Task taskObject = new Task(objectId);
+			taskType =taskObject.getType(context);
+			taskName =taskObject.getName(context);
+			TaskSEMDeliverable=taskObject.getAttributeValue(context,"SEM Deliverable");
+			TaskSEMIsKeytask=taskObject.getAttributeValue(context,"SEM Is Keytask");
+			
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(
+    				eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+    		TaskEstStartDate=taskObject.getAttributeValue(context,"Task Estimated Start Date");
+    		if(!TaskEstStartDate.equals("")){
+    			Date date=formatter.parse(TaskEstStartDate);
+    			TaskEstStartDate=format.format(date);
+    		}
+    		TaskEstFinishDate=taskObject.getAttributeValue(context,"Task Estimated Finish Date");
+    		if(!TaskEstFinishDate.equals("")){
+    			Date date=formatter.parse(TaskEstFinishDate);
+    			TaskEstFinishDate=format.format(date);
+    		}
+    		
+			
+			Map map=taskObject.getProject(context,busList1);
+			TaskInProject=(String) map.get("name");
+			
+			String res[]=getOwnerAssignedAndDepartment(context,objectId);
+			TaskOwner=res[0];
+			TaskOwnerDepartment=res[1];
+			TaskAssignee=res[2];
+			TaskAssigneeDepartment=res[3];
+			
+			
+			String url = "";
+			String fileName = "";
+			try {
+				url = this.getClass().getResource("/").getPath();
+				url = url.substring(1, url.length() - 16);
+				fileName = url + "ContentTextHtmlTemplate"
+						+ String.format("%c", slash1)
+						+ "SEMProjectTaskAssigned.html";
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				message = "Can Not Find Email Template \"SEMProjectTaskAssigned.html\", Please Connect Administrator.";
+				return message;
+			}
+			try {
+				taskURL = FrameworkProperties
+						.getProperty(context,
+								"CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				taskURL = (String) programMap.get("baseURL");
+			}
+			//taskURL = taskURL + "?objectId=" + objectId;
+			File file = new File(fileName);
+			InputStreamReader imput = new InputStreamReader(
+					new FileInputStream(file), "UTF-8");
+			BufferedReader reader = new BufferedReader(imput);
+			String htmlStr = "";
+			StringBuffer htmlContent = new StringBuffer();
+			String tmpStr = "";
+			while ((tmpStr = reader.readLine()) != null) {
+				htmlContent.append(tmpStr);
+			}
+			reader.close();
+			imput.close();
+			htmlStr = htmlContent.toString();
+			htmlStr = htmlStr.replace("${TaskType}", taskType);
+			htmlStr = htmlStr.replace("${TaskName}", taskName);
+			htmlStr = htmlStr.replace("${TaskInProject}",TaskInProject);
+			htmlStr = htmlStr.replace("${TaskOwner}",TaskOwner);
+			htmlStr = htmlStr.replace("${TaskOwnerDepartment}",TaskOwnerDepartment);
+			htmlStr = htmlStr.replace("${TaskEstStartDate}",TaskEstStartDate);
+			htmlStr = htmlStr.replace("${TaskEstFinishDate}",TaskEstFinishDate);
+			htmlStr = htmlStr.replace("${TaskAssignee}",TaskAssignee);
+			htmlStr = htmlStr.replace("${TaskAssigneeDepartment}",TaskAssigneeDepartment);
+			htmlStr = htmlStr.replace("${TaskSEMDeliverable}",TaskSEMDeliverable);
+			htmlStr = htmlStr.replace("${TaskSEMIsKeytask}",TaskSEMIsKeytask);
+			htmlStr = htmlStr.replace("${TaskURL}", taskURL);
+
+
+			message = htmlStr;
+			return message;
+
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return message;
+	}
+
+	public String getSEMProjectTaskReviewerMessageHTML(Context context,
+			String args[]) throws Exception {
+		String message = "";
+		StringList busList1 = new StringList("id");
+		busList1.add(DomainConstants.SELECT_NAME);
+		busList1.add(DomainConstants.SELECT_TYPE);
+		try {
+			String TaskInProject="";
+			String taskType = "";
+			String taskName = "";
+			String TaskOwner="";
+			String TaskOwnerDepartment="";
+			String TaskEstStartDate="";
+			String TaskEstFinishDate="";
+			String TaskAssignee="";
+			String TaskAssigneeDepartment="";
+			String TaskSEMDeliverable="";
+			String TaskSEMIsKeytask="";
+			String taskURL = "";
+			String TaskPercentComplete="";
+			String TaskActStartDate="";
+			String TaskActFinishDate="";
+			
+			
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String objectId = (String) programMap.get("id");
+			Task taskObject = new Task(objectId);
+			taskType =taskObject.getType(context);
+			taskName =taskObject.getName(context);
+			TaskSEMDeliverable=taskObject.getAttributeValue(context,"SEM Deliverable");
+			TaskSEMIsKeytask=taskObject.getAttributeValue(context,"SEM Is Keytask");
+			TaskPercentComplete=taskObject.getAttributeValue(context,"Percent Complete");
+					
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(
+    				eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+    		TaskEstStartDate=taskObject.getAttributeValue(context,"Task Estimated Start Date");
+    		if(!TaskEstStartDate.equals("")){
+    			Date date=formatter.parse(TaskEstStartDate);
+    			TaskEstStartDate=format.format(date);
+    		}
+    		TaskEstFinishDate=taskObject.getAttributeValue(context,"Task Estimated Finish Date");
+    		if(!TaskEstFinishDate.equals("")){
+    			Date date=formatter.parse(TaskEstFinishDate);
+    			TaskEstFinishDate=format.format(date);
+    		}
+    		TaskActStartDate=taskObject.getAttributeValue(context,"Task Actual Start Date");
+    		if(!TaskActStartDate.equals("")){
+    			Date date=formatter.parse(TaskActStartDate);
+    			TaskActStartDate=format.format(date);
+    		}
+    		TaskActFinishDate=taskObject.getAttributeValue(context,"Task Actual Finish Date");
+    		if(!TaskActFinishDate.equals("")){
+    			Date date=formatter.parse(TaskActFinishDate);
+    			TaskActFinishDate=format.format(date);
+    		}
+    		
+			Map map=taskObject.getProject(context,busList1);
+			TaskInProject=(String) map.get("name");
+			
+			String res[]=getOwnerAssignedAndDepartment(context,objectId);
+			TaskOwner=res[0];
+			TaskOwnerDepartment=res[1];
+			TaskAssignee=res[2];
+			TaskAssigneeDepartment=res[3];
+			String url = "";
+			String fileName = "";
+			try {
+				url = this.getClass().getResource("/").getPath();
+				url = url.substring(1, url.length() - 16);
+				fileName = url + "ContentTextHtmlTemplate"
+						+ String.format("%c", slash1)
+						+ "SEMProjectTaskReviewer.html";
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				message = "Can Not Find Email Template \"SEMProjectTaskReviewer.html\", Please Connect Administrator.";
+				return message;
+			}
+			try {
+				taskURL = FrameworkProperties
+						.getProperty(context,
+								"CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				taskURL = (String) programMap.get("baseURL");
+			}
+			//taskURL = taskURL + "?objectId=" + objectId;
+			File file = new File(fileName);
+			InputStreamReader imput = new InputStreamReader(
+					new FileInputStream(file), "UTF-8");
+			BufferedReader reader = new BufferedReader(imput);
+			String htmlStr = "";
+			StringBuffer htmlContent = new StringBuffer();
+			String tmpStr = "";
+			while ((tmpStr = reader.readLine()) != null) {
+				htmlContent.append(tmpStr);
+			}
+			reader.close();
+			imput.close();
+			htmlStr = htmlContent.toString();
+			htmlStr = htmlStr.replace("${TaskType}", taskType);
+			htmlStr = htmlStr.replace("${TaskName}", taskName);
+			htmlStr = htmlStr.replace("${TaskInProject}",TaskInProject);
+			htmlStr = htmlStr.replace("${TaskOwner}",TaskOwner);
+			htmlStr = htmlStr.replace("${TaskOwnerDepartment}",TaskOwnerDepartment);
+			htmlStr = htmlStr.replace("${TaskEstStartDate}",TaskEstStartDate);
+			htmlStr = htmlStr.replace("${TaskEstFinishDate}",TaskEstFinishDate);
+			htmlStr = htmlStr.replace("${TaskAssignee}",TaskAssignee);
+			htmlStr = htmlStr.replace("${TaskAssigneeDepartment}",TaskAssigneeDepartment);
+			htmlStr = htmlStr.replace("${TaskSEMDeliverable}",TaskSEMDeliverable);
+			htmlStr = htmlStr.replace("${TaskSEMIsKeytask}",TaskSEMIsKeytask);
+			htmlStr = htmlStr.replace("${TaskPercentComplete}",TaskPercentComplete);
+			htmlStr = htmlStr.replace("${TaskActStartDate}",TaskActStartDate);
+			htmlStr = htmlStr.replace("${TaskActFinishDate}",TaskActFinishDate);
+			htmlStr = htmlStr.replace("${TaskURL}", taskURL);
+
+			// System.out.println("+++++++++++++++++++++++++++"+htmlStr);
+
+			message = htmlStr;
+			return message;
+
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return message;
+	}
+
+		public StringList getTaskExpiresPerson(Context context, String[] args)throws MatrixException {
+	    	StringList  TaskAssignedList = new StringList();
+			try {
+				HashMap programMap = (HashMap) JPO.unpackArgs(args);
+				String objectId = (String) programMap.get("id");
+				DomainObject taskObj = DomainObject.newInstance(context, objectId);
+				StringList personIdList = taskObj.getInfoList(context,"to[Assigned Tasks].from.id");
+				//System.out.println("+++++++++personIdList+++++++++++++++++"+personIdList);
+				if(personIdList.size()>0)
+				{
+					for(int i = 0 ; i < personIdList.size(); i++)
+					{
+						String personId = (String)personIdList.get(i);
+						DomainObject personObj = new DomainObject(personId);
+						String strPersonName = personObj.getName(context);
+						if(strPersonName!=null){
+							TaskAssignedList.add(strPersonName);
+						}
+					}					
+				}
+				if(taskObj.getAttributeValue(context,"SEM Is Keytask").equals("YES")){
+					if(!taskObj.getOwner(context).equals("")&&!TaskAssignedList.contains(taskObj.getOwner(context))){
+						TaskAssignedList.add(taskObj.getOwner(context));
+					}
+				}
+			}catch(Exception e){
+				m_rootLogger.error(e.getMessage(), e);
+				throw new MatrixException(e.getMessage());
+			}
+			//System.out.println("+++++++++TaskAssignedList+++++++++++++++++"+TaskAssignedList);
+			return (TaskAssignedList);
+	    }
+	   public String getSEMProjectTaskExpiresMessageHTML(Context context,
+			String args[]) throws Exception {
+		String message = "";
+		StringList busList1 = new StringList("id");
+		busList1.add(DomainConstants.SELECT_NAME);
+		busList1.add(DomainConstants.SELECT_TYPE);
+		try {
+			String TaskInProject="";
+			String taskType = "";
+			String taskName = "";
+			String TaskOwner="";
+			String TaskOwnerDepartment="";
+			String TaskEstFinishDate="";
+			String TaskAssignee="";
+			String TaskAssigneeDepartment="";
+			String TaskSEMDeliverable="";
+			String TaskSEMIsKeytask="";
+			String taskURL = "";
+			String TaskPercentComplete="";
+			
+			
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String objectId = (String) programMap.get("id");
+			Task taskObject = new Task(objectId);
+			taskType =taskObject.getType(context);
+			taskName =taskObject.getName(context);
+			TaskSEMDeliverable=taskObject.getAttributeValue(context,"SEM Deliverable");
+			TaskSEMIsKeytask=taskObject.getAttributeValue(context,"SEM Is Keytask");
+			TaskPercentComplete=taskObject.getAttributeValue(context,"Percent Complete");
+					
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(
+    				eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+
+    		TaskEstFinishDate=taskObject.getAttributeValue(context,"Task Estimated Finish Date");
+    		if(!TaskEstFinishDate.equals("")){
+    			Date date=formatter.parse(TaskEstFinishDate);
+    			TaskEstFinishDate=format.format(date);
+    		}
+
+			Map map=taskObject.getProject(context,busList1);
+			TaskInProject=(String) map.get("name");
+			
+			String res[]=getOwnerAssignedAndDepartment(context,objectId);
+			TaskOwner=res[0];
+			TaskOwnerDepartment=res[1];
+			TaskAssignee=res[2];
+			TaskAssigneeDepartment=res[3];
+			String url = "";
+			String fileName = "";
+			try {
+				url = this.getClass().getResource("/").getPath();
+				url = url.substring(1, url.length() - 16);
+				fileName = url + "ContentTextHtmlTemplate"
+						+ String.format("%c", slash1)
+						+ "SEMProjectTaskExpires.html";
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				message = "Can Not Find Email Template \"SEMProjectTaskExpires.html\", Please Connect Administrator.";
+				return message;
+			}
+			try {
+				taskURL = FrameworkProperties.getProperty(context,"CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				taskURL = (String) programMap.get("baseURL");
+			}
+			//taskURL = taskURL + "?objectId=" + objectId;
+			File file = new File(fileName);
+			InputStreamReader imput = new InputStreamReader(
+					new FileInputStream(file), "UTF-8");
+			BufferedReader reader = new BufferedReader(imput);
+			String htmlStr = "";
+			StringBuffer htmlContent = new StringBuffer();
+			String tmpStr = "";
+			while ((tmpStr = reader.readLine()) != null) {
+				htmlContent.append(tmpStr);
+			}
+			reader.close();
+			imput.close();
+			htmlStr = htmlContent.toString();
+			htmlStr = htmlStr.replace("${TaskType}", taskType);
+			htmlStr = htmlStr.replace("${TaskName}", taskName);
+			htmlStr = htmlStr.replace("${TaskInProject}",TaskInProject);
+			htmlStr = htmlStr.replace("${TaskOwner}",TaskOwner);
+			htmlStr = htmlStr.replace("${TaskOwnerDepartment}",TaskOwnerDepartment);
+			htmlStr = htmlStr.replace("${TaskEstFinishDate}",TaskEstFinishDate);
+			htmlStr = htmlStr.replace("${TaskAssignee}",TaskAssignee);
+			htmlStr = htmlStr.replace("${TaskAssigneeDepartment}",TaskAssigneeDepartment);
+			htmlStr = htmlStr.replace("${TaskSEMDeliverable}",TaskSEMDeliverable);
+			htmlStr = htmlStr.replace("${TaskSEMIsKeytask}",TaskSEMIsKeytask);
+			htmlStr = htmlStr.replace("${TaskPercentComplete}",TaskPercentComplete);
+			htmlStr = htmlStr.replace("${TaskURL}", taskURL);
+
+			 //System.out.println("+++++++++++++++++++++++++++"+htmlStr);
+
+			message = htmlStr;
+			return message;
+
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return message;
+	}
+	    public StringList getTaskOverduePerson(Context context, String[] args)throws MatrixException {
+	    	StringList  TaskAssignedList = new StringList();
+			try {
+				HashMap programMap = (HashMap) JPO.unpackArgs(args);
+				HashMap payload=(HashMap) programMap.get("payload");
+				String projectId=(String) payload.get("projectId");
+
+				String objectId = (String) programMap.get("id");
+				DomainObject taskObj = DomainObject.newInstance(context, objectId);
+				StringList personIdList = taskObj.getInfoList(context,"to[Assigned Tasks].from.id");
+				
+				if(personIdList.size()>0)
+				{
+					for(int i = 0 ; i < personIdList.size(); i++)
+					{
+						String personId = (String)personIdList.get(i);
+						DomainObject personObj = new DomainObject(personId);
+						String strPersonName = personObj.getName(context);
+						if(strPersonName!=null){
+							TaskAssignedList.add(strPersonName);
+							//find PM
+							DomainObject  Obj=new DomainObject(projectId); 
+					    	String where="name=='"+strPersonName+"'";
+					    	MapList mapList=Obj.getRelatedObjects(context,"Member","Person", busList,relList,false,
+									true, (short)1,where,"");
+							String childPMS="";
+					    	if(mapList.size()>0){
+					    		Map map=(Map) mapList.get(0);
+					    		String relId=(String) map.get("id[connection]");
+					    		DomainRelationship relObj=new DomainRelationship(relId);
+					    		childPMS=relObj.getAttributeValue(context,"SEM PrjMemberStruct");
+					    	}
+					    	if(!childPMS.equals("")){
+					    		MapList mapList1=Obj.getRelatedObjects(context,"Member","Person", busList,relList,false,
+										true, (short)1,"","");
+						    	Iterator it=mapList1.iterator();
+						 	    while(it.hasNext())
+						 		{
+						 			Map map1=(Map)it.next();
+						 			String relId1=(String)map1.get("id[connection]");
+						 			String objId=(String)map1.get("id");
+						    		DomainRelationship relObj=new DomainRelationship(relId1);
+						    		String onePMS=relObj.getAttributeValue(context,"SEM PrjMemberStruct");
+									//mod by zs 6/6/2017
+									String splitName = childPMS.substring( 0,onePMS.length()-2);
+						    		if(UIUtil.isNotNullAndNotEmpty(onePMS)){					    			
+						    			if(splitName.equals(onePMS)){
+							    	    	DomainObject obj=new DomainObject(objId);   
+							    	    	String PMName=obj.getName(context);
+							    	    	if(!TaskAssignedList.contains(PMName)){
+												TaskAssignedList.add(PMName);
+											}
+							    	    }
+						    		}
+									//end
+						 		}
+					    	}
+						}
+					}					
+				}
+				if(!taskObj.getOwner(context).equals("")&&!TaskAssignedList.contains(taskObj.getOwner(context))){
+					TaskAssignedList.add(taskObj.getOwner(context));
+				}
+			    StringList affectedTaskIdList =taskObj.getInfoList(context,"from[Dependency].to.id");
+				if(affectedTaskIdList.size()>0)
+				{
+					for(int i = 0 ; i < affectedTaskIdList.size(); i++)
+					{
+						String affectedTaskId = (String)affectedTaskIdList.get(i);
+						DomainObject affectedTaskObj  = new DomainObject(affectedTaskId );
+						StringList personIdList1=affectedTaskObj.getInfoList(context,"to[Assigned Tasks].from.id");
+						
+						if(personIdList1.size()>0)
+						{
+							for(int j = 0 ; j < personIdList1.size();j++)
+							{
+								String personId1 = (String)personIdList1.get(j);
+								DomainObject personObj1 = new DomainObject(personId1);
+								String strPersonName1 = personObj1.getName(context);
+								if(strPersonName1!=null&&!TaskAssignedList.contains(strPersonName1)){
+									TaskAssignedList.add(strPersonName1);
+								}
+							}					
+						}
+						if(!affectedTaskObj.getOwner(context).equals("")&&!TaskAssignedList.contains(affectedTaskObj.getOwner(context))){
+						    TaskAssignedList.add(affectedTaskObj.getOwner(context));
+						}
+					}
+				} 
+			}catch(Exception e){
+				throw new MatrixException(e.getMessage());
+			}
+			//System.out.println("TaskAssignedList==="+TaskAssignedList);
+			return (TaskAssignedList);
+	    }
+	   public String getSEMProjectTaskOverdueMessageHTML(Context context,
+			String args[]) throws Exception {
+		String message = "";
+		StringList busList1 = new StringList("id");
+		busList1.add(DomainConstants.SELECT_NAME);
+		busList1.add(DomainConstants.SELECT_TYPE);
+		try {
+			String TaskInProject="";
+			String taskType = "";
+			String taskName = "";
+			String TaskOwner="";
+			String TaskOwnerDepartment="";
+			String TaskEstFinishDate="";
+			String TaskAssignee="";
+			String TaskAssigneeDepartment="";
+			String TaskSEMDeliverable="";
+			String TaskSEMIsKeytask="";
+			String taskURL = "";
+			String TaskPercentComplete="";
+			
+			
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String objectId = (String) programMap.get("id");
+			Task taskObject = new Task(objectId);
+			taskType =taskObject.getType(context);
+			taskName =taskObject.getName(context);
+			TaskSEMDeliverable=taskObject.getAttributeValue(context,"SEM Deliverable");
+			TaskSEMIsKeytask=taskObject.getAttributeValue(context,"SEM Is Keytask");
+			TaskPercentComplete=taskObject.getAttributeValue(context,"Percent Complete");
+					
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(
+    				eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+
+    		TaskEstFinishDate=taskObject.getAttributeValue(context,"Task Estimated Finish Date");
+    		if(!TaskEstFinishDate.equals("")){
+    			Date date=formatter.parse(TaskEstFinishDate);
+    			TaskEstFinishDate=format.format(date);
+    		}
+
+			Map map=taskObject.getProject(context,busList1);
+			TaskInProject=(String) map.get("name");
+			
+			String res[]=getOwnerAssignedAndDepartment(context,objectId);
+			TaskOwner=res[0];
+			TaskOwnerDepartment=res[1];
+			TaskAssignee=res[2];
+			TaskAssigneeDepartment=res[3];
+			
+			String url = "";
+			String fileName = "";
+			try {
+				url = this.getClass().getResource("/").getPath();
+				url = url.substring(1, url.length() - 16);
+				fileName = url + "ContentTextHtmlTemplate"
+						+ String.format("%c", slash1)
+						+ "SEMProjectTaskOverdue.html";
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				message = "Can Not Find Email Template \"SEMProjectTaskOverdue.html\", Please Connect Administrator.";
+				return message;
+			}
+			try {
+				taskURL = FrameworkProperties
+						.getProperty(context,
+								"CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+			} catch (Exception e) {
+				taskURL = (String) programMap.get("baseURL");
+			}
+			//taskURL = taskURL + "?objectId=" + objectId;
+			File file = new File(fileName);
+			InputStreamReader imput = new InputStreamReader(
+					new FileInputStream(file), "UTF-8");
+			BufferedReader reader = new BufferedReader(imput);
+			String htmlStr = "";
+			StringBuffer htmlContent = new StringBuffer();
+			String tmpStr = "";
+			while ((tmpStr = reader.readLine()) != null) {
+				htmlContent.append(tmpStr);
+			}
+			reader.close();
+			imput.close();
+			htmlStr = htmlContent.toString();
+			htmlStr = htmlStr.replace("${TaskType}", taskType);
+			htmlStr = htmlStr.replace("${TaskName}", taskName);
+			htmlStr = htmlStr.replace("${TaskInProject}",TaskInProject);
+			htmlStr = htmlStr.replace("${TaskOwner}",TaskOwner);
+			htmlStr = htmlStr.replace("${TaskOwnerDepartment}",TaskOwnerDepartment);
+			htmlStr = htmlStr.replace("${TaskEstFinishDate}",TaskEstFinishDate);
+			htmlStr = htmlStr.replace("${TaskAssignee}",TaskAssignee);
+			htmlStr = htmlStr.replace("${TaskAssigneeDepartment}",TaskAssigneeDepartment);
+			htmlStr = htmlStr.replace("${TaskSEMDeliverable}",TaskSEMDeliverable);
+			htmlStr = htmlStr.replace("${TaskSEMIsKeytask}",TaskSEMIsKeytask);
+			htmlStr = htmlStr.replace("${TaskPercentComplete}",TaskPercentComplete);
+			htmlStr = htmlStr.replace("${TaskURL}", taskURL);
+
+			// System.out.println("+++++++++++++++++++++++++++"+htmlStr);
+
+			message = htmlStr;
+			return message;
+
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return message;
+	}
+		//get Subject Text
+	    public String getProjectTaskAssignedSubject(Context context, String[] args) throws Exception {
+	 	    Map info = (Map) JPO.unpackArgs(args);
+	        //Map payload = (Map) info.get("payload");
+	        String subject="\u9879\u76EE\u4EFB\u52A1\u5206\u914D\u63D0\u9192";
+	        //String[] subjectKeys = (String[]) payload.get("subjectKeys");
+	        //String[] subjectValues = (String[]) payload.get("subjectValues");
+	        String companyName = null;
+	        String basePropName = (String) info.get("bundleName");
+	        Locale locale = (Locale) info.get("locale");
+
+	        subject = MessageUtil.getMessage(context, null, subject,null,null, companyName, locale, basePropName);
+	        
+	        return (subject);
+	   }
+	   public String getProjectTaskReviewerSubject(Context context, String[] args) throws Exception {
+	 	    Map info = (Map) JPO.unpackArgs(args);
+	        String subject="\u9879\u76EE\u4EFB\u52A1\u5BA1\u6838\u63D0\u9192";
+	        String companyName = null;
+	        String basePropName = (String) info.get("bundleName");
+	        Locale locale = (Locale) info.get("locale");
+	        subject = MessageUtil.getMessage(context, null, subject,null,null, companyName, locale, basePropName);
+	        return (subject);
+	   }
+	   public String getProjectTaskExpiresSubject(Context context, String[] args) throws Exception {
+	 	    Map info = (Map) JPO.unpackArgs(args);
+	        String subject="\u4EFB\u52A1\u5230\u671F\u63D0\u9192";
+	        String companyName = null;
+	        String basePropName = (String) info.get("bundleName");
+	        Locale locale = (Locale) info.get("locale");
+	        subject = MessageUtil.getMessage(context, null, subject,null,null, companyName, locale, basePropName);
+	        return (subject);
+	   }
+	   public String getProjectTaskOverdueSubject(Context context, String[] args) throws Exception {
+	 	    Map info = (Map) JPO.unpackArgs(args);
+	        String subject="\u4EFB\u52A1\u903E\u671F\u63D0\u9192";
+	        String companyName = null;
+	        String basePropName = (String) info.get("bundleName");
+	        Locale locale = (Locale) info.get("locale");
+	        subject = MessageUtil.getMessage(context, null, subject,null,null, companyName, locale, basePropName);
+	        return (subject);
+	   }//
+	   public String getSubjectText(Context context,String[] args) throws Exception{
+		   // Map info = (Map) JPO.unpackArgs(args);
+	        String subject="\u4EFB\u52A1\u63D0\u9192\u901A\u77E5";
+	        /*String companyName = null;
+	        String basePropName = (String) info.get("bundleName");
+	        Locale locale = (Locale) info.get("locale");
+	        subject = MessageUtil.getMessage(context, null, subject,null,null, companyName, locale, basePropName);
+	        */
+	        return (subject);
+	   }
+	   //add   relate   Eight  SEM Task Item
+	   public void TypeSEMPartTaskCreateAction(Context context, String[] args) throws Exception {
+		    DomainObject strObj=new DomainObject(args[0]);
+			long currentTime=new Date().getTime();
+			String version= Long.toString(currentTime);
+	   		String sType="SEM Task Item";
+	   		String sPolicy="SEM Task Item";
+	   		String[] Names={"\u5382\u5546\u5B9A\u70B9","\u8BBE\u8BA1\u6784\u60F3\u4E66","\u7EC4\u7ACB\u56FE","3D-F","3D-P","\u8BBE\u8BA1\u4ED5\u6837\u56FE","\u90E8\u54C1\u56FE","\u627F\u8BA4\u56FE"};
+	   		SimpleDateFormat matter= new SimpleDateFormat("yyyy-MM-dd");
+			java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+			java.util.Date EsDate = new java.util.Date();
+		    String Value= formatter.format(EsDate);
+			for(int j=0;j<8;j++){
+	   			DomainObject dom1=new DomainObject();
+		   		dom1.createAndConnect(context, sType,Names[j],version,sPolicy, "eService Production","SEM Related DrwTask",strObj,true);
+			    //dom1.setAttributeValue(context,"Task Estimated Start Date",Value);  
+			    //dom1.setAttributeValue(context,"Task Estimated Finish Date",Value);  
+	   		}	
+	   }
+	   //about Task Assignee Department and Review Department
+	   public void updateSEMTaskAssigneeAndReviewDepartment(Context context,String[]args)throws Exception
+		{
+		   	 HashMap programMap = (HashMap)JPO.unpackArgs(args);
+		   	 HashMap paramMap=(HashMap)programMap.get("paramMap");
+		   	 HashMap fieldMap=(HashMap)programMap.get("fieldMap");
+		   	 HashMap settings=(HashMap)fieldMap.get("settings");
+		   	 String flag=(String) settings.get("Flag");
+		 	 String ownerId=((String) paramMap.get("New OID")).split(String.format("%c", slash)+"|")[0];
+			 String objID=(String) paramMap.get("objectId");
+			 DomainObject strObj=new DomainObject(objID);
+			 try{
+					ContextUtil.pushContext(context);
+		 	        if(ownerId!=null&&!ownerId.equals("")){
+				      DomainObject personId=new DomainObject(ownerId);
+				      MapList mapList1=personId.getRelatedObjects(context,
+						"Member","Department", busList, relList,true,false,
+						(short)1,"", null);
+				      if(mapList1.size()>0){
+					    Map map1=(Map) mapList1.get(0);
+					    String departmentId=(String) map1.get("id");
+					    DomainObject departmentObj=new DomainObject(departmentId);
+					    if(flag.equals("assignee")){
+					    	 strObj.setAttributeValue(context,"SEM Task Assignee Department",departmentObj.getName(context));
+					    }else{
+					    	 strObj.setAttributeValue(context,"SEM Task Reviewer Department",departmentObj.getName(context));
+					    }
+				       }
+				     }
+				 }catch(Exception e){
+					 m_rootLogger.error(e.getMessage(), e);
+				 }finally{
+					ContextUtil.popContext(context);
+				 }	
+		}
+	 //get Department
+	 public Vector getPersonDepartment(Context context,String[]args,String rel)throws Exception
+	 {
+		 Vector vc = new Vector();
+		 try{
+		 HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		 MapList objectList = (MapList)paramMap.get("objectList");
+		 Iterator it = objectList.iterator();
+		 while(it.hasNext())
+		 {
+				Map taskMap = (Map)it.next();
+				String taskId = (String)taskMap.get("id");
+				DomainObject taskObj = new DomainObject(taskId);
+				String strType = taskObj.getType(context);
+				if(strType.equals("Project Space"))
+				{
+					vc.add("");
+					continue;
+				}
+				StringList personIdList = taskObj.getInfoList(context,rel);
+				StringBuffer sb = new StringBuffer();
+				StringList busList = new StringList("id");
+				busList.add("name");
+				if(personIdList.size()>0)
+				{
+					String personName = "";
+					for(int i = 0 ; i < personIdList.size(); i++)
+					{
+						String personId = (String)personIdList.get(i);
+						DomainObject personObj = new DomainObject(personId);
+						String strPersonName = personObj.getName(context);
+						Person person = new Person(personId);
+                        MapList departmentList=person.getRelatedObjects(context, "Member","Department", busList, relList,true,false,(short)1,"", null);
+                        if(departmentList.size()>0){
+                        	Map map=(Map) departmentList.get(0);
+                        	String departmentName=(String) map.get("name");
+                            sb.append(departmentName+",");
+                        } 
+					}
+				}
+				String department=sb.toString();
+				if(!department.equals("")){
+					department=department.substring(0,department.length()-1);
+				}
+				vc.add(department);
+		 }}catch(Exception e){
+			 m_rootLogger.error(e.getMessage(), e);
+		 }
+		 return vc;
+	 }
+	 public Vector getSEMAssigneeDepartment(Context context,String[]args)throws Exception
+	 { 
+		 return  getPersonDepartment(context,args,"to[Assigned Tasks].from.id");
+	 }
+	 public Vector getSEMReviewerDepartment(Context context,String[]args)throws Exception
+	 { 
+		 return  getPersonDepartment(context,args,"from[SEM Task Reviewer].to.id");
+	 }
+	 //table:get task assignee
+	 public Vector getSEMTaskAssignee(Context context,String[]args,String rel)throws Exception
+	 {
+		 Vector vc = new Vector();
+		 try{
+		 HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		 MapList objectList = (MapList)paramMap.get("objectList");
+		 Iterator it = objectList.iterator();
+		 while(it.hasNext())
+		 {
+				Map taskMap = (Map)it.next();
+				String taskId = (String)taskMap.get("id");
+				DomainObject taskObj = new DomainObject(taskId);
+				String strType = taskObj.getType(context);
+				if(strType.equals("Project Space"))
+				{
+					vc.add("");
+					continue;
+				}
+				StringList personIdList = taskObj.getInfoList(context,rel);
+				StringBuffer sb = new StringBuffer();
+				StringList busList = new StringList("id");
+				busList.add("name");
+				if(personIdList.size()>0)
+				{
+					String personName = "";
+					for(int i = 0 ; i < personIdList.size(); i++)
+					{
+						String personId = (String)personIdList.get(i);
+						DomainObject personObj = new DomainObject(personId);
+						String strPersonName = personObj.getName(context);
+						Person person = new Person(personId);
+						sb.append(person.getDisplayName(context,strPersonName)+",");
+					}
+				}
+				String strPersonName=sb.toString();
+				if(!strPersonName .equals("")){
+					strPersonName=strPersonName.substring(0,strPersonName .length()-1);
+				}
+				vc.add(strPersonName);
+		 }}catch(Exception e){
+			 m_rootLogger.error(e.getMessage(), e);
+		 }
+		 return vc;
+	 }
+	 public Vector getSEMAssignee(Context context,String[]args)throws Exception
+	 { 
+		 return  getSEMTaskAssignee(context,args,"to[Assigned Tasks].from.id");
+	 }
+	 public Vector getSEMReviewer(Context context,String[]args)throws Exception
+	 { 
+		 return  getSEMTaskAssignee(context,args,"from[SEM Task Reviewer].to.id");
+	 }
+	 public void updateTaskAssignee(Context context,String[] args)throws Exception
+	 {
+		 try{
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			HashMap paramMap = (HashMap) programMap.get("paramMap");
+			HashMap requestMap = (HashMap) programMap.get("requestMap");
+			String objectId = (String) paramMap.get("objectId");// get the task Id
+			String newValue = (String) paramMap.get("New Value");//Get the dependency entered by the user.Eg:Project1:1:FS+5, 2:SF-5, 4:SS
+			ContextUtil.pushContext(context);
+			DomainObject strTaskObj = new DomainObject(objectId);
+			MapList personList =strTaskObj.getRelatedObjects(context,"Assigned Tasks","Person",busList,relList,true,false,(short)1,"","");
+			Iterator it = personList.iterator();
+			while(it.hasNext())
+			{
+				Map personMap = (Map)it.next();
+				String relId = (String)personMap.get("id[connection]");
+				DomainRelationship.disconnect(context, relId);
+			}
+			if(!newValue.equals("")&&newValue.length()>0){
+		  	    String personId =PersonUtil.getPersonObjectID(context,newValue);
+		  	    if(personId.length()>0)
+				{
+					DomainObject strPersonObj = new DomainObject(personId);
+					DomainRelationship del = strTaskObj.connectFrom(context,"Assigned Tasks",strPersonObj); 
+				}
+			}
+		 }catch(Exception e){
+			 m_rootLogger.error(e.getMessage(), e);
+		 }finally{
+			 ContextUtil.popContext(context);
+		 }
+	} 
+	public void updateTaskReviewer(Context context,String[] args)throws Exception
+	 {
+		 try{
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			HashMap paramMap = (HashMap) programMap.get("paramMap");
+			HashMap requestMap = (HashMap) programMap.get("requestMap");
+			String objectId = (String) paramMap.get("objectId");// get the task Id
+			String newValue = (String) paramMap.get("New Value");//Get the dependency entered by the user.Eg:Project1:1:FS+5, 2:SF-5, 4:SS
+
+			ContextUtil.pushContext(context);
+			DomainObject strTaskObj = new DomainObject(objectId);
+			MapList personList =strTaskObj.getRelatedObjects(context,"SEM Task Reviewer","Person",busList,relList,false,true,(short)1,"","");
+			Iterator it = personList.iterator();
+			while(it.hasNext())
+			{
+				Map personMap = (Map)it.next();
+				String relId = (String)personMap.get("id[connection]");
+				DomainRelationship.disconnect(context, relId);
+			}
+			if(!newValue.equals("")&&newValue.length()>0){
+				String[] names=newValue.split(String.format("%c", slash)+"|");
+				for(int i=0;i<names.length;i++){
+					String personId =PersonUtil.getPersonObjectID(context,names[i]);
+				  	if(personId.length()>0)
+				    {
+							DomainObject strPersonObj = new DomainObject(personId);
+							DomainRelationship del = strTaskObj.connectTo(context,"SEM Task Reviewer",strPersonObj); 
+				    }
+				}
+			}
+		 }catch(Exception e){
+			 m_rootLogger.error(e.getMessage(), e);
+		 }finally{
+			 ContextUtil.popContext(context);
+		 }
+	} //
+	//get Owner Department
+	public String getOwnerDepartment(Context context,String[] args)throws Exception{
+		 String res="";
+		 StringList busList1= new StringList("id");
+		 busList1.add("name");
+		 try{
+		 HashMap param=JPO.unpackArgs(args);
+		 HashMap paramMap=(HashMap) param.get("paramMap");
+		 String objID=(String) paramMap.get("objectId");
+		 DomainObject strObj=new DomainObject(objID);
+		 String owner=strObj.getOwner(context).getName();
+		 Person person=Person.getPerson(context,owner);
+		 MapList departmentList=person.getRelatedObjects(context, "Member","Department", busList1, relList,true,false,(short)1,"", null);
+		 if(departmentList.size()>0){
+         	Map map=(Map)departmentList.get(0);
+         	res=(String)map.get("name");
+         }}catch(Exception e){
+			 m_rootLogger.error(e.getMessage(), e);
+		 }
+		 return res;
+	}
+	//get Task assigned(form)
+	public String getAssigneeDepartment(Context context,String[] args)throws Exception{
+		 String department="";
+		 try{
+			HashMap param=JPO.unpackArgs(args);
+			HashMap paramMap=(HashMap) param.get("paramMap");
+			String objID=(String) paramMap.get("objectId");
+		    DomainObject taskObj = new DomainObject(objID);
+			StringList personIdList = taskObj.getInfoList(context,"to[Assigned Tasks].from.id");
+			StringBuffer sb = new StringBuffer();
+			StringList busList = new StringList("id");
+			busList.add("name");
+			if(personIdList.size()>0)
+			{
+				String personName = "";
+				for(int i = 0 ; i < personIdList.size(); i++)
+				{
+					String personId = (String)personIdList.get(i);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					Person person = new Person(personId);
+					String fullName=person.getDisplayName(context,strPersonName);
+                    MapList departmentList=person.getRelatedObjects(context, "Member","Department", busList, relList,true,false,(short)1,"", null);
+                    if(departmentList.size()>0){
+                 	  Map map=(Map) departmentList.get(0);
+                 	  String departmentName=(String) map.get("name");
+                 	  sb.append(departmentName+"("+fullName+"),");
+                    } 
+				}
+			}
+			department=sb.toString();
+			if(!department.equals("")){
+				department=department.substring(0,department.length()-1);
+			}
+        }catch(Exception e){
+			 m_rootLogger.error(e.getMessage(), e);
+		}
+		return department;
+	}
+	//get Task Reviewer(form)
+	public String getReviewerDepartment(Context context,String[] args)throws Exception{
+		 String department="";
+		 try{
+			HashMap param=JPO.unpackArgs(args);
+			HashMap paramMap=(HashMap) param.get("paramMap");
+			String objID=(String) paramMap.get("objectId");
+		    DomainObject taskObj = new DomainObject(objID);
+			String strType = taskObj.getType(context);
+			StringList personIdList = taskObj.getInfoList(context,"from[SEM Task Reviewer].to.id");
+			StringBuffer sb = new StringBuffer();
+			StringList busList = new StringList("id");
+			busList.add("name");
+			if(personIdList.size()>0)
+			{
+				String personName = "";
+				for(int i = 0 ; i < personIdList.size(); i++)
+				{
+					String personId = (String)personIdList.get(i);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					Person person = new Person(personId);
+					String fullName=person.getDisplayName(context,strPersonName);
+                    MapList departmentList=person.getRelatedObjects(context, "Member","Department", busList, relList,true,false,(short)1,"", null);
+                    if(departmentList.size()>0){
+                	  Map map=(Map) departmentList.get(0);
+                	  String departmentName=(String) map.get("name");
+                	  sb.append(departmentName+"("+fullName+"),");
+                    } 
+				}
+			}
+			department=sb.toString();
+			if(!department.equals("")){
+				department=department.substring(0,department.length()-1);
+			}
+       }catch(Exception e){
+			 m_rootLogger.error(e.getMessage(), e);
+		}
+		return department;
+	}//
+	//get owner Department(table type)
+	public Vector getSEMOwnerDepartment(Context context, String[] args)throws Exception {
+		Vector vc = new Vector();
+		try {
+			StringList busList1 = new StringList("id");
+			busList1.add("name");
+			HashMap paramMap = (HashMap) JPO.unpackArgs(args);
+			MapList objectList = (MapList) paramMap.get("objectList");
+			Iterator it = objectList.iterator();
+			while (it.hasNext()) {
+				String res = "";
+				Map DocMap = (Map) it.next();
+				String DocId = (String) DocMap.get("id");
+				DomainObject strObj = new DomainObject(DocId);
+				String owner = strObj.getOwner(context).getName();
+				Person person = Person.getPerson(context, owner);
+				MapList departmentList = person.getRelatedObjects(context,
+						"Member", "Department", busList1, relList, true, false,
+						(short) 1, "", null);
+				if (departmentList.size() > 0) {
+					Map map = (Map) departmentList.get(0);
+					res = (String) map.get("name");
+				}
+				vc.add(res);
+			}
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return vc;
+	}//
+	//cheack dispaly complete or rollback button(review task)
+	public boolean displayCompleteOrRollbackButton(Context context, String[] args)throws Exception {
+		boolean res=false;
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+            String  objID = (String) programMap.get("objectId");
+            String currentUser=context.getUser();
+
+			DomainObject taskObj = new DomainObject(objID);
+			String sOwner = taskObj.getInfo(context, "owner");
+			String state=taskObj.getCurrentState(context).getName();
+			ContextUtil.pushContext(context);
+			StringList busList = new StringList("id");
+			busList.add("name");
+			StringList relList = new StringList(DomainRelationship.SELECT_ID);	
+			relList.add("attribute[SEM Reviewed]");
+
+			MapList mapList=taskObj.getRelatedObjects(context,"SEM Task Reviewer","Person", busList, relList, false, true, (short)1, "","");				
+			if(mapList!=null&&mapList.size()>0)
+			{
+				Iterator items=mapList.iterator();
+				while(items.hasNext()){
+					Map map=(Map)items.next();
+					String name=(String)map.get("name");
+					String relAttr=(String)map.get("attribute[SEM Reviewed]");
+					if(state.equals("Review")&&name.equals(currentUser)&&relAttr.equals("NO")){
+						res=true;
+						break;
+					}
+				}
+			}else{	
+				if(state.equals("Review")&&currentUser.equals(sOwner))
+				{
+					res=true;
+				}
+			}	
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}finally{
+			ContextUtil.popContext(context);
+		}
+		return res;
+	}
+	public boolean displaySubmitButton(Context context, String[] args)throws Exception {
+		boolean res=false;
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+            String  objID = (String) programMap.get("objectId");
+            String currentUser=context.getUser();
+            DomainObject taskObj = new DomainObject(objID);
+            String state=taskObj.getCurrentState(context).getName();
+            String status=taskObj.getAttributeValue(context,"SEM Edit Status");
+            if(state.equals("Create")&&status.equals("P2")){
+               StringList personIdList = taskObj.getInfoList(context,"to[Assigned Tasks].from.id");
+               if (personIdList.size() > 0) {
+				  for (int i = 0; i < personIdList.size(); i++) {
+					String personId = (String) personIdList.get(i);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					if(strPersonName.equals(currentUser)){
+						res=true;
+						break;
+					}
+				   }
+               }
+            }
+		}catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return res;
+	}
+}
+

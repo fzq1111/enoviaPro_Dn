@@ -1,0 +1,869 @@
+updateSEMBudgetChangeNumberimport matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.State;
+import matrix.util.MatrixException;
+import matrix.util.StringList;
+import java.util.*;
+
+import org.apache.log4j.Logger;
+
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.domain.util.mxAttr;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.apps.common.Person;
+
+public class ${CLASSNAME} {
+	private static Logger m_rootLogger = Logger.getLogger(${CLASS:SEMBudget}.class);
+    StringList busList = new StringList("id");
+	StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	private static final int slash = 92; // ASCII 92 == '\\'
+	public ${CLASSNAME}(Context context, String[] args) throws Exception {
+	}
+
+	/*
+	 * GET SEM Approve Order AND SEM PrjChange Order
+	 */
+	public MapList getACO(Context context, String[] args) throws Exception {
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		String objectId = (String) programMap.get("objectId");
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		DomainObject strObj = new DomainObject(objectId);
+		MapList mapList = strObj.getRelatedObjects(context,
+				"SEM Project Change", "*", busList, relList, false, true,
+				(short) 1, null, null);
+		return mapList;
+	}
+
+	/*
+	 * GET SEM Approve Order Affected Item
+	 */
+	public MapList getAOAffectedItem(Context context, String[] args)
+			throws Exception {
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		String objectId = (String) programMap.get("objectId");
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		DomainObject strObj = new DomainObject(objectId);
+		MapList mapList = strObj.getRelatedObjects(context, "Affected Item",
+				"Project Space,Task Management,Issue", busList, relList, false,
+				true, (short) 1, null, null);
+		return mapList;
+	}
+
+	/*
+	 * GET SEM PrjChange Order Affected Item
+	 */
+	public MapList getCOAffectedItem(Context context, String[] args)
+			throws Exception {
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		String objectId = (String) programMap.get("objectId");
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		DomainObject strObj = new DomainObject(objectId);
+		MapList mapList = strObj.getRelatedObjects(context, "Affected Item",
+				"Phase,Task,Gate,Milestone", busList, relList, false, true,
+				(short) 1, null, null);
+		return mapList;
+	}
+
+	// make current project Spance Add AO AffectedItem when SEM Approval
+	// Type=Project Plan Approve
+	public void projectAddAOAffectedItem(Context context, String[] args)
+			throws Exception {
+		HashMap param = JPO.unpackArgs(args);
+		HashMap paramMap = (HashMap) param.get("paramMap");
+		HashMap requestMap = (HashMap) param.get("requestMap");
+		String[] parentIds = (String[]) requestMap.get("objectId");
+		String newValue = (String) paramMap.get("New Value");
+		String objID = (String) paramMap.get("objectId");
+		DomainObject strObj = new DomainObject(objID);
+		strObj.setAttributeValue(context, "SEM Approval Type", newValue);
+		if (newValue.equals("\u9879\u76EE\u8BA1\u5212\u5BA1\u6279")) {
+			DomainObject parentObj = new DomainObject(parentIds[0]);
+			strObj.connectTo(context, "Affected Item", parentObj);
+		}
+	}
+
+	public HashMap<String, StringList> reloadAOReviewRouteTempalte(
+			Context context, String args[]) throws Exception {
+		HashMap<String, StringList> rangeMap = new HashMap<String, StringList>();
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		HashMap requestMap = new HashMap((Map) programMap.get("requestMap"));
+		HashMap fieldValues = new HashMap((Map) programMap.get("fieldValues"));
+		String SEMApprovalType = (String) fieldValues.get("SEMApprovalType");
+		StringList resultList = new StringList();
+		StringList resultIdList = new StringList();
+		StringList busList = new StringList("id");
+		String where = "attribute[SEM Approval Type]=='" + SEMApprovalType
+				+ "'";
+		MapList mapList = DomainObject.findObjects(context, "Route Template",
+				"*", where, busList);
+		//System.out.println("Test---range--" + mapList.size());
+		if (mapList.size() > 0) {
+			Iterator it = mapList.iterator();
+			while (it.hasNext()) {
+				Map map = (Map) it.next();
+				String id = (String) map.get("id");
+				DomainObject rtObj = new DomainObject(id);
+				resultList.add(rtObj.getName(context));
+				resultIdList.add(id);
+			}
+		}
+		rangeMap.put("RangeValues", resultList);
+		return rangeMap;
+	}
+
+	public Object getDefaultApprovalList(Context context, String args[])
+			throws Exception {
+		HashMap tempMap = new HashMap();
+		StringList fieldChoices = new StringList();
+		StringList fieldDisplayChoices = new StringList();
+		StringList busList = new StringList("id");
+		String where = "attribute[SEM Approval Type]=='\u9879\u76EE\u8BA1\u5212\u5BA1\u6279'";
+		MapList mapList = DomainObject.findObjects(context, "Route Template",
+				"*", where, busList);
+		if (mapList.size() > 0) {
+			Iterator it = mapList.iterator();
+			while (it.hasNext()) {
+				Map map = (Map) it.next();
+				String id = (String) map.get("id");
+				DomainObject rtObj = new DomainObject(id);
+				fieldChoices.add(rtObj.getName(context));
+				fieldDisplayChoices.add(rtObj.getName(context));
+			}
+		}
+		tempMap.put("field_choices", fieldChoices);
+		tempMap.put("field_display_choices", fieldDisplayChoices);
+		return tempMap;
+	}
+	//Create SEM BudgetChange Request 
+	public Map createNewBCR(Context context,String[]args)throws Exception
+	{
+		HashMap programMap = (HashMap)JPO.unpackArgs(args);
+  		HashMap requestMap = (HashMap)programMap.get("RequestValuesMap");
+  		String strName=(String)programMap.get("Name");
+  		String[] objs=(String[])requestMap.get("objectId");
+  		String obj=objs[0];
+  		String strType = "SEM BudgetChange Request";
+    	String strPolicy ="SEM BudgetChange Request";
+    	if(strName == null || strName =="" )
+    	{			
+    	  strName = FrameworkUtil.autoName(context,"type_SEMBudgetChangeRequest",null,"policy_SEMBudgetChangeRequest",null,null,true,true);
+    	}
+    	DomainObject dom=new DomainObject();
+  		dom.createObject(context, strType,strName ,"-", strPolicy, "eService Production");
+  		String projectId =dom.getInfo(context, "id");
+  		DomainObject strObj = new DomainObject(projectId);
+  		String newValue=new DomainObject(obj).getAttributeValue(context,"SEM Car Code");
+  		strObj.setAttributeValue(context, "SEM Car Code", newValue);
+    	Map returnMap = new HashMap();
+  		returnMap.put("id", projectId);
+    	return returnMap;
+	}
+	//get SEM BudgetChange Request  AffectedItem  
+	public MapList getBCRAffectedItem(Context context, String[] args)
+			throws Exception {
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		String objectId = (String) programMap.get("objectId");
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		DomainObject strObj = new DomainObject(objectId);
+		MapList mapList = strObj.getRelatedObjects(context,"SEM Affected Budget",
+				"*", busList, relList, false,true,
+				(short) 1, null, null);
+		return mapList;
+	}
+	//in Investment Create SEM BudgetChange Request 
+	public Map investmentCreateNewBCR(Context context,String[]args)throws Exception
+	{
+		HashMap programMap = (HashMap)JPO.unpackArgs(args);
+  		HashMap requestMap = (HashMap)programMap.get("RequestValuesMap");
+  		String strName=(String)programMap.get("Name");
+  		String  obj=(String)programMap.get("objectId");
+  		//System.out.println("programMap:--    "+programMap);
+  		String preRow=(String)programMap.get("preRows");
+  		//System.out.println("preRow:---"+preRow);
+  		String[] preRows=preRow.split(String.format("%c", slash)+"|");
+  		String strType = "SEM BudgetChange Request";
+    	String strPolicy ="SEM BudgetChange Request";
+    	if(strName == null || strName =="")
+    	{			
+    	  strName = FrameworkUtil.autoName(context,"type_SEMBudgetChangeRequest",null,"policy_SEMBudgetChangeRequest",null,null,true,true);
+    	}
+    	DomainObject dom=new DomainObject();
+  		dom.createObject(context, strType,strName ,"-", strPolicy, "eService Production");
+  		String projectId =dom.getInfo(context, "id");
+  		DomainObject strObj = new DomainObject(projectId);
+  		String newValue=new DomainObject(obj).getAttributeValue(context,"SEM Car Code");
+  		strObj.setAttributeValue(context, "SEM Car Code", newValue);
+    	Map returnMap = new HashMap();
+    	returnMap.put("id", projectId);
+  		ContextUtil.pushContext(context);
+  		for(int i=0;i<preRows.length;i++){
+  			DomainObject domObj=new DomainObject(preRows[i]);  			
+  			domObj.connectFrom(context,"SEM Affected Budget",strObj);  				  			 			  			
+  		}
+  		ContextUtil.popContext(context);
+    	return returnMap;
+	}
+	/*
+	 * Approve Order Add AffectedItems
+	 */
+	public StringList includeProjectSpace(Context context,String[] args)throws Exception
+	{
+
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		String objectId = (String)paramMap.get("objectId");
+		DomainObject AOObj = new DomainObject(objectId);		
+		MapList mapList = AOObj.getRelatedObjects(context,"SEM Project Change","*",busList,relList,true,false,(short)0,"","");
+		StringList projectList = new StringList();
+		if(mapList.size()>0){
+			Iterator it = mapList.iterator();
+			while(it.hasNext())
+			{
+				Map taskMap = (Map)it.next();
+				String projectId = (String)taskMap.get("id");
+				DomainObject projectObj = new DomainObject(projectId);
+				String strType = projectObj.getType(context);
+				if(strType.equals("Project Space"))
+				{
+					projectList.add(projectId);
+				}else{
+					continue;
+				}
+			}
+		}
+		return projectList;
+	}
+	
+	public MapList getObjects(Context context,String[] args)throws Exception
+	{
+		MapList includeIdList = new MapList();
+		try{
+			String rel="";
+			String type="";
+			HashMap hashMap = (HashMap)JPO.unpackArgs(args);
+			HashMap requestMap=(HashMap) hashMap.get("RequestValuesMap");
+	 		String projectId = (String)hashMap.get("objectId");
+	 		DomainObject projectObj = new DomainObject(projectId);
+	 		String[] parents=(String[])requestMap.get("objectId");
+	        String parentId=parents[0];
+		 	DomainObject AOObj=new DomainObject(parentId);
+		 	String Sat=AOObj.getAttributeValue(context,"SEM Approval Type");
+		 	if(Sat.equals("\u9879\u76EE\u8BA1\u5212\u5BA1\u6279")){
+		 			rel="Subtask";
+		 			type="Task Management";
+		 	}else{
+		 			rel="Issue";
+					type="Issue";
+		 	}
+	 		includeIdList = projectObj.getRelatedObjects(context,rel,type, busList, relList,false, true, (short)1, null, null);
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+  	        throw new MatrixException(e);
+		}
+		includeIdList.add(0, includeIdList.size() - 1); 
+		return includeIdList;
+	}
+	public MapList getTaskObjects(Context context,String[] args)throws Exception
+	{
+		MapList includeIdList = new MapList();
+		try{
+			
+			HashMap hashMap = (HashMap)JPO.unpackArgs(args);
+	 		String projectId = (String)hashMap.get("objectId");
+	 		DomainObject projectObj = new DomainObject(projectId);
+	 		StringList busList = new StringList("id");
+	 		busList.add("name");
+	 		busList.add("type");
+	 		busList.add("current");
+	 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	 		includeIdList = projectObj.getRelatedObjects(context,"Subtask","Phase,Task,Gate,Milestone", busList, relList,false, true, (short)1, null, null);
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+  	        throw new MatrixException(e);
+		}
+		includeIdList.add(0, includeIdList.size() - 1); 
+		return includeIdList;
+	}
+	//
+	public HashMap getIssueSEMApprovalType(Context context, String args[])throws Exception
+    {
+		HashMap tempMap=new HashMap();
+   	    HashMap programMap=JPO.unpackArgs(args);
+        StringList fieldChoices= new StringList();
+        StringList fieldDisplayChoices=new StringList();
+        HashMap requestMap = (HashMap)programMap.get("requestMap");
+		String value=(String) requestMap.get("typeflag");
+        StringList orang=mxAttr.getChoices(context,"SEM Approval Type");
+        for (int i = 0; i <orang.size(); i++)
+        {
+        	if(value.equals("adb")&&i==2){
+        		fieldChoices.add(orang.get(i));
+	            fieldDisplayChoices.add(orang.get(i));
+        	}else if(value.equals("sa")&&i==1){
+        		fieldChoices.add(orang.get(i));
+	            fieldDisplayChoices.add(orang.get(i));
+        	}else if(value.equals("all")){
+        		fieldChoices.add(orang.get(i));
+	            fieldDisplayChoices.add(orang.get(i));
+        	}  
+        }
+    	tempMap.put("field_choices", fieldChoices);
+        tempMap.put("field_display_choices",fieldDisplayChoices);
+        return tempMap; 
+   }
+   public Map issueCreateNewSAO(Context context,String[]args)throws Exception
+	{
+		HashMap programMap = (HashMap)JPO.unpackArgs(args);
+ 		HashMap requestMap = (HashMap)programMap.get("RequestValuesMap");
+ 		String strName=(String)programMap.get("Name");
+ 		//System.out.println("programMap:--    "+programMap);
+ 		String preRow=(String)programMap.get("preRows");
+ 		//System.out.println("preRow:---"+preRow);
+ 		String[] preRows=preRow.split(String.format("%c", slash)+"|");
+ 		String strType = "SEM Approve Order";
+   	    String strPolicy ="SEM Approve Order";
+   	    if(strName == null || strName =="")
+     	{			
+   	      strName = FrameworkUtil.autoName(context,"type_SEMApproveOrder",null,"policy_SEMApproveOrder",null,null,true,true);
+   	    }
+     	DomainObject dom=new DomainObject();
+ 		dom.createObject(context, strType,strName ,"-", strPolicy, "eService Production");
+ 		String projectId =dom.getInfo(context, "id");
+ 		DomainObject strObj = new DomainObject(projectId);
+   	    Map returnMap = new HashMap();
+ 		returnMap.put("id", projectId);
+ 		ContextUtil.pushContext(context);
+ 		if(!preRows[0].equals("")){
+ 		  for(int i=0;i<preRows.length;i++){
+ 			DomainObject domObj=new DomainObject(preRows[i]);
+ 			domObj.connectFrom(context,"Affected Item",strObj);
+ 		  }
+ 		}
+ 		ContextUtil.popContext(context);
+   	    return returnMap;
+	}
+	public Vector getAffectedTask(Context context,String[]args)throws Exception
+    {
+	    HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		MapList objectList = (MapList)paramMap.get("objectList");
+		Iterator it = objectList.iterator();
+		Vector vc = new Vector();
+		while(it.hasNext())
+		{
+			Map taskMap = (Map)it.next();
+			String taskId = (String)taskMap.get("id");
+			DomainObject taskObj = new DomainObject(taskId);
+			StringList affectedTaskIdList =taskObj.getInfoList(context,"to[Dependency].from.id");
+			StringBuffer sb = new StringBuffer();
+			if(affectedTaskIdList.size()>0)
+			{
+				sb.append("<div>");
+				for(int i = 0 ; i < affectedTaskIdList.size(); i++)
+				{
+					String affectedTaskId = (String)affectedTaskIdList.get(i);
+					DomainObject affectedTaskObj  = new DomainObject(affectedTaskId );
+					String Name= affectedTaskObj.getName(context);
+					String url="javascript:showModalDialog(\"../common/emxTree.jsp?objectId="+affectedTaskId+"\"";
+					String href="../common/emxTree.jsp?";
+					sb.append("<a href ='javascript:showModalDialog(\"");
+					sb.append(href + "objectId=" + affectedTaskId);
+					sb.append("\", \"875\", \"550\", \"false\", \"popup\")'>");
+					sb.append(Name+ "</a>");
+					if(i!=affectedTaskIdList.size()-1){
+						sb.append("<label>,</label>");
+					}
+					
+				}
+				sb.append("</div>");
+			}
+			String show = sb.toString();
+			//System.out.println("show---"+show);
+			vc.add(show);
+		}
+		return vc;
+    }
+	//SEM BCR  Affected  Item  modify by fzq 2017-03-30
+    public MapList getCurrentProjectSpace(Context context,String[] args)throws Exception
+	{
+		MapList projectList = new MapList();
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		String objectId = (String)paramMap.get("objectId");
+		DomainObject strObj=DomainObject.newInstance(context,objectId);
+		MapList mapList=strObj.getRelatedObjects(context,"SEM Project Change","Project Space",busList,relList,true,false,(short)1,"",null);
+		if(mapList.size()>0){
+			Map map=(Map) mapList.get(0);
+			String id=(String) map.get("id");
+			map.put("id",id);
+			map.put("type","ProjectSpace");
+			map.put("selection","multiple");
+			map.put("disableSelection", "true");
+			projectList.add(map);
+		}
+		return projectList;
+	}
+    public MapList getProjectCostItem(Context context,String[] args)throws Exception
+	{
+		MapList includeIdList = new MapList();
+		try{
+			HashMap hashMap = (HashMap)JPO.unpackArgs(args);
+	 		String projectId = (String)hashMap.get("objectId");
+	 		DomainObject projectObj = new DomainObject(projectId);
+	 		StringList busList = new StringList("id");
+	 		busList.add("attribute[SEM DepCode]");
+	 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	 		StringList busList1= new StringList("id");
+	 		busList1.add("attribute[Organization ID]");
+	 		
+	 		String departId="";
+	 		Person person=Person.getPerson(context);
+	 		MapList departmentList=person.getRelatedObjects(context,"Member","Department", busList1, relList,true,false,(short)1,null, null);
+	 		if(departmentList.size()>0){
+	 			Map departMap=(Map)departmentList.get(0);
+	 			departId=(String)departMap.get("attribute[Organization ID]");
+	 		}
+	 		//String where="attribute[SEM DepCode]=='"+departId+"'";
+	 		String strWhereClause = "";
+			strWhereClause = getSEMBudgetFilter(context, projectId);
+	 		String strType=projectObj .getType(context);	
+	 		if(strType.equals("Project Space")){
+	 			MapList mapList= projectObj.getRelatedObjects(context,"Project Financial Item,SEM Sub Budget","Budget", busList, relList,false, true, (short)2,strWhereClause, null);
+		 		//System.out.println("mapList=="+mapList);
+	 			Iterator items=mapList.iterator();
+		 		while(items.hasNext()){
+		 			Map map=(Map) items.next();
+		 			String budgeId=(String)map.get("id");
+		 			map.put("selection","multiple");
+		 		    map.put("disableSelection", "true");
+		 			includeIdList.add(map);
+		 		}
+	 		}else{
+	 			boolean hasSubBudget =projectObj.hasRelatedObjects(context,"SEM Sub Budget", true); 
+				boolean hasItems =projectObj.hasRelatedObjects(context,"Financial Items", true);
+				if(hasItems){
+					MapList mapList= projectObj.getRelatedObjects(context,"Financial Items","Cost Item", busList, relList,false, true, (short)0,null, null);
+			 		Iterator items=mapList.iterator();
+			 		while(items.hasNext()){
+			 			Map map=(Map) items.next();
+			 			String strCostItemId = (String)map.get("id");
+			 			DomainObject costItemObj = new DomainObject(strCostItemId);
+			 			StringList busList2 = new StringList("id");
+			 			String strCurrent = null;
+			 			StringList mapList11 = new StringList();
+			 			MapList mapList1 = costItemObj.getRelatedObjects(context,"SEM Affected Budget","SEM BudgetChange Request", busList2, relList,true, false, (short)1,null, null);
+			 			if(mapList1.size()>0){
+			 				for (int y = 0; y < mapList1.size(); y++){
+			 					Map map1=(Map) mapList1.get(y);
+					 			String strSBRId=(String)map1.get("id");
+					 			DomainObject semBRObj = new DomainObject(strSBRId);
+					 			strCurrent = semBRObj.getInfo(context, DomainObject.SELECT_CURRENT);
+					 			mapList11.add(strCurrent);
+			 				}
+				 			if(!mapList11.contains("Create") && !mapList11.contains("Review") && !mapList11.contains("Approved")){
+				 				map.put("selection","multiple");
+					 			includeIdList.add(map);
+				 			}
+			 			}else{
+			 				map.put("selection","multiple");
+				 			includeIdList.add(map);
+			 			}
+			 			
+			 		}
+				}else if(hasSubBudget){
+					MapList mapList= projectObj.getRelatedObjects(context,"SEM Sub Budget","Budget", busList, relList,false, true,(short)1,strWhereClause, null);
+			 		Iterator items=mapList.iterator();
+			 		while(items.hasNext()){
+			 			Map map=(Map) items.next();
+			 			map.put("selection","multiple");
+			 			map.put("disableSelection", "true");
+			 			includeIdList.add(map);
+			 		}
+	 			}
+	 		} 		
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+  	        throw new MatrixException(e);
+		}
+		return includeIdList;
+	}//
+    
+    public String getSEMBudgetFilter(Context context, String strProjectId) throws Exception
+	{
+		String strResult = "";
+		try
+		{
+			Person person = new Person(PersonUtil.getPersonObjectID(context));
+			String strLoginUserId = person.getId(context);
+			StringList relSelects = new StringList("attribute[Project Role]");
+			relSelects.addElement("attribute[SEM Budget Access]");//add by ryan 2017-05-05
+			String strWhere = "id == " + strProjectId;
+			
+			//add by zhangshuai 2017/05/09
+			DomainObject domObj = new DomainObject(strProjectId);
+			String strType = domObj.getType(context);
+			StringList busList1= new StringList("id");
+			System.out.println("strType444444444444444===="+strType);
+			if("Budget".equals(strType)){
+				MapList mapList1 = domObj.getRelatedObjects(context, 
+						"Project Financial Item,SEM Sub Budget", 
+						"Project Space", 
+						busList1, 
+						new StringList(), 
+						true, 
+						false, 
+						(short)0, 
+						null, 
+						null);
+				System.out.println("mapList155555555===="+mapList1);
+				for(int y=0;y<mapList1.size();y++){
+					Map map = (Map)mapList1.get(y);
+					String proId = (String)map.get("id");
+					strWhere = "id == " + proId;
+				}
+			}
+				//end
+			
+			MapList projList = person.getRelatedObjects(context, 
+														"Member", 
+														"Project Space", 
+														new StringList(), 
+														relSelects, 
+														true, 
+														false, 
+														(short)1, 
+														strWhere, 
+														null);
+			boolean bIsPx = false;
+			String strSEMBudgetAccess = "";//add by ryan 2017-05-05
+			for(int i = 0; i < projList.size(); i ++)
+			{
+				Map projMap = (Map)projList.get(i);
+				String strProjectRole = (String)projMap.get("attribute[Project Role]");
+				if(strProjectRole.equals("SEM_StrategyProjectLeader"))
+				{
+					bIsPx = true;
+					break;
+				}
+				strSEMBudgetAccess = (String)projMap.get("attribute[SEM Budget Access]");//add by ryan 2017-05-05
+			}
+			
+			String strAllReviewerKey = "SEM.allBudget.viewer";
+    		StringList reviewerRoleList = getProperty(strAllReviewerKey);
+			StringList currentRoleList = person.getRoleAssignments(context);
+			boolean bIsAllReviewer = false;
+			for(int i = 0; i < reviewerRoleList.size(); i ++)
+			{
+				if(currentRoleList.contains((String)reviewerRoleList.get(i)))
+				{
+					bIsAllReviewer = true;
+					break;
+				}
+			}
+			
+			if(!(bIsAllReviewer || bIsPx))
+			{
+				strResult += "type!=\"Budget\" || (type==\"Budget\" && (";
+				//modify by ryan 2017-05-05
+				MapList departmentList = new MapList();
+				StringList busSelects = new StringList("id");
+				busSelects.addElement("attribute[Organization ID]");
+				if(UIUtil.isNotNullAndNotEmpty(strSEMBudgetAccess))
+				{
+					strWhere = "attribute[Organization ID] == \"" + strSEMBudgetAccess + "\"";
+					departmentList = DomainObject.findObjects(context, "Department", "*", strWhere, busSelects);
+				}
+				else
+				{
+					departmentList = person.getRelatedObjects(context, 
+							"Member", 
+							"Department", 
+							busSelects, 
+							null, 
+							true, 
+							false, 
+							(short)1, 
+							null, 
+							null);
+				}
+				//modify end
+				for(int i = 0; i < departmentList.size(); i ++)
+				{
+					Map currDepartmentMap = (Map)departmentList.get(i);
+					String strCurrDepartmentId = (String)currDepartmentMap.get("id");
+					String strCurrDepartmentOrgId = (String)currDepartmentMap.get("attribute[Organization ID]");
+					strResult += "attribute[SEM DepCode]==\"" + strCurrDepartmentOrgId + "\" || ";
+					DomainObject currDepartmentObj = DomainObject.newInstance(context, strCurrDepartmentId);
+					
+					MapList topDepartmentList = currDepartmentObj.getRelatedObjects(context, 
+																					"Company Department", 
+																					"Department", 
+																					busSelects, 
+																					null, 
+																					true, 
+																					false, 
+																					(short)0, 
+																					null, 
+																					null);
+					for(int m = 0; m < topDepartmentList.size(); m ++)
+					{
+						Map topMap = (Map)topDepartmentList.get(m);
+						String strTopOrgId = (String)topMap.get("attribute[Organization ID]");
+						strResult += "attribute[SEM DepCode]==\"" + strTopOrgId + "\" || ";
+					}
+					
+					MapList subDepartmentList = currDepartmentObj.getRelatedObjects(context, 
+																					"Company Department", 
+																					"Department", 
+																					busSelects, 
+																					null, 
+																					false, 
+																					true, 
+																					(short)0, 
+																					null, 
+																					null);
+					for(int m = 0; m < subDepartmentList.size(); m ++)
+					{
+						Map subMap = (Map)subDepartmentList.get(m);
+						String strSubOrgId = (String)subMap.get("attribute[Organization ID]");
+						strResult += "attribute[SEM DepCode]==\"" + strSubOrgId + "\" || ";
+					}
+				}
+				strResult = strResult.substring(0, strResult.length() - 4) + "))";
+			}
+		}catch(Exception ex)
+		{
+			m_rootLogger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+		
+		return strResult;
+	}
+    
+    public StringList getProperty(String strKey)
+    {
+    	StringList strReturnList = new StringList();
+    	String strValue = null;
+    	try
+    	{
+    		strValue = FrameworkProperties.getProperty(strKey);
+    	}
+    	catch(Exception e)
+    	{
+    		m_rootLogger.debug(e.getMessage());
+    		strValue = "";
+    	}
+    	if(UIUtil.isNotNullAndNotEmpty(strValue))
+		{
+			String[] valueArray = strValue.split(",");
+			for(int j = 0; j < valueArray.length; j ++)
+			{
+				strReturnList.add(valueArray[j].trim());
+			}
+		}
+    	return strReturnList;
+    }
+    
+	public void updateSEMAffectedItemTask(Context context,String[] args)throws Exception
+	{
+      try{
+         HashMap param=JPO.unpackArgs(args);
+ 	     HashMap paramMap=(HashMap) param.get("paramMap");
+ 	     String newValue=(String) paramMap.get("New Value");
+ 	     String objID=(String) paramMap.get("objectId");
+ 	     ContextUtil.pushContext(context);
+ 	     if(!newValue.equals("")){
+ 	    	 String[] toIds=newValue.split(String.format("%c", slash)+"|");
+ 	 	     DomainObject strObj=new DomainObject(objID);
+ 	 	     for(int i=0;i<toIds.length;i++){
+ 	 	    	 String taskId=toIds[i];
+ 	 	    	 DomainObject taskObj=new DomainObject(taskId);
+ 	 	    	 strObj.connectTo(context,"Affected Item",taskObj);
+ 	 	     } 
+ 	     }   
+      }catch(Exception e){
+    	  m_rootLogger.error(e.getMessage(), e);
+	      throw new MatrixException(e);
+	  }finally{
+		  ContextUtil.popContext(context);
+	  }
+	}
+	public MapList getProjectSpace(Context context,String[] args)throws Exception
+	{
+		MapList projecMapList= new MapList();
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		String objectId = (String)paramMap.get("objectId");
+		DomainObject AOObj = new DomainObject(objectId);
+		String type=AOObj.getType(context);
+		if(type.equals("Project Space")){		
+			Map map=new HashMap();
+			map.put("id",objectId);
+			map.put("disableSelection", "true");
+			projecMapList.add(map);
+		}else{
+	        MapList mapList = AOObj.getRelatedObjects(context,"SEM Project Change","*",busList,relList,true,false,(short)0,"","");
+		    if(mapList.size()>0){
+			Iterator it = mapList.iterator();
+			while(it.hasNext())
+			{
+				Map taskMap = (Map)it.next();
+				String projectId = (String)taskMap.get("id");
+				DomainObject projectObj = new DomainObject(projectId);
+				String strType = projectObj.getType(context);
+				if(strType.equals("Project Space"))
+				{
+					Map map=new HashMap();
+					map.put("id",projectId);
+					map.put("disableSelection", "true");
+					projecMapList.add(map);
+				}else{
+					continue;
+				}
+			}
+		  }
+		}
+		return projecMapList;
+	}
+    public MapList getProjectTaskObjects(Context context,String[] args)throws Exception
+	{
+		MapList includeIdList = new MapList();
+		try{
+			HashMap programMap = (HashMap)JPO.unpackArgs(args);
+	  		String objectId = (String)programMap.get("objectId");
+	 		DomainObject projectObj = new DomainObject(objectId);
+	 		includeIdList = projectObj.getRelatedObjects(context,"Subtask","Task Management", busList, relList,false, true, (short)1, null, null);
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+  	        throw new MatrixException(e);
+		}
+		return includeIdList;
+	}
+	public int triggerCheckSEMBudgetChangeRequestCreatePromote(Context context, String[] args)
+			throws Exception {
+		String objectId = args[0];
+		DomainObject strObj = new DomainObject(objectId);
+		MapList mapList=strObj.getRelatedObjects(context,"SEM Affected Budget","Cost Item",busList,relList,false,true,(short)1,null,null);
+		if (mapList.size()>0) {
+			Double sum=0.0;
+			Iterator items=mapList.iterator();
+			while(items.hasNext()){
+				Map map=(Map) items.next();
+				String relId=(String) map.get("id[connection]");
+		 		DomainRelationship relObj=new DomainRelationship(relId);
+				String budgetChangeNumber=relObj.getAttributeValue(context,"SEM BudgetChange Number");
+				if(Double.parseDouble(budgetChangeNumber)==0){
+					try {
+						String sErrMsg = "\u6295\u8D44\u8C03\u6574\u5355\u53D7\u5F71\u54CD\u9879\u5BF9\u5E94\u6295\u8D44\u9879\u7684\u8C03\u6574\u91D1\u989D\u4E0D\u80FD\u4E3A\u96F6!";
+						${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+					} catch (Exception e) {
+						throw new Exception(e.getMessage());
+					}
+					return 1;
+				}else{
+				   sum+=Double.parseDouble(budgetChangeNumber);
+				}
+			}
+			if(sum!=0){
+				try {
+					String sErrMsg = "\u8BE5\u6295\u8D44\u8C03\u6574\u5355\u7684\u8C03\u6574\u91D1\u989D\u548C\u4E0D\u4E3A\u96F6\uFF0C\u8BF7\u4FEE\u6539\u8C03\u6574\u91D1\u989D!";
+					${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+				} catch (Exception e) {
+					throw new Exception(e.getMessage());
+
+				}
+				return 1;
+			}
+			return 0;
+		}else {
+			try {
+				String sErrMsg = "\u8BF7\u5728\u53D7\u5F71\u54CD\u9879\u91CC\u9762\u6DFB\u52A0\u9700\u8981\u8C03\u6574\u7684\u6295\u8D44\u9879!";
+				${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+			} catch (Exception e) {
+				throw new Exception(e.getMessage());
+
+			}
+			return 1;
+		}
+	}
+    public void updateSEMBudgetChangeNumber(Context context, String[] args){
+    try{
+       HashMap param=JPO.unpackArgs(args);
+ 	   HashMap paramMap=(HashMap) param.get("paramMap");
+ 	   String newValue=(String) paramMap.get("New Value");
+ 	   String relId = (String)paramMap.get("relId"); //add by zs 5/10/2017
+ 	   String objID=(String) paramMap.get("objectId");
+ 	   DomainObject strObj=new DomainObject(objID);
+	   ContextUtil.pushContext(context);
+ 	   String name=strObj.getName(context);
+ 	   String planCost=strObj.getAttributeValue(context,"Planned Cost");
+	   double doublePlanCost = Double.parseDouble(planCost);
+	   MapList CQList=strObj.getRelatedObjects(context,"SEM CostRequest Budget","*",busList,relList,false,true,(short)1,"" ,"");
+	   Iterator x = CQList.iterator();
+	   double budgetCost1=0.0;
+	   while(x.hasNext())
+	   {
+			Map map2 = (Map)x.next();
+			String CQId = (String)map2.get("id");
+			DomainObject CQObj = new DomainObject(CQId);
+			String strContractCost = CQObj.getAttributeValue(context,"SEM Contract Amount");
+			double doubleContractCost = Double.parseDouble(strContractCost);
+			String strRequestCost = CQObj.getAttributeValue(context,"SEM Request Amount");
+			double doubleRequestCost = Double.parseDouble(strRequestCost);
+			if(doubleContractCost==0.0)
+			{
+				budgetCost1 +=doubleRequestCost;
+			}else{
+				budgetCost1 +=doubleContractCost;
+			}
+	   }
+	   double returnValue = doublePlanCost - budgetCost1;
+	   String d = String.format("%.2f", returnValue);
+	   double res=Double.parseDouble(newValue);
+	  // System.out.println("res=="+res);
+	   if(res<0&&(res+returnValue)<-0.01){
+		   try {
+				String sErrMsg = "\u6295\u8D44\u9879"+name+"\u8C03\u51CF\u91D1\u989D\u4E0D\u80FD\u5927\u4E8E\u6295\u8D44\u4F59\u989D!";
+				${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+			} catch (Exception e) {
+				throw new Exception(e.getMessage());
+
+			}
+		   return;
+	   }
+	   //mod by zs 5/10/2017
+ 	 //  MapList mapList=strObj.getRelatedObjects(context,"SEM Affected Budget","SEM BudgetChange Request",busList,relList,true,false,(short)1,null,null);
+ 	  // if(mapList.size()>0){
+
+ 		//  Map map=(Map) mapList.get(0);
+ 		//   String relId=(String) map.get("id[connection]");
+ 		   DomainRelationship relObj=new DomainRelationship(relId);
+ 		   if(res>0){
+ 			  relObj.setAttributeValue(context,"SEM BudgetChange Type","\u8C03\u589E");
+ 		   }else{
+ 			  relObj.setAttributeValue(context,"SEM BudgetChange Type","\u8C03\u51CF"); 
+ 		   }
+ 		   relObj.setAttributeValue(context,"SEM BudgetChange Number",newValue);
+ 	 //  }
+	 //end
+    }catch(Exception e){
+    	m_rootLogger.error(e.getMessage(), e);
+	        
+    }finally{
+    	try{
+    	  ContextUtil.popContext(context);
+    	}catch(Exception e){
+    		m_rootLogger.error(e.getMessage(), e);
+        }
+    }
+   }
+}
+

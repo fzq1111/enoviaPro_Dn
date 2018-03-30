@@ -1,0 +1,48 @@
+var params = proc.declareParameters(["type", "vault", "select"], ["label", "where", "orderby", "limit", "dump", "notsubstitute", "format", "escape"]);
+
+var cmd = "query connection type $1 vault $2";
+params.addVars([type, vault]);
+if (where)
+{
+	if (params.getBoolean("escape"))
+		where = "escape " + where;	
+	cmd += " where " + params.addVar(where);
+}
+if (orderby)
+	cmd += " orderby" + params.addVar(orderby);
+
+if (limit)
+	cmd += " limit" + params.addVar(limit);
+
+cmd += " select";
+if (dump || params.getBoolean("notsubstitute"))
+	cmd += " notsubstitute";
+
+cmd += params.addVars(JSON.parse(select));
+
+if (dump)
+	cmd += " dump" + params.addVar(dump);
+
+if (format) {
+    switch (format) {
+        case "tcl":
+            cmd += " tcl";
+            break;
+        case "json":
+            cmd += " json";
+            break;
+        case "txt":
+            break;
+        default:
+            proc.write(label, null, "format " + format + " not supported");
+            ok = false;
+    }
+}
+else {
+   cmd += " tcl";
+}
+
+mql.startTransaction(false);
+mql.execute(label, cmd, params);
+mql.abortTransaction();
+

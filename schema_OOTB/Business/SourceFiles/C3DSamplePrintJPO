@@ -1,0 +1,50 @@
+/*
+**  C3DSamplePrintJPO
+**
+**  Copyright Dassault Systemes, 1992-2011.
+**  All Rights Reserved.
+**  This program contains proprietary and trade secret information of Dassault Systemes and its 
+**  subsidiaries, Copyright notice is precautionary only
+**  and does not evidence any actual or intended publication of such program
+**
+**  Sample JPO Program for watermark and header, footer printing from AutoVue
+**  Currently JPO is configured to return format
+*/
+
+import java.util.Vector;
+
+import matrix.db.BusinessType;
+import matrix.db.BusinessTypeItr;
+import matrix.db.BusinessTypeList;
+import matrix.db.Context;
+import matrix.db.JPO;
+
+
+public class ${CLASSNAME}
+{
+	public ${CLASSNAME}()
+	{
+	}
+
+	public ${CLASSNAME} (Context context, String[] args) throws Exception
+	{
+		
+	}
+
+	//this method must return String
+	public String execute(Context context, String[] args)throws Exception
+	{
+		String returnStr = "";
+
+		String busId     = args[0];
+		String fileName  = args[1];
+		String format    = args[2];
+
+		//Currently JPO returns format of business object which is opened through AutoVue.
+		//Although user can configured JPO with business logic, to return a value for printing Header, footer and watermarks.
+
+		return format;
+	}
+}
+
+

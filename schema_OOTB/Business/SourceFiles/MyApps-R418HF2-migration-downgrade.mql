@@ -1,0 +1,8 @@
+tcl;
+eval {
+	puts "Start MyApps migrate HF2 downgrade"
+
+	puts "End MyApps migrate HF2 downgrade"
+	exit 0
+}
+

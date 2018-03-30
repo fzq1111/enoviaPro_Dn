@@ -1,0 +1,49 @@
+# File: TeamEngineering-Security-MD-R418HF2-downgrade.mql
+# Description: This file downgrades VPLM security data from R418 HF2 to R418 GA for One-Click
+#
+# MBH 15:10:29 Created file
+# MBH 15:10:29 IR-405220-3DEXPERIENCER2016x : Datasetup - CS visibility for any org
+# MBH 15:10:29 IR-403392-3DEXPERIENCER2016x : Datasetup - Too much visibility on CS
+# MBH 15:11:26 TSK2207688 : Action Flow trigger on promote/demote check
+
+# IR-405220-3DEXPERIENCER2016x
+# IR-403392-3DEXPERIENCER2016x
+modify policy VPLM_PosResourceRef
+   state DEFAULT
+      login VPLMLocalCrossOrgContextAccess key CorporateResourceReadAccess read,show related organization filter "name == 'TeamCorporate'"
+      public key ProjectResourcePublicReadAccess read,show localfilter "(project == const 'Default') && (type == 'PLMPosProjectResourceMngtRef')";
+
+# TSK2207688
+tcl;
+eval {
+  source "$env(INSTALL_TCL_PROGRAMS_DIR)/VPLMxCommon-PnOSecurity-MD-Utilities-R418.tcl"
+
+  #Remove new CA trigger
+  set TriggerName "PolicyChangeActionPromoteCheck";
+  set States "PRIVATE|IN_WORK|FROZEN|RELEASED|OBSOLETE"
+  set Policies "VPLM_SMB_Definition|VPLM_SMB_Definition_Document|VPLM_SMB_Evaluation|VPLM_SMB_Resource"
+  set lSta [split $States "|"]
+  set lPol [split $Policies "|"]
+  foreach sPol $lPol {
+    foreach sSta $lSta {
+      removeTriggerProgramParameterFromPolicyState "$sPol" "$sSta" "Promote" "check" "PromoteCheck" "$TriggerName"
+
+      if {$sSta == "FROZEN"} {
+        removeTriggerProgramParameterFromPolicyState "$sPol" "$sSta" "Demote" "check" "DemoteCheck" "$TriggerName"
+      } 
+    }
+  }
+
+  #Install obsolete CA trigger
+  set TriggerName "PolicyToStateReleaseObsoleteChangePromoteCheck";
+  set States "IN_WORK|FROZEN|RELEASED"
+  set lSta [split $States "|"]
+  foreach sPol $lPol {
+    foreach sSta $lSta {
+      set paramValue [appendTriggerProgramParameterToPolicyState "$sPol" "$sSta" "PromoteCheck" "$TriggerName"]
+      mql modify policy "$sPol" state "$sSta" add trigger "Promote" check "emxTriggerManager" input "$paramValue";
+    }
+  }
+}
+exit
+

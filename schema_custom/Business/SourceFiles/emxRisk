@@ -1,0 +1,210 @@
+//
+// $Id: emxRisk.java.rca 1.6 Wed Oct 22 16:21:24 2008 przemek Experimental przemek $ 
+//
+// emxRisk.java
+//
+// Copyright (c) 2002-2015 Dassault Systemes.
+// All Rights Reserved
+// This program contains proprietary and trade secret information of
+// MatrixOne, Inc.  Copyright notice is precautionary only and does
+// not evidence any actual or intended publication of such program.
+//
+
+import java.util.HashMap;
+
+import com.matrixone.apps.domain.util.MapList;
+import java.util.Map;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+
+import matrix.util.StringList;
+import java.util.Iterator;
+import matrix.db.*;
+import java.util.Vector;
+
+/**
+ * The <code>emxRisk</code> class represents the Risk JPO
+ * functionality for the AEF type.
+ *
+ * @version AEF 10.0.SP4 - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxRiskBase}
+{
+
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF 10.0.SP4
+     * @grade 0
+     */
+	StringList busList = new StringList("id");
+    StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	private static final int slash = 92;   // ASCII 92 == '\\'
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+    //add related Task
+  	public MapList getSEMRelatedTask(Context context,String[] args)throws Exception
+  	{
+  		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+  		String objectId = (String)paramMap.get("objectId");
+  		DomainObject strTaskObj = new DomainObject(objectId);		
+  		MapList mapList = strTaskObj.getRelatedObjects(context,"Risk","Task Management",busList,relList,false,true,(short)1,"","");
+  		return mapList;
+  	}
+  	public StringList includeProjectSpace(Context context,String[] args)throws Exception
+  	{
+  		StringList includeIdList = new StringList();
+  		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+  		String objectId = (String)paramMap.get("objectId");
+  		try{
+  		DomainObject costitemObj = new DomainObject(objectId);
+   		MapList mapList=costitemObj.getRelatedObjects(context,"Risk,Subtask","Project Space,Task Management",busList, relList,true,false, (short)0,null, null);
+   		Iterator items=mapList.iterator();
+   		while(items.hasNext()){
+   			Map map=(Map) items.next();
+   			String id=(String)map.get("id");
+   			DomainObject obj=new DomainObject(id);
+   			String type=obj.getType(context);
+   			if(type.equals("Project Space")){
+   		      includeIdList.add(id);
+   		      break;
+   			}
+   		}
+   		}catch(Exception e){
+  			e.printStackTrace();
+  		}
+   		return includeIdList;
+  	}//
+  	public void updateRiskAssignee(Context context,String[] args)throws Exception
+  	{
+  		 try{
+ 			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+ 			HashMap paramMap = (HashMap) programMap.get("paramMap");
+ 			HashMap requestMap = (HashMap) programMap.get("requestMap");
+ 			String objectId = (String) paramMap.get("objectId");// get the task Id
+ 			String newValue = (String) paramMap.get("New Value");//Get the dependency entered by the user.Eg:Project1:1:FS+5, 2:SF-5, 4:SS
+ 			ContextUtil.pushContext(context);
+ 			DomainObject strTaskObj = new DomainObject(objectId);
+ 			MapList personList =strTaskObj.getRelatedObjects(context,"Assigned Risk","Person",busList,relList,true,false,(short)1,"","");
+ 			Iterator it = personList.iterator();
+ 			while(it.hasNext())
+ 			{
+ 				Map personMap = (Map)it.next();
+ 				String relId = (String)personMap.get("id[connection]");
+ 				DomainRelationship.disconnect(context, relId);
+ 			}
+ 			if(!newValue.equals("")&&newValue.length()>0){
+				String[] names=newValue.split(String.format("%c", slash)+"|");
+				for(int i=0;i<names.length;i++){
+					String personId =PersonUtil.getPersonObjectID(context,names[i]);
+				  	if(personId.length()>0)
+				    {
+							DomainObject strPersonObj = new DomainObject(personId);
+							DomainRelationship del = strTaskObj.connectFrom(context,"Assigned Risk",strPersonObj); 
+				    }
+				}
+			}
+ 		 }catch(Exception e){
+ 			 e.printStackTrace();
+ 		 }finally{
+ 			 ContextUtil.popContext(context);
+ 		 }
+  	}
+  	//table
+  	public StringList getColumnPersonIcon(Context context, String args[]) throws Exception {
+
+		Map programMap = (Map) JPO.unpackArgs(args);
+		MapList objectList = (MapList) programMap.get("objectList");
+		
+	       HashMap paramMap          = (HashMap) programMap.get("paramList");
+           String exportFormat       = (String) paramMap.get("exportFormat");
+           boolean isPrinterFriendly = false;
+           Map paramList             = (Map) programMap.get("paramList");
+           String PrinterFriendly    = (String) paramList.get("reportFormat");
+
+           if(PrinterFriendly != null)
+           {
+               isPrinterFriendly = true;
+           }
+		
+		StringList vecResult = new StringList();
+		String strIcon = EMPTY_STRING;
+		Map riskMap = null;
+		String riskId = EMPTY_STRING;
+		String strRelationshipPattern = RELATIONSHIP_ASSIGNED_RISK;
+		String strTypePattern = TYPE_PERSON;
+
+		StringList slBusSelect = new StringList();
+		slBusSelect.add(SELECT_ID);
+		slBusSelect.add(SELECT_NAME);
+
+		StringList slRelSelect = new StringList();
+		slRelSelect.add(DomainRelationship.SELECT_ID);
+		boolean getTo = true; 
+		boolean getFrom = false; 
+		short recurseToLevel = 1;
+		String strBusWhere = "";
+		String strRelWhere = "";
+
+		for(Object objectMap : objectList) {
+			
+			riskMap = (Map) objectMap;
+			riskId = (String)riskMap.get("id");
+			String strRelId = (String)riskMap.get(SELECT_RELATIONSHIP_ID); 
+			DomainObject risk = DomainObject.newInstance(context,riskId);
+			String objectType = risk.getInfo(context, SELECT_TYPE);
+			//if(risk.isKindOf(context, TYPE_PROJECT_SPACE) || risk.isKindOf(context, TYPE_PERSON)){
+				if(objectType.equalsIgnoreCase(TYPE_PROJECT_SPACE) || objectType.equalsIgnoreCase(TYPE_PERSON)) {
+				vecResult.add("");
+			} else {
+				MapList mlRequestPersonList = risk.getRelatedObjects(context,strRelationshipPattern,
+																	strTypePattern,slBusSelect,
+																	slRelSelect,getTo,
+																	getFrom,recurseToLevel,
+																	strBusWhere,strRelWhere,0); 
+				int personInfoSize = mlRequestPersonList.size();
+				if(mlRequestPersonList.size()>0) {
+					StringBuffer strNameBuffer = new StringBuffer();
+					for (int i=0;i<personInfoSize;i++) {
+						Map mapRequestPersonInfo = (Map) mlRequestPersonList.get(i);
+						String personFullName = PersonUtil.getFullName(context,(String)mapRequestPersonInfo.get(SELECT_NAME)).replace(",", " ");
+						//personFullName = XSSUtil.encodeForHTML(context,(personFullName));
+						 if((exportFormat != null)
+	                                && (exportFormat.length() > 0)
+	                                && ("CSV".equals(exportFormat)))
+	                        {
+							 strNameBuffer.append(personFullName);
+	                        }
+						 else{
+							 strNameBuffer.append(personFullName);
+						 }
+						 						
+						if(i<personInfoSize-1) {
+							strNameBuffer.append(", ");
+						}
+					}
+					
+					StringBuffer strHTMLBuffer = new StringBuffer();
+					strHTMLBuffer.append(strNameBuffer);
+					strIcon = strHTMLBuffer.toString();
+				}
+				else {
+					strIcon = "";
+				}
+				String strIconURL = FrameworkUtil.findAndReplace(strIcon,"&","&#38;");
+				vecResult.add(strIcon);
+			}
+		}
+		return vecResult;
+	}
+}
+

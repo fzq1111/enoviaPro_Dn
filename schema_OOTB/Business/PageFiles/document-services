@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ds:services xmlns:ds="http://www.3ds.com/enovia/e6wv2"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.3ds.com/enovia/e6wv2 servicesv2.xsd">
+
+    <ds:service name="documents">
+        <ds:data>
+            <ds:jpo classname="com.dassault_systemes.enovia.document.DocumentService" function="getDocuments" returnedData="idsAndData"/>
+            <ds:updatejpo classname="com.dassault_systemes.enovia.document.DocumentService" function="updateDocuments"/>
+        </ds:data>
+        <ds:field name="name"><ds:selectable expression="name" type="bus"/></ds:field>
+        <ds:field name="policy"><ds:selectable expression="policy" type="bus"/></ds:field>
+        <ds:field name="revision"><ds:selectable expression="revision" type="bus"/></ds:field>
+        <ds:field name="title"><ds:selectable expression="attribute[attribute_Title]" type="bus"/></ds:field>
+        <ds:field name="description"><ds:selectable expression="description" type="bus"/></ds:field>
+        <ds:field name="collabspace"><ds:selectable expression="project" type="bus"/></ds:field>
+        <ds:field name="originated"><ds:selectable expression="originated" type="bus" format="utc"/></ds:field>
+        <ds:field name="modified"><ds:selectable expression="modified" type="bus" format="utc"/></ds:field>
+        <ds:field name="hasModifyAccess"><ds:selectable expression="current.access[modify,checkin]" type="bus"/></ds:field>
+        <ds:field name="hasDeleteAccess"><ds:selectable expression="current.access[delete]" type="bus"/></ds:field>
+        <ds:field name="parentId"><ds:selectable type="key"/></ds:field>
+        <ds:field name="parentRelName"><ds:selectable type="key"/></ds:field>
+        <ds:field name="parentDirection"><ds:selectable type="key"/></ds:field>
+        <!-- Used to calculate the file size in the files sub-service. -->
+        <ds:field name="fileName"><ds:selectable expression="format.file.name" type="bus" format="transient" multivalue="true"/></ds:field>
+        <ds:field name="fileSize"><ds:selectable expression="format.file.size" type="bus" format="transient" multivalue="true"/></ds:field>
+        <ds:field name="image"><ds:image source="primaryOrType" size="thumbnail" /></ds:field>
+        <ds:field name="imageId"><ds:selectable expression="to[Image Holder].from.id" type="bus"/></ds:field>
+        <!-- can be passed in the case multiple file check-in with one receipt. -->
+        <ds:field name="receipt"><ds:selectable type="key"/></ds:field>
+
+        <ds:subservice name="parentId" includeByDefault="never">
+            <ds:data>
+                <ds:jpo classname="com.dassault_systemes.enovia.document.DocumentService" function="getRelatedDocuments" returnedData="idsAndData"/>
+            </ds:data>
+        </ds:subservice>
+
+        <ds:subservice name="DownloadTicket" includeByDefault="never">
+            <ds:data>
+                <ds:updatejpo classname="com.dassault_systemes.enovia.document.DocumentService" function="requestDownloadTicket">
+                    <ds:arg arg-name="action" arg-value="download"/>
+                    <ds:arg arg-name="level" arg-value="document-level"/>
+                </ds:updatejpo>
+            </ds:data>
+            <ds:ref-subservice name="ticket-fields"/>
+        </ds:subservice>
+
+        <ds:subservice name="files" includeByDefault="yes">
+            <ds:data>
+                <ds:jpo classname="com.dassault_systemes.enovia.document.DocumentService" function="getFiles" returnedData="idsAndData"/>
+                <ds:updatejpo classname="com.dassault_systemes.enovia.document.DocumentService" function="updateFiles" processMultiple="true"/>
+            </ds:data>
+            <ds:ref-subservice name="file-fields"/>
+            <ds:field name="fileSize">
+              <ds:selectable expression="attribute[Title]" type="bus"/>
+              <ds:fieldjpo classname="com.dassault_systemes.enovia.document.DocumentService" function="getFileSize"/>
+            </ds:field>
+
+            <ds:subservice name="versions" includeByDefault="no">
+                <ds:data>
+                    <ds:jpo classname="com.dassault_systemes.enovia.document.DocumentService" function="getVersions" returnedData="idsAndData"/>
+                    <ds:updatejpo classname="com.dassault_systemes.enovia.document.DocumentService" function="updateVersions" />
+                </ds:data>
+                <ds:ref-subservice name="file-fields"/>
+                <ds:field name="fileSize">
+                  <ds:selectable expression="format.file.size" type="bus"/>
+                  <ds:fieldjpo classname="com.dassault_systemes.enovia.document.DocumentService" function="getVersionFileSize"/>
+                </ds:field>
+
+                <ds:subservice name="DownloadTicket" includeByDefault="never">
+                    <ds:data>
+                        <ds:updatejpo classname="com.dassault_systemes.enovia.document.DocumentService" function="requestDownloadTicket" >
+                            <ds:arg arg-name="level" arg-value="version-level"/>
+                            <ds:arg arg-name="action" arg-value="download"/>
+                        </ds:updatejpo>
+                    </ds:data>
+                    <ds:ref-subservice name="ticket-fields"/>
+                </ds:subservice>
+            </ds:subservice>
+
+            <ds:subservice name="DownloadTicket" includeByDefault="never">
+                <ds:data>
+                    <ds:updatejpo classname="com.dassault_systemes.enovia.document.DocumentService" function="requestDownloadTicket">
+                        <ds:arg arg-name="action" arg-value="download"/>
+                        <ds:arg arg-name="level" arg-value="file-level"/>
+                    </ds:updatejpo>
+                </ds:data>
+                <ds:ref-subservice name="ticket-fields"/>
+            </ds:subservice>
+
+            <ds:subservice name="CheckinTicket" includeByDefault="never">
+                <ds:data csrf="false">
+                    <ds:updatejpo classname="com.dassault_systemes.enovia.document.DocumentService" function="requestCheckinTicket">
+                        <ds:arg arg-name="action" arg-value="checkin"/>
+                        <ds:arg arg-name="level" arg-value="file-level"/>
+                    </ds:updatejpo>
+                </ds:data>
+                <ds:ref-subservice name="ticket-fields"/>
+            </ds:subservice>
+
+            <ds:subservice name="CheckoutTicket" includeByDefault="never">
+                <ds:data>
+                    <ds:updatejpo classname="com.dassault_systemes.enovia.document.DocumentService" function="requestDownloadTicket">
+                        <ds:arg arg-name="action" arg-value="checkout"/>
+                        <ds:arg arg-name="level" arg-value="file-level"/>
+                    </ds:updatejpo>
+                </ds:data>
+                <ds:ref-subservice name="ticket-fields"/>
+            </ds:subservice>
+
+        </ds:subservice>
+    </ds:service>
+
+    <ds:service name="file-fields">
+        <ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus"/></ds:field>
+        <ds:field name="comments"><ds:selectable expression="attribute[Checkin Reason]" type="bus"/></ds:field>
+        <ds:field name="locker"><ds:selectable expression="locker" type="bus"/></ds:field>
+        <ds:field name="fileType"><ds:selectable expression="attribute[File Type]" type="bus"/></ds:field>
+        <ds:field name="dimension"><ds:selectable expression="attribute[File Dimension]" type="bus"/></ds:field>
+        <ds:field name="length"><ds:selectable expression="attribute[File Duration]" type="bus"/></ds:field>
+        <ds:field name="created"><ds:selectable expression="attribute[File Created Date]" type="bus" format="utc"/></ds:field>
+        <ds:field name="modified"><ds:selectable expression="attribute[File Modified Date]" type="bus" format="utc"/></ds:field>
+        <ds:field name="receipt"><ds:selectable type="key"/></ds:field>
+        <ds:field name="keepLocked"><ds:selectable type="key"/></ds:field>
+        <ds:field name="format"><ds:selectable type="key"/></ds:field>
+        <ds:field name="store"><ds:selectable type="key"/></ds:field>
+    </ds:service>
+
+    <ds:service name="ticket-fields">
+        <ds:field name="ticketURL"><ds:selectable type="key"/></ds:field>
+        <ds:field name="ticket"><ds:selectable type="key"/></ds:field>
+        <ds:field name="ticketparamname"><ds:selectable type="key"/></ds:field>
+        <ds:field name="fileName"><ds:selectable type="key"/></ds:field>
+    </ds:service>
+
+</ds:services>
+

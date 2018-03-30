@@ -1,0 +1,642 @@
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.log4j.Logger;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UINavigatorUtil;
+
+public class ${CLASSNAME} {
+
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	public ${CLASSNAME}(Context context, String[] args)throws Exception 
+	{
+		
+	}
+	public static MapList searchSEMDrawingPlan(Context context, String[] args)
+			throws Exception {
+		MapList dataList=new MapList();
+		try{			
+		StringList busList = new StringList(DomainConstants.SELECT_ID);
+		busList.add(DomainConstants.SELECT_NAME);
+		busList.add(DomainObject.SELECT_TYPE);
+		busList.add("attribute[SEM Part Revision]");
+		busList.add(DomainObject.SELECT_DESCRIPTION);
+	    busList.add("attribute[SEM Is NewPart]");
+	    busList.add("attribute[SEM Need AdvPcue]");
+	    busList.add("attribute[Task Estimated Finish Date]");	    
+	    busList.add("attribute[Task Actual Finish Date]");
+	    busList.add("attribute[SEM Remark]");
+	    busList.add("attribute[SEM Need DevConcept]");
+	    busList.add("attribute[SEM DevConcept NO]");
+	    busList.add("attribute[SEM Issue EO]");
+	    busList.add("attribute[SEM Drawing NO]");
+	    busList.add("attribute[SEM Drawing Revision]");
+	    busList.add("attribute[SEM Supplier]");
+	    busList.add("attribute[SEM Dep]");
+	    busList.add("attribute[SEM Institute Owner]");
+	    busList.add("attribute[SEM Dev Owner]");
+	    busList.add("attribute[SEM Remark]");
+	    StringList relList = new StringList("id[connection]");
+	    relList.add("attribute[SEM Sequence]");
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		String objectId = (String) programMap.get("objectId");
+		DomainObject projectObj=new DomainObject(objectId);
+		MapList partTaskList = projectObj.getRelatedObjects(context,
+				"SEM Related DrwTask,SEM Project PartTask,SEM SubPart","SEM Part Task", busList, relList, false,
+				true, (short) 0, "", "");
+		if(partTaskList!=null&&partTaskList.size()!=0)
+		{
+		for(int i=0;i<partTaskList.size();i++)
+		{
+			Map partTaskMAP =(Map)partTaskList.get(i);
+			String leveltemp=(String)partTaskMAP.get("level");
+			String  level;
+			if(leveltemp.equals("1"))
+			{
+				level="";
+			}else
+			{
+				level=Integer.parseInt(leveltemp,10)-1+"";
+			}
+			String partTaskId = (String) partTaskMAP.get(DomainConstants.SELECT_ID);
+			String partTaskName=(String)partTaskMAP.get(DomainConstants.SELECT_NAME);
+			String partTaskRev = (String) partTaskMAP.get("attribute[SEM Part Revision]");
+			String partTaskDes = (String) partTaskMAP.get(DomainObject.SELECT_DESCRIPTION);
+			String isNewPart = (String) partTaskMAP.get("attribute[SEM Is NewPart]");
+			String NeedAdvPcue = (String) partTaskMAP.get("attribute[SEM Need AdvPcue]");
+			String Supplier = (String) partTaskMAP.get("attribute[SEM Supplier]");
+			String Dep = (String) partTaskMAP.get("attribute[SEM Dep]");
+			String InstituteOwner = (String) partTaskMAP.get("attribute[SEM Institute Owner]");
+			String DevOwner = (String) partTaskMAP.get("attribute[SEM Dev Owner]");
+			String Remark = (String) partTaskMAP.get("attribute[SEM Remark]");
+
+			DomainObject partTaskObj = new DomainObject(partTaskId);			
+			String wherecs = "name == '厂商定点'";
+			MapList SEMTaskItemCS = partTaskObj.getRelatedObjects(context,"SEM Related DrwTask","SEM Task Item", busList, relList,false,true, (short)1,wherecs,"");			
+			HashMap datamap=new HashMap();
+			datamap.put("level",level);
+			for(int j=0;j<SEMTaskItemCS.size();j++)
+			{ 
+				Map SEMTaskItemCSmap =(Map)SEMTaskItemCS.get(j);
+				String SEMTaskItemCSId = (String) SEMTaskItemCSmap.get(DomainConstants.SELECT_ID);
+				String SEMTaskItemCSName=(String)SEMTaskItemCSmap.get(DomainConstants.SELECT_NAME);
+				String TaskEFDCS = (String) SEMTaskItemCSmap.get("attribute[Task Estimated Finish Date]");
+				String TaskAFDCS=(String)SEMTaskItemCSmap.get("attribute[Task Actual Finish Date]");
+				String RemarkCS=(String)SEMTaskItemCSmap.get("attribute[SEM Remark]");
+				
+				datamap.put("TaskEFDCS",TaskEFDCS);
+				datamap.put("TaskAFDCS",TaskAFDCS);
+				datamap.put("RemarkCS",RemarkCS);					
+			}
+				String wheresj = "name == '设计构想书'";
+				MapList SEMTaskItemSJ = partTaskObj.getRelatedObjects(context,"SEM Related DrwTask","SEM Task Item", busList, relList,false,true, (short)1,wheresj,"");
+				System.out.println("SEMTaskItemSJ====="+SEMTaskItemSJ);
+				for(int j=0;j<SEMTaskItemSJ.size();j++)
+				{ 
+					Map SEMTaskItemSJmap =(Map)SEMTaskItemCS.get(j);
+					String SEMTaskItemSJId = (String) SEMTaskItemSJmap.get(DomainConstants.SELECT_ID);
+					String SEMTaskItemSJName=(String)SEMTaskItemSJmap.get(DomainConstants.SELECT_NAME);
+					String TaskEFDSJ = (String) SEMTaskItemSJmap.get("attribute[Task Estimated Finish Date]");
+					String TaskAFDSJ=(String)SEMTaskItemSJmap.get("attribute[Task Actual Finish Date]");
+					String NeedDevConceptSJ=(String)SEMTaskItemSJmap.get("attribute[SEM Need DevConcept]");
+					String DevConceptNOSJ=(String)SEMTaskItemSJmap.get("attribute[SEM DevConcept NO]");
+					
+					datamap.put("TaskEFDSJ",TaskEFDSJ);
+					datamap.put("TaskAFDSJ",TaskAFDSJ);
+					datamap.put("NeedDevConceptSJ",NeedDevConceptSJ);
+					datamap.put("DevConceptNOSJ",DevConceptNOSJ);
+				}
+				String wheredf = "name == '3D-F'";
+				MapList SEMTaskItemDF = partTaskObj.getRelatedObjects(context,"SEM Related DrwTask","SEM Task Item", busList, relList,false,true, (short)1,wheredf,"");
+				for(int j=0;j<SEMTaskItemDF.size();j++)
+				{ 
+					Map SEMTaskItemDFmap =(Map)SEMTaskItemCS.get(j);
+					String SEMTaskItemDFId = (String) SEMTaskItemDFmap.get(DomainConstants.SELECT_ID);
+					String SEMTaskItemDFName=(String)SEMTaskItemDFmap.get(DomainConstants.SELECT_NAME);
+					String TaskEFDDF = (String) SEMTaskItemDFmap.get("attribute[Task Estimated Finish Date]");
+					String TaskAFDDF=(String)SEMTaskItemDFmap.get("attribute[Task Actual Finish Date]");
+					String IssueEODF=(String)SEMTaskItemDFmap.get("attribute[SEM Issue EO]");
+					DomainObject SEMTaskItemDFObj = new DomainObject(SEMTaskItemDFId);
+					datamap.put("TaskEFDDF",TaskEFDDF);
+					datamap.put("TaskAFDDF",TaskAFDDF);
+					datamap.put("IssueEODF",IssueEODF);
+				}
+				String wheredp = "name == '3D-P'";
+				MapList SEMTaskItemDP = partTaskObj.getRelatedObjects(context,"SEM Related DrwTask","SEM Task Item", busList, relList,false,true, (short)1,wheredp,"");
+				for(int j=0;j<SEMTaskItemDP.size();j++)
+				{ 
+					Map SEMTaskItemDPmap =(Map)SEMTaskItemDP.get(j);
+					String SEMTaskItemDPId = (String) SEMTaskItemDPmap.get(DomainConstants.SELECT_ID);
+					String SEMTaskItemDPName=(String)SEMTaskItemDPmap.get(DomainConstants.SELECT_NAME);
+					String TaskEFDDP = (String) SEMTaskItemDPmap.get("attribute[Task Estimated Finish Date]");
+					String TaskAFDDP=(String)SEMTaskItemDPmap.get("attribute[Task Actual Finish Date]");
+					String IssueEODP=(String)SEMTaskItemDPmap.get("attribute[SEM Issue EO]");
+					datamap.put("IssueEODP",IssueEODP);
+					datamap.put("TaskAFDDP",TaskAFDDP);
+					datamap.put("TaskEFDDP",TaskEFDDP);
+					
+				}				
+				String whereys = "name == '设计仕样图'";
+				MapList SEMTaskItemYS = partTaskObj.getRelatedObjects(context,"SEM Related DrwTask","SEM Task Item", busList, relList,false,true, (short)1,whereys,"");
+				for(int j=0;j<SEMTaskItemYS.size();j++)
+				{ 
+					Map SEMTaskItemYSmap =(Map)SEMTaskItemYS.get(j);
+					String SEMTaskItemYSId = (String) SEMTaskItemYSmap.get(DomainConstants.SELECT_ID);
+					String SEMTaskItemYSName=(String)SEMTaskItemYSmap.get(DomainConstants.SELECT_NAME);
+					String DrawingNOYS = (String) SEMTaskItemYSmap.get("attribute[SEM Drawing NO]");
+					String DrawingRevisionYS = (String) SEMTaskItemYSmap.get("attribute[SEM Drawing Revision]");
+					String TaskEFDYS = (String) SEMTaskItemYSmap.get("attribute[Task Estimated Finish Date]");
+					String TaskAFDYS=(String)SEMTaskItemYSmap.get("attribute[Task Actual Finish Date]");
+					String IssueEOYS=(String)SEMTaskItemYSmap.get("attribute[SEM Issue EO]");
+					datamap.put("DrawingNOYS",DrawingNOYS);
+					datamap.put("DrawingRevisionYS",DrawingRevisionYS);
+					datamap.put("TaskEFDYS",TaskEFDYS);
+					datamap.put("TaskAFDYS",TaskAFDYS);
+					datamap.put("IssueEOYS",IssueEOYS);
+					
+				}
+				
+				String wherebp= "name == '部品图'";
+				MapList SEMTaskItemBP = partTaskObj.getRelatedObjects(context,"SEM Related DrwTask","SEM Task Item", busList, relList,false,true, (short)1,wherebp,"");
+				for(int j=0;j<SEMTaskItemBP.size();j++)
+				{ 
+					Map SEMTaskItemBPmap =(Map)SEMTaskItemBP.get(j);
+					String SEMTaskItemBPId = (String) SEMTaskItemBPmap.get(DomainConstants.SELECT_ID);
+					String SEMTaskItemBPName=(String)SEMTaskItemBPmap.get(DomainConstants.SELECT_NAME);
+					String DrawingNOBP = (String) SEMTaskItemBPmap.get("attribute[SEM Drawing NO]");
+					String DrawingRevisionBP = (String) SEMTaskItemBPmap.get("attribute[SEM Drawing Revision]");
+					String TaskEFDBP = (String) SEMTaskItemBPmap.get("attribute[Task Estimated Finish Date]");
+					String TaskAFDBP=(String)SEMTaskItemBPmap.get("attribute[Task Actual Finish Date]");
+					String IssueEOBP=(String)SEMTaskItemBPmap.get("attribute[SEM Issue EO]");
+					datamap.put("DrawingNOBP",DrawingNOBP);
+					datamap.put("DrawingRevisionBP",DrawingRevisionBP);
+					datamap.put("TaskEFDBP",TaskEFDBP);
+					datamap.put("TaskAFDBP",TaskAFDBP);
+					datamap.put("IssueEOBP",IssueEOBP);
+					
+				}				
+				String wherezl= "name == '组立图'";
+				MapList SEMTaskItemZL = partTaskObj.getRelatedObjects(context,"SEM Related DrwTask","SEM Task Item", busList, relList,false,true, (short)1,wherezl,"");
+				for(int j=0;j<SEMTaskItemZL.size();j++)
+				{ 
+					Map SEMTaskItemZLmap =(Map)SEMTaskItemZL.get(j);
+					String SEMTaskItemZLId = (String) SEMTaskItemZLmap.get(DomainConstants.SELECT_ID);
+					String SEMTaskItemZLName=(String)SEMTaskItemZLmap.get(DomainConstants.SELECT_NAME);
+					String DrawingNOZL = (String) SEMTaskItemZLmap.get("attribute[SEM Drawing NO]");
+					String DrawingRevisionZL = (String) SEMTaskItemZLmap.get("attribute[SEM Drawing Revision]");
+					String TaskEFDZL = (String) SEMTaskItemZLmap.get("attribute[Task Estimated Finish Date]");
+					String TaskAFDZL=(String)SEMTaskItemZLmap.get("attribute[Task Actual Finish Date]");
+					String IssueEOZL=(String)SEMTaskItemZLmap.get("attribute[SEM Issue EO]");
+					datamap.put("DrawingNOZL",DrawingNOZL);
+					datamap.put("DrawingRevisionZL",DrawingRevisionZL);
+					datamap.put("TaskEFDZL",TaskEFDZL);
+					datamap.put("TaskAFDZL",TaskAFDZL);
+					datamap.put("IssueEOZL",IssueEOZL);					
+				}				
+				String wherecr= "name == '承认图'";
+				MapList SEMTaskItemCR= partTaskObj.getRelatedObjects(context,"SEM Related DrwTask","SEM Task Item", busList, relList,false,true, (short)1,wherecr,"");
+				for(int j=0;j<SEMTaskItemCR.size();j++)
+				{ 
+					Map SEMTaskItemCRmap =(Map)SEMTaskItemCR.get(j);
+					String SEMTaskItemCRId = (String) SEMTaskItemCRmap.get(DomainConstants.SELECT_ID);
+					String SEMTaskItemCRName=(String)SEMTaskItemCRmap.get(DomainConstants.SELECT_NAME);
+					String TaskEFDCR = (String) SEMTaskItemCRmap.get("attribute[Task Estimated Finish Date]");
+					String TaskAFDCR=(String)SEMTaskItemCRmap.get("attribute[Task Actual Finish Date]");
+					String IssueEOCR=(String)SEMTaskItemCRmap.get("attribute[SEM Issue EO]");
+					datamap.put("TaskEFDCR",TaskEFDCR);
+					datamap.put("TaskAFDCR",TaskAFDCR);
+					datamap.put("IssueEOCR",IssueEOCR);					
+				}				
+				datamap.put("partTaskName",partTaskName);
+				datamap.put("partTaskRev",partTaskRev);	
+				datamap.put("partTaskDes",partTaskDes);	
+				datamap.put("isNewPart",isNewPart);
+				datamap.put("NeedAdvPcue",NeedAdvPcue);
+				datamap.put("Supplier",Supplier);
+				datamap.put("Dep",Dep);
+				datamap.put("InstituteOwner",InstituteOwner);
+				datamap.put("DevOwner",DevOwner);
+				datamap.put("Remark",Remark);
+				System.out.println("datamap====="+datamap);
+				dataList.add(datamap);
+		}
+		}
+		}catch(Exception e)
+		{
+			m_logger.error(e.getMessage(), e);
+			throw(e);
+		}
+		System.out.println("dataList==="+dataList);
+		return dataList;
+	}
+
+	public void fillSheetInfo(Context context,String[] titles,MapList dataList,HSSFWorkbook workbook) throws Exception {
+		try {	
+			int curRowIndex = 0;
+			int curDataIndex=0;
+			int maxRowCount = dataList.size();
+			int maxcolumnCount = titles.length;
+			int maxSheetRow = 60000;
+			int sheetNum = maxRowCount/maxSheetRow;
+			if(maxRowCount%maxSheetRow!=0){
+				sheetNum = sheetNum+1;
+			}
+			String sheetName;
+
+			HSSFCell LEVEL,SEMPartName,SEMPartRevision,SEMPartdescription,SEMIsNewPart,SEMNeedAdvPcue,ChangShangTaskEstimatedFinishDate,ChangShangTaskActualFinishDate,ChangShangSEMRemark,
+			ShejiSEMNeedDevConcept,ShejiSEMDevConceptNO,ShejiTaskEstimatedFinishDate,ShejiTaskActualFinishDate,DFEstimatedFinishDate,DFActualFinishDate,DFSEMIssueEO,DPTaskEstimatedFinishDate,
+			DPActualFinishDate,DPSEMIssueEO,SYSEMDrawingNO,SYSEMDrawingRevision,SYTaskEstimatedFinishDate,SYTaskActualFinishDate,SYSEMIssueEO,BPSEMDrawingNO,BPSEMDrawingRevision,BPTaskEstimatedFinishDate,
+			BPTaskActualFinishDate,BPSEMIssueEO,ZLSEMDrawingNO,ZLSEMDrawingRevision,ZLTaskEstimatedFinishDate,ZLTaskActualFinishDate,ZLSEMIssueEO,CRTaskEstimatedFinishDate,CRTaskActualFinishDate,
+			CRSEMIssueEO,SEMSupplier,SEMDep,SEMInstituteOwner,SEMDevOwner,SEMRemark;
+			HSSFCellStyle sheetStyle = workbook.createCellStyle();
+			sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);		
+			sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			
+			
+			HSSFFont columnHeadFont = workbook.createFont(); 
+			columnHeadFont.setColor(HSSFFont.COLOR_RED);
+			columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			
+			
+			HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook.createCellStyle();  
+			columnHeadStyle.setFont(columnHeadFont); 
+			columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			
+			for(int n=1;n<=sheetNum;n++)
+			{				
+				sheetName = "EPL\u660E\u7EC6\u8868"+n;
+				HSSFSheet sheet = workbook.createSheet(sheetName);
+				sheet.createFreezePane(1,1,1,1);				
+				for(int i=0;i<maxcolumnCount;i++)
+				{
+					sheet.setColumnWidth(i, 3000);
+				}
+				sheet.setColumnWidth(2, 3000);
+				sheet.setColumnWidth(3, 3000);
+				sheet.setColumnWidth(4, 3000);
+				sheet.addMergedRegion(new CellRangeAddress(0, 0, 0,3));
+				sheet.addMergedRegion(new CellRangeAddress(0, 0, 6,8));
+				sheet.addMergedRegion(new CellRangeAddress(0, 0, 9,12));
+				sheet.addMergedRegion(new CellRangeAddress(0, 0, 13,15));
+				sheet.addMergedRegion(new CellRangeAddress(0, 0, 16,18));
+				sheet.addMergedRegion(new CellRangeAddress(0, 0, 19,23));
+				sheet.addMergedRegion(new CellRangeAddress(0, 0, 24,28));
+				sheet.addMergedRegion(new CellRangeAddress(0, 0, 29,33));
+				sheet.addMergedRegion(new CellRangeAddress(0, 0, 34,38));
+				HSSFRow row = sheet.createRow(curRowIndex); 		
+				row.setHeight((short) 600);
+
+				HSSFCell cell0 = row.createCell(0);
+				cell0.setCellValue("DX7 17MY EPL\u5DEE\u5F02\u6E05\u5355");
+				cell0.setCellStyle(columnHeadStyle); 
+
+				HSSFCell cell6 = row.createCell(6);
+				cell6.setCellValue("\u5382\u5546\u5B9A\u70B9\u72B6\u51B5");
+				cell6.setCellStyle(columnHeadStyle); 
+				
+				HSSFCell cell9 = row.createCell(9);
+				cell9.setCellValue("\u8BBE\u8BA1\u6784\u60F3\u4E66");
+				cell9.setCellStyle(columnHeadStyle); 
+				
+				HSSFCell cell13 = row.createCell(13);
+				cell13.setCellValue("3D-F\u51BB\u7ED3\u65F6\u95F4");
+				cell13.setCellStyle(columnHeadStyle); 
+				
+				HSSFCell cell16 = row.createCell(16);
+				cell16.setCellValue("3D-P\u51BB\u7ED3\u65F6\u95F4");
+				cell16.setCellStyle(columnHeadStyle); 
+				
+				HSSFCell cell19 = row.createCell(19);
+				cell19.setCellValue("\u5F0F\u6837\u56FE\u51FA\u56FE\u65F6\u95F4\u7BA1\u5236");
+				cell19.setCellStyle(columnHeadStyle); 
+				
+				HSSFCell cell24 = row.createCell(24);
+				cell24.setCellValue("\u90E8\u54C1\u56FE\u51FA\u56FE\u65F6\u95F4\u7BA1\u5236");
+				cell24.setCellStyle(columnHeadStyle); 
+				
+				HSSFCell cell29 = row.createCell(29);
+				cell29.setCellValue("\u7EC4\u7ACB\u56FE\u51FA\u56FE\u65F6\u95F4\u7BA1\u5236");
+				cell29.setCellStyle(columnHeadStyle); 
+				
+				HSSFCell cell34 = row.createCell(34);
+				cell34.setCellValue("\u627F\u8BA4\u56FE\u7BA1\u63A7");
+				cell34.setCellStyle(columnHeadStyle); 
+
+				curRowIndex ++;
+				row =sheet.createRow(curRowIndex);
+				for(int i=0;i<maxcolumnCount;i++)
+				{
+					HSSFCell cellt = row.createCell(i);
+					cellt.setCellValue(titles[i]);
+					cellt.setCellStyle(columnHeadStyle); 
+				}
+				curRowIndex=curRowIndex+1;		
+				ContextUtil.pushContext(context);
+				
+				for(int i=0; i<maxSheetRow&&curDataIndex<maxRowCount; curDataIndex++,i++){
+					
+					row =sheet.createRow(curRowIndex); 
+					Map map = (Map) dataList.get(curDataIndex);
+					System.out.println("map======"+map);
+					
+					LEVEL = row.createCell(0);
+					LEVEL.setCellType(HSSFCell.CELL_TYPE_STRING);
+					LEVEL.setCellValue((String)map.get("level"));
+					LEVEL.setCellStyle(sheetStyle); 
+					
+					SEMPartName = row.createCell(1);
+					SEMPartName.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMPartName.setCellValue((String)map.get("partTaskName"));
+					SEMPartName.setCellStyle(sheetStyle); 
+					
+					SEMPartRevision = row.createCell(2);
+					SEMPartRevision.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMPartRevision.setCellValue((String)map.get("partTaskRev")); 
+					SEMPartRevision.setCellStyle(sheetStyle); 
+					
+					SEMPartdescription = row.createCell(3);
+					SEMPartdescription.setCellType(HSSFCell.CELL_TYPE_STRING);	
+					SEMPartdescription.setCellValue((String)map.get("partTaskDes"));
+					SEMPartdescription.setCellStyle(sheetStyle);
+					
+					SEMIsNewPart = row.createCell(4);
+					SEMIsNewPart.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMIsNewPart.setCellValue((String)map.get("isNewPart")); 
+					SEMIsNewPart.setCellStyle(sheetStyle);
+					
+					SEMNeedAdvPcue = row.createCell(5);
+					SEMNeedAdvPcue.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMNeedAdvPcue.setCellValue((String)map.get("NeedAdvPcue"));
+					SEMNeedAdvPcue.setCellStyle(sheetStyle);
+					
+					ChangShangTaskEstimatedFinishDate = row.createCell(6);
+					ChangShangTaskEstimatedFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ChangShangTaskEstimatedFinishDate.setCellValue(changeDate((String)map.get("TaskEFDCS"))); 
+					ChangShangTaskEstimatedFinishDate.setCellStyle(sheetStyle);
+					
+					ChangShangTaskActualFinishDate = row.createCell(7);
+					ChangShangTaskActualFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ChangShangTaskActualFinishDate.setCellValue(changeDate((String)map.get("TaskAFDCS"))); 
+					ChangShangTaskActualFinishDate.setCellStyle(sheetStyle);	
+					
+					ChangShangSEMRemark = row.createCell(8);
+					ChangShangSEMRemark.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ChangShangSEMRemark.setCellValue((String)map.get("RemarkCS")); 
+					ChangShangSEMRemark.setCellStyle(sheetStyle);	
+					
+					ShejiSEMNeedDevConcept = row.createCell(9);
+					ShejiSEMNeedDevConcept.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ShejiSEMNeedDevConcept.setCellValue((String)map.get("NeedDevConceptSJ")); 
+					ShejiSEMNeedDevConcept.setCellStyle(sheetStyle);	
+					
+					ShejiSEMDevConceptNO = row.createCell(10);
+					ShejiSEMDevConceptNO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					String SEMCostType = (String)map.get("DevConceptNOSJ");
+					ShejiSEMDevConceptNO.setCellValue((String)map.get("DevConceptNOSJ")); 
+					ShejiSEMDevConceptNO.setCellStyle(sheetStyle);	
+					
+					ShejiTaskEstimatedFinishDate = row.createCell(11);
+					ShejiTaskEstimatedFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ShejiTaskEstimatedFinishDate.setCellValue(changeDate((String)map.get("TaskEFDSJ"))); 
+					ShejiTaskEstimatedFinishDate.setCellStyle(sheetStyle);	
+					
+					ShejiTaskActualFinishDate = row.createCell(12);
+					ShejiTaskActualFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ShejiTaskActualFinishDate.setCellValue(changeDate((String)map.get("TaskAFDSJ"))); 
+					ShejiTaskActualFinishDate.setCellStyle(sheetStyle);	
+					
+					DFEstimatedFinishDate = row.createCell(13);
+					DFEstimatedFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					DFEstimatedFinishDate.setCellValue(changeDate((String)map.get("TaskEFDDF"))); 
+					DFEstimatedFinishDate.setCellStyle(sheetStyle);	
+					
+					DFActualFinishDate = row.createCell(14);
+					DFActualFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					DFActualFinishDate.setCellValue(changeDate((String)map.get("TaskAFDDF"))); 
+					DFActualFinishDate.setCellStyle(sheetStyle);	
+					
+					DFSEMIssueEO = row.createCell(15);
+					DFSEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					DFSEMIssueEO.setCellValue((String)map.get("IssueEODF")); 
+					DFSEMIssueEO.setCellStyle(sheetStyle);	
+																				
+					DPTaskEstimatedFinishDate = row.createCell(16);
+					DPTaskEstimatedFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					DPTaskEstimatedFinishDate.setCellValue(changeDate((String)map.get("TaskEFDDP"))); 
+					DPTaskEstimatedFinishDate.setCellStyle(sheetStyle);	
+					
+					DPActualFinishDate = row.createCell(17);
+					DPActualFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					DPActualFinishDate.setCellValue(changeDate((String)map.get("TaskAFDDP"))); 
+					DPActualFinishDate.setCellStyle(sheetStyle);	
+					
+					DPSEMIssueEO = row.createCell(18);
+					DPSEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					DPSEMIssueEO.setCellValue((String)map.get("IssueEODP")); 
+					DPSEMIssueEO.setCellStyle(sheetStyle);	
+															
+					SYSEMDrawingNO = row.createCell(19);
+					SYSEMDrawingNO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SYSEMDrawingNO.setCellValue((String)map.get("DrawingNOYS")); 
+					SYSEMDrawingNO.setCellStyle(sheetStyle);	
+					
+					SYSEMDrawingRevision = row.createCell(20);
+					SYSEMDrawingRevision.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SYSEMDrawingRevision.setCellValue((String)map.get("DrawingRevisionYS")); 
+					SYSEMDrawingRevision.setCellStyle(sheetStyle);	
+					
+					SYTaskEstimatedFinishDate = row.createCell(21);
+					SYTaskEstimatedFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SYTaskEstimatedFinishDate.setCellValue(changeDate((String)map.get("TaskEFDYS"))); 
+					SYTaskEstimatedFinishDate.setCellStyle(sheetStyle);	
+					
+					SYTaskActualFinishDate = row.createCell(22);
+					SYTaskActualFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SYTaskActualFinishDate.setCellValue(changeDate((String)map.get("TaskAFDYS"))); 
+					SYTaskActualFinishDate.setCellStyle(sheetStyle);	
+					
+					SYSEMIssueEO = row.createCell(23);
+					SYSEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SYSEMIssueEO.setCellValue((String)map.get("IssueEOYS")); 
+					SYSEMIssueEO.setCellStyle(sheetStyle);	
+										
+					BPSEMDrawingNO = row.createCell(24);
+					BPSEMDrawingNO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					BPSEMDrawingNO.setCellValue((String)map.get("DrawingNOBP")); 
+					BPSEMDrawingNO.setCellStyle(sheetStyle);	
+					
+					BPSEMDrawingRevision = row.createCell(25);
+					BPSEMDrawingRevision.setCellType(HSSFCell.CELL_TYPE_STRING);
+					BPSEMDrawingRevision.setCellValue((String)map.get("DrawingRevisionBP")); 
+					BPSEMDrawingRevision.setCellStyle(sheetStyle);	
+					
+					BPTaskEstimatedFinishDate = row.createCell(26);
+					BPTaskEstimatedFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					BPTaskEstimatedFinishDate.setCellValue(changeDate((String)map.get("TaskEFDBP"))); 
+					BPTaskEstimatedFinishDate.setCellStyle(sheetStyle);	
+					
+					BPTaskActualFinishDate = row.createCell(27);
+					BPTaskActualFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					BPTaskActualFinishDate.setCellValue(changeDate((String)map.get("TaskAFDBP"))); 
+					BPTaskActualFinishDate.setCellStyle(sheetStyle);	
+					
+					BPSEMIssueEO = row.createCell(28);
+					BPSEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					BPSEMIssueEO.setCellValue((String)map.get("IssueEOBP")); 
+					BPSEMIssueEO.setCellStyle(sheetStyle);	
+										
+					
+					ZLSEMDrawingNO = row.createCell(29);
+					ZLSEMDrawingNO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ZLSEMDrawingNO.setCellValue((String)map.get("DrawingNOZL")); 
+					ZLSEMDrawingNO.setCellStyle(sheetStyle);	
+					
+					ZLSEMDrawingRevision = row.createCell(30);
+					ZLSEMDrawingRevision.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ZLSEMDrawingRevision.setCellValue((String)map.get("DrawingRevisionZL")); 
+					ZLSEMDrawingRevision.setCellStyle(sheetStyle);	
+					
+					ZLTaskEstimatedFinishDate = row.createCell(31);
+					ZLTaskEstimatedFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ZLTaskEstimatedFinishDate.setCellValue(changeDate((String)map.get("TaskEFDZL"))); 
+					ZLTaskEstimatedFinishDate.setCellStyle(sheetStyle);	
+										
+					ZLTaskActualFinishDate = row.createCell(32);
+					ZLTaskActualFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ZLTaskActualFinishDate.setCellValue(changeDate((String)map.get("TaskAFDZL"))); 
+					ZLTaskActualFinishDate.setCellStyle(sheetStyle);	
+					
+					ZLSEMIssueEO = row.createCell(33);
+					ZLSEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					ZLSEMIssueEO.setCellValue((String)map.get("IssueEOZL")); 
+					ZLSEMIssueEO.setCellStyle(sheetStyle);	
+					
+					
+					CRTaskEstimatedFinishDate = row.createCell(36);
+					CRTaskEstimatedFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					CRTaskEstimatedFinishDate.setCellValue(changeDate((String)map.get("TaskEFDCR"))); 
+					CRTaskEstimatedFinishDate.setCellStyle(sheetStyle);	
+					
+					CRTaskActualFinishDate = row.createCell(37);
+					CRTaskActualFinishDate.setCellType(HSSFCell.CELL_TYPE_STRING);
+					CRTaskActualFinishDate.setCellValue(changeDate((String)map.get("TaskAFDCR"))); 
+					CRTaskActualFinishDate.setCellStyle(sheetStyle);	
+					
+					CRSEMIssueEO = row.createCell(38);
+					CRSEMIssueEO.setCellType(HSSFCell.CELL_TYPE_STRING);
+					CRSEMIssueEO.setCellValue((String)map.get("IssueEOCR")); 
+					CRSEMIssueEO.setCellStyle(sheetStyle);	
+					
+					SEMSupplier = row.createCell(39);
+					SEMSupplier.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMSupplier.setCellValue((String)map.get("Supplier")); 
+					SEMSupplier.setCellStyle(sheetStyle);	
+					
+					
+					SEMDep = row.createCell(40);
+					SEMDep.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMDep.setCellValue((String)map.get("Dep")); 
+					SEMDep.setCellStyle(sheetStyle);	
+					
+					SEMInstituteOwner = row.createCell(41);
+					SEMInstituteOwner.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMInstituteOwner.setCellValue((String)map.get("InstituteOwner")); 
+					SEMInstituteOwner.setCellStyle(sheetStyle);	
+					
+					SEMDevOwner = row.createCell(42);
+					SEMDevOwner.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMDevOwner.setCellValue((String)map.get("DevOwner")); 
+					SEMDevOwner.setCellStyle(sheetStyle);	
+					
+					SEMRemark = row.createCell(43);
+					SEMRemark.setCellType(HSSFCell.CELL_TYPE_STRING);
+					SEMRemark.setCellValue((String)map.get("Remark")); 
+					SEMRemark.setCellStyle(sheetStyle);	
+					
+					curRowIndex=curRowIndex+1;
+				}
+				curRowIndex = 0;
+			}//for sheet
+			
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw new FrameworkException(e);
+		}finally{
+			ContextUtil.popContext(context);
+		}
+	}		
+//exprot  
+	public void exportExcel(Context context,String[] args) {
+System.out.println("....exportExcel......start..");
+	 try{
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	    	MapList dataList = (MapList)programMap.get("dataList");
+	    	if(dataList==null||dataList.size()==0){
+	    		return;
+	    	}
+			HSSFWorkbook workbook = (HSSFWorkbook)programMap.get("workbook");
+            String[] titles = {"LEVEL","\u96F6\u4EF6\u53F7","\u7248\u672C","\u96F6\u4EF6\u540D\u79F0","\u662F\u5426\u65B0\u4EF6(Y/N)","\u662F\u5426\u9700\u8981\u63D0\u524D\u5B9A\u5382\u5546\uFF08Y/N\uFF09","\u8BA1\u5212\u5B9A\u5382\u5546\u65F6\u95F4","\u5B9E\u9645\u5B9A\u5382\u5546\u65F6\u95F4",
+            		"\u5382\u5546","\u662F\u5426\u9700\u8981\u53D1\u5E03\u8BBE\u8BA1\u6784\u60F3\uFF08Y/N\uFF09"," \u8BBE\u8BA1\u6784\u60F3\u4E66\u7F16\u53F7"," \u9884\u8BA1\u53D1\u5E03\u65E5\u671F"," \u5B9E\u9645\u53D1\u5E03\u65E5\u671F"," 3D\u9884\u8BA1\u51BB\u7ED3\u65F6\u95F4"," \u5B9E\u9645\u51BB\u7ED3\u65F6\u95F4"," EO\u53F7"," 3D\u9884\u8BA1\u51BB\u7ED3\u65F6\u95F4"," \u5B9E\u9645\u51BB\u7ED3\u65F6\u95F4"," EO\u53F7"," \u56FE\u53F7"," \u7248\u6B21"," \u9884\u8BA1\u53D1\u5E03\u65F6\u95F4"," \u5B9E\u9645\u53D1\u5E03\u65F6\u95F4"," EO\u53F7"," \u56FE\u53F7"," \u7248\u6B21"," \u9884\u8BA1\u53D1\u5E03\u65F6\u95F4",
+            		"\u5B9E\u9645\u53D1\u5E03\u65F6\u95F4"," EO\u53F7"," \u56FE\u53F7"," \u7248\u6B21"," \u9884\u8BA1\u53D1\u5E03\u65F6\u95F4"," \u5B9E\u9645\u53D1\u5E03\u65F6\u95F4"," EO\u53F7"," \u8BA1\u5212\u63D0\u56FE\u65F6\u95F4"," \u5B9E\u9645\u63D0\u56FE\u65F6\u95F4"," \u8BA1\u5212\u53D1\u56FE\u65F6\u95F4"," \u5B9E\u9645\u53D1\u5E03\u65F6\u95F4"," EO\u53F7"," \u4F9B\u5E94\u5546"," \u5355\u4F4D(\u8BFE\uFF09","\u7814\u7A76\u9662\u62C5\u5F53"," \u5F00\u53D1\u62C5\u5F53"," \u5907\u6CE8"};
+            fillSheetInfo(context,titles,dataList,workbook);
+System.out.println("....exportExcel......end..");            
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+	}//end method
+
+public String changeDate(String strDate)throws Exception
+{
+	try{
+		if(strDate.length()>0)
+		{
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+			java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+			Date date2 = formatter.parse(strDate);		
+			strDate = dateFormat.format(date2);		
+			return strDate;
+		}else{
+			return "";
+		}
+	}catch(Exception e){
+		m_logger.error(e.getMessage(), e);
+		throw new Exception(e.getMessage());
+	}
+	
+}
+}

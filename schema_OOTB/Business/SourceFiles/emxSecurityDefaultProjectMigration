@@ -1,0 +1,17 @@
+import matrix.db.Context;
+
+
+public class ${CLASSNAME} extends
+		${CLASS:emxSecurityDefaultProjectMigrationBase} {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7895294148958107828L;
+
+	public ${CLASSNAME}(Context context,
+			String[] args) throws Exception {
+		super(context, args);
+		// TODO Auto-generated constructor stub
+	}
+}
+

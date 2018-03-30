@@ -1,0 +1,7 @@
+#####################################
+tcl;
+eval {
+    puts "VPLMxProductEditor-R418HF2-downgrade.mql executed"
+	exit 0
+}
+

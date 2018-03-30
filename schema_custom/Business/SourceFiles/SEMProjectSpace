@@ -1,0 +1,300 @@
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.MapList;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.State;
+import matrix.util.StringList;
+import com.matrixone.apps.common.Person;
+public class ${CLASSNAME} 
+{
+	static StringList busList = new StringList("id");
+	static StringList relList = new StringList(DomainRelationship.SELECT_ID);
+    public ${CLASSNAME}(Context context, String[] args)throws Exception
+    {
+    }
+    //get projec space related SEMTestCarNumbers
+    public MapList getSEMTestCarNumbers(Context context, String[] args)
+			throws Exception {
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		String objectId = (String) programMap.get("objectId");
+		DomainObject strObj = new DomainObject(objectId);
+		MapList mapList = strObj.getRelatedObjects(context, "SEM Prject TestCars",
+				"SEM TestCar Numbers", busList, relList, false,
+				true, (short) 1, null, null);
+		return mapList;
+	}
+	public HashMap getSEMIssueTypeList(Context context, String args[])throws Exception
+    {
+    	 HashMap tempMap = new HashMap();
+         StringList fieldChoices= new StringList();
+         StringList fieldDisplayChoices=new StringList();
+         StringList busList=new StringList("id");
+     	 String where="attribute[LS Index Key1]=='SEM Issue Type'";
+     	 MapList mapList=DomainObject.findObjects(context,"LS Property Key","*",where,busList);
+     	 //System.out.println("Test---range--"+mapList.size());
+     	 if(mapList.size()>0)
+	     {
+				Iterator it = mapList.iterator();
+				while(it.hasNext()){
+					Map map = (Map)it.next();
+					String id = (String)map.get("id");
+					DomainObject rtObj=new DomainObject(id);
+					fieldChoices.add(rtObj.getAttributeValue(context,"LS Attribute1"));
+					fieldDisplayChoices.add(rtObj.getAttributeValue(context,"LS Attribute1"));	
+				}	
+	      }
+     	  tempMap.put("field_choices", fieldChoices);
+          tempMap.put("field_display_choices",fieldDisplayChoices);
+          return tempMap; 
+    }
+    public HashMap getSEMIssuePhaseList(Context context, String args[])throws Exception
+    {
+    	 HashMap tempMap = new HashMap();
+         StringList fieldChoices= new StringList();
+         StringList fieldDisplayChoices=new StringList();
+         StringList busList=new StringList("id");
+     	 String where="attribute[LS Index Key1]=='SEM Issue Phase'";
+     	 MapList mapList=DomainObject.findObjects(context,"LS Property Key","*",where,busList);
+     	 if(mapList.size()>0)
+	     {
+				Iterator it = mapList.iterator();
+				while(it.hasNext()){
+					Map map = (Map)it.next();
+					String id = (String)map.get("id");
+					DomainObject rtObj=new DomainObject(id);
+					fieldChoices.add(rtObj.getAttributeValue(context,"LS Attribute1"));
+					fieldDisplayChoices.add(rtObj.getAttributeValue(context,"LS Attribute1"));	
+				}	
+	      }
+     	  tempMap.put("field_choices", fieldChoices);
+          tempMap.put("field_display_choices",fieldDisplayChoices);
+          return tempMap; 
+    }//
+    public MapList getPIMProjectSpace(Context context, String[] args)
+			throws Exception {
+    	Person person =Person.getPerson(context);
+    	String personId = person.getId(context); 
+    	String buswhere="policy=='Project Space'&&current!='Complete'&&current!='Archive'";
+  	    String relwhere="attribute[Project Role]=='SEM_StrategyProjectLeader'||attribute[Project Role]~~'SEM*PM'";    	DomainObject personObj = new DomainObject(personId); 
+		MapList mapList =personObj.getRelatedObjects(context,"Member",
+				"Project Space", busList,relList,true,
+				false, (short)2,buswhere,relwhere);
+		return mapList;
+	} 
+    public MapList getPIMCurrentIssue(Context context, String[] args)
+			throws Exception {
+    	MapList returnList=new MapList();
+    	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+		String objectId     = (String) programMap.get("objectId");
+		String where="current=='Assign'||"+"current=='Active'";
+		returnList=findPIMIssue(context,args,objectId,where);
+		return returnList;
+	}
+    public MapList getPIMReviewIssue(Context context, String[] args)
+			throws Exception {
+    	MapList returnList=new MapList();
+    	String where="current=='Review'";
+    	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+		String objectId     = (String) programMap.get("objectId");
+		returnList=findPIMIssue(context,args,objectId,where);
+		return returnList;
+	}
+    public MapList getPIMClosedIssue(Context context, String[] args)
+			throws Exception {
+    	MapList returnList=new MapList();
+		String where="current=='Closed'";
+    	HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+		String objectId     = (String) programMap.get("objectId");
+		returnList=findPIMIssue(context,args,objectId,where);
+		return returnList;
+	}
+    public MapList findPIMIssue(Context context, String[] args,String projectId,String busWhere)throws Exception {
+    	MapList returnMapList=new MapList();
+    	Set<String> set=new HashSet<String>();
+    	Set<String> issueIdsSet=new HashSet<String>();
+    	String personName=context.getUser();
+    	DomainObject  Obj=new DomainObject(projectId);
+    	MapList issuemapList=Obj.getRelatedObjects(context,"Issue","Issue", busList,relList,false,
+				true, (short)1,null,"");
+    	//System.out.println(" issuemapList---"+ issuemapList.size());
+    	Iterator issueitems=issuemapList.iterator();
+    	while(issueitems.hasNext()){
+    		Map issuemap=(Map)issueitems.next();
+    		issueIdsSet.add((String)issuemap.get("id"));
+    	}
+    	String where="name=='"+personName+"'";
+    	MapList mapList=Obj.getRelatedObjects(context,"Member","Person", busList,relList,false,
+				true, (short)1,where,"");
+    	String parentPMS="";
+    	if(mapList.size()>0){
+    		Map map=(Map) mapList.get(0);
+    		String relId=(String) map.get("id[connection]");
+    		DomainRelationship relObj=new DomainRelationship(relId);
+    		parentPMS=relObj.getAttributeValue(context,"SEM PrjMemberStruct");
+    	}
+    	MapList mapList1=Obj.getRelatedObjects(context,"Member","Person", busList,relList,false,
+				true, (short)1,"","");
+    	Iterator it=mapList1.iterator();
+ 	    while(it.hasNext())
+ 		{
+ 			Map map1=(Map)it.next();
+ 			String relId1=(String)map1.get("id[connection]");
+ 			String objId=(String)map1.get("id");
+    		DomainRelationship relObj=new DomainRelationship(relId1);
+    		String onePMS=relObj.getAttributeValue(context,"SEM PrjMemberStruct").trim();
+    	    if(!parentPMS.equals("")&&onePMS.startsWith(parentPMS)){
+    	    	DomainObject obj=new DomainObject(objId);   
+    	    	MapList mapList2=obj.getRelatedObjects(context,"Assigned Issue","Issue", busList, relList,false,true, (short)1,busWhere,"");
+    	    	Iterator items=mapList2.iterator();
+    	        while(items.hasNext())
+    	 		{
+    	        	Map map2=(Map)items.next();
+    	        	String id=(String) map2.get("id");
+    	        	if(issueIdsSet.contains(id)&&!set.contains(id)){
+    	        		 set.add(id);
+    	        		 returnMapList.add(map2);   
+    	        	}	
+    	 		}
+    	    }
+ 		}
+    	return  returnMapList;
+    }
+    public MapList getOIMCurrentIssue(Context context, String[] args)
+			throws Exception {
+    	MapList returnList=new MapList();
+    	String where="current=='Assign'||"+"current=='Active'";
+		returnList=findOIMIssue(context,args,where);
+		return returnList;
+	}
+    public MapList getOIMReviewIssue(Context context, String[] args)
+			throws Exception {
+    	MapList returnList=new MapList();
+    	String where="current=='Review'";
+		returnList=findOIMIssue(context,args,where);
+		return returnList;
+	}
+    public MapList getOIMClosedIssue(Context context, String[] args)
+			throws Exception {
+    	MapList returnList=new MapList();
+    	String where="current=='Closed'";
+		returnList=findOIMIssue(context,args,where);
+		return returnList;
+	}
+    public MapList findOIMIssue(Context context, String[] args,String busWhere)throws Exception {
+    	MapList returnMapList=new MapList();
+    	Set<String> set=new HashSet<String>();
+    	Person person =Person.getPerson(context);
+    	String personId = person.getId(context); 
+    	DomainObject  Obj=new DomainObject(personId); 
+    	MapList mapList=Obj.getRelatedObjects(context,"Member","Department", busList,relList,true,
+				false, (short)1,"","");
+    	if(mapList.size()>0){
+    		Map map=(Map) mapList.get(0);
+    		String departmentId=(String) map.get("id");
+    		DomainObject departmentObj=new DomainObject(departmentId);
+    	    MapList mapList1=departmentObj.getRelatedObjects(context,"Member,Company Department","Person,Department", busList,relList,false,
+				true,(short)3,"","");
+    	    Iterator it=mapList1.iterator();
+ 	        while(it.hasNext())
+ 		    {
+ 			   Map map1=(Map)it.next();
+ 			   String objId=(String)map1.get("id");
+    		   DomainObject personObj=new DomainObject(objId); 
+    		   String type=personObj.getType(context);
+    		   if(type.equals("Person")){
+    	           MapList mapList2=personObj.getRelatedObjects(context,"Assigned Issue","Issue", busList, relList,false,true, (short)1,busWhere,"");
+    	           Iterator items=mapList2.iterator();
+    	           while(items.hasNext())
+    	 	       {
+    	        	   Map map2=(Map)items.next();
+    	        	   String id=(String) map2.get("id");
+    	        	   if(!set.contains(id)){
+    	        		 set.add(id);
+    	        		 returnMapList.add(map2);   
+    	        	   }	
+    	 	       }
+    		   }
+    	    }
+ 		}
+    	return  returnMapList;
+    }
+    //control edit SEM Project Progress
+    public boolean controlSEMProjectProgressDisplay(Context context, String[] args)throws Exception {
+    	boolean flag=true;
+    	Person person=Person.getPerson(context);
+    	if(person.hasRole(context,"Project Administrator")||person.hasRole(context,"Project Lead")){
+    		flag=false;
+    	}
+    	return flag;
+    }
+    public boolean controlSEMProjectProgressDisplay1(Context context, String[] args)throws Exception {
+    	boolean flag=false;
+    	Person person=Person.getPerson(context);
+    	if(person.hasRole(context,"Project Administrator")||person.hasRole(context,"Project Lead")){
+    		flag=true;
+    	}
+    	//System.out.println("flag-1-"+flag);
+    	return flag;
+    }//
+	//add reminder message when create project
+    public String getSEMCarCode(Context context, String[] args)throws Exception {
+    	StringBuffer bf=new StringBuffer();
+    	bf.append("<input value=\"\"   id=\"SEMCarCode\"  name=\"SEMCarCode\"  size=\"20\"   type=\"text\" />");
+    	bf.append("<label style=\"color:red;padding-left:8px;\">\u8F66\u578B\u7801\u81F3\u5C11\u4E94\u4F4D\u6570</label>");
+    	return bf.toString();
+    }
+    public void updateSEMCarCode(Context context, String[] args)throws Exception {
+       HashMap param=JPO.unpackArgs(args);
+  	   HashMap paramMap=(HashMap) param.get("paramMap");
+  	   String newValue=(String) paramMap.get("New Value");
+  	   String objID=(String) paramMap.get("objectId");
+  	   DomainObject strObj=new DomainObject(objID);
+  	   strObj.setAttributeValue(context,"SEM Car Code",newValue);
+    }
+    public String getSEMBudgetCode(Context context, String[] args)throws Exception {
+    	StringBuffer bf=new StringBuffer();
+    	bf.append("<input value=\"\"   id=\"SEMBudgetCode\"  name=\"SEMBudgetCode\"  size=\"20\"   type=\"text\" />");
+    	bf.append("<label style=\"color:red;padding-left:8px;\">\u9884\u7B97\u7801\u5FC5\u987B2\u4F4D\u5927\u5199\u5B57\u6BCD</label>");
+    	return bf.toString();
+    }
+
+	public void updateSEMBudgetCode(Context context, String[] args)throws Exception {
+		HashMap param = JPO.unpackArgs(args);
+		HashMap paramMap = (HashMap) param.get("paramMap");
+		String newValue = (String) paramMap.get("New Value");
+		String objID = (String) paramMap.get("objectId");
+		DomainObject strObj = new DomainObject(objID);
+		String personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+		DomainObject personObj = new DomainObject(personId);
+		MapList ResultList = new MapList();
+		StringList busList = new StringList();
+		busList.add("id");
+		busList.add("name");
+		String strBusWhere = "id!=="+objID;
+		String strRelWhere = "";
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		ResultList = personObj.getRelatedObjects(context, "Member","Project Space", busList, relList, true, false, (short) 1, strBusWhere,strRelWhere);
+		Iterator objectListItr = ResultList.iterator();
+		Map objectMap = new HashMap();		
+		while(objectListItr.hasNext()){
+			objectMap = (Map) objectListItr.next();
+			String psName = (String)objectMap.get("name");
+			String psId = (String)objectMap.get("id");	
+			DomainObject psObj = new DomainObject(psId);
+			String lsValue = psObj.getInfo(context, "attribute[SEM Budget Code]");	
+			if (newValue.equals(lsValue)) {			
+				throw new Exception("\u9884\u7B97\u7801\u5DF2\u5B58\u5728");
+			} else {
+				strObj.setAttributeValue(context, "SEM Budget Code", newValue);
+			}
+		}	
+	}
+}
+

@@ -1,0 +1,139 @@
+Attribute Name	Registry Name	Type	Description	Default	"Ranges (use ""|"" delim)"	Multiline (boolean)	Hidden (boolean)	Dimension	Max Length (int)	ResetonClone (boolean)	ResetonRevision (boolean)	Icon File
+SEM Doc Subtype	SEM Doc Subtype	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Confidentiality Level	SEM Confidentiality Level	string		普通	 = 普通 | = 秘密 | = 机密 | = 绝密	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Type	SEM Issue Type	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Class	SEM Issue Class	string			 = D-设计 | = E-设备治工具 | = O-作业面 | = Q-品质 | = S-物料	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Line	SEM Issue Line	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Major	SEM Issue Major	string			 = 机能 | = 设计 | = 钣金 | = 零件 |  = 仕样面 | = 重保 | = 异音 | = 配线配管 | = 一般 | = 台架强度 | = 实车耐久 | = NVH |  = 电子试验 | = 环境试验 | = 动力性 | = 机能实用性 | = 操安乘适 | = 诸元 | = 油耗排放 | = 刹车性能 | = 漏水 | = 底盘调校 | = 设计构造面 | = 新色开发面 | = 设备工艺面 | = SKID面 | = 治工具面 | = 作业工法面 | = VAVE面 | = 零件及副料面 | = 欠料 | = 涂装 | = 色差 | = 缩水 | = 作业 | = 其他	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Phase	SEM Issue Phase	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Section	SEM Issue Section	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue PartType	SEM Issue PartType	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Repeat	SEM Issue Repeat	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Submiter	SEM Issue Submiter	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue HappenDate	SEM Issue HappenDate	timestamp			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue TestCarCode	SEM Issue TestCarCode	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Solution TestCarCode	SEM Issue Solution TestCarCode	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue EO	SEM Issue EO	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue SolutionResult	SEM Issue SolutionResult	string			 = NG | = OK | = <<未到位>>	FALSE	FALSE		0	FALSE	FALSE	
+SEM PrjMemberStruct	SEM PrjMemberStruct	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Part Revision	SEM Part Revision	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Is NewPart	SEM Is NewPart	string			 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+SEM Need AdvPcue	SEM Need AdvPcue	string			 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+SEM Supplier	SEM Supplier	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Dep	SEM Dep	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Institute Owner	SEM Institute Owner	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Dev Owner	SEM Dev Owner	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Need DevConcept	SEM Need DevConcept	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+SEM Remark	SEM Remark	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM RequestCode	SEM RequestCode	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Requestor	SEM Requestor	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Request Amount	SEM Request Amount	real			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Contract Amount	SEM Contract Amount	real			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Pay Amount	SEM Pay Amount	real			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Owned System	SEM Owned System	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Approval Type	SEM Approval Type	string			 = 问题分配审批 | = 问题对策审批 | = 项目计划审批	FALSE	FALSE		0	FALSE	FALSE	
+SEM Budget Code	SEM Budget Code	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Car Code	SEM Car Code	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM BudgetChange Number	SEM BudgetChange Number	real			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM BudgetChange Type	SEM BudgetChange Type	string			 = 调减 | = 调增 | = <<新增>>	FALSE	FALSE		0	FALSE	FALSE	
+SEM BudgetChange Remark	SEM BudgetChange Remark	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Sequence	SEM Sequence	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Reviewed	SEM Reviewed	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+SEM Project Type	SEM Project Type	string		车型项目	 = 概念项目 | = 车型项目 | = 部门项目	FALSE	FALSE		0	FALSE	FALSE	
+SEM Budget Open Status	SEM Budget Open Status	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+SEM Is Keytask	SEM Is Keytask	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+SEM Edit Status	SEM Edit Status	string		P1	 = P1 | = P2 | = P3 | = P4 | = P5	FALSE	FALSE		0	FALSE	FALSE	
+SEM Is Locked	SEM Is Locked	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+SEM Deliverable	SEM Deliverable	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM DepCode	SEM DepCode	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Frozen Cost	SEM Frozen Cost	real			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Cost Type	SEM Cost Type	string		费用	 = 费用 | = 资本	FALSE	FALSE		0	FALSE	FALSE	
+SEM Content	SEM Content	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM ExtObj Code	SEM ExtObj Code	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM ExtObj Type	SEM ExtObj Type	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM ExtObj ID	SEM ExtObj ID	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM BudgetChange Resource	SEM BudgetChange Resource	string		自身调整	 = 自身调整 | = 仕样变更 | = 造型变更 | = 设计变更	FALSE	FALSE		0	FALSE	FALSE	
+SEM Request Item	SEM Request Item	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Item Attribute	SEM Item Attribute	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Number	SEM Number	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Profit Task	SEM Profit Task	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+LS Attribute1	LS Attribute1	string	LS Attribute1		 	FALSE	FALSE		0	FALSE	FALSE	
+LS Attribute2	LS Attribute2	string	LS Attribute2		 	FALSE	FALSE		0	FALSE	FALSE	
+LS Attribute3	LS Attribute3	string	LS Attribute3		 	FALSE	FALSE		0	FALSE	FALSE	
+LS Attribute4	LS Attribute4	string	LS Attribute4		 	FALSE	FALSE		0	FALSE	FALSE	
+LS Attribute5	LS Attribute5	string	LS Attribute5		 	FALSE	FALSE		0	FALSE	FALSE	
+LS Index Key3	LS Index Key3	string	LS Index Key3		 	FALSE	FALSE		0	FALSE	FALSE	
+LS Index Key1	LS Index Key1	string	LS Index Key1		 	FALSE	FALSE		0	FALSE	FALSE	
+LS Index Key2	LS Index Key2	string	LS Index Key2		 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Budget Number	SEM Budget Number	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM ModelData Phase Version	SEM ModelData Phase Version	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM SupplierResolution Recommendation	SEM SupplierResolution Recommendation	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Reason	SEM Issue Reason	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM TestCars Scope	SEM TestCars Scope	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue SolutionProgress	SEM Issue SolutionProgress	string		D	 = A | = B | = C | = D	FALSE	FALSE		0	FALSE	FALSE	
+Project Role	Project Role	string	Project Members role on the project		 =  | = <<role_Employee>> | = <<role_DesignEngineer>> | = <<Core Team Member>> | = <<Design Engineer>> | = <<Financial Reviewer>> | = <<Project Assessor>> | = <<role_SeniorDesignEngineer>> | = <<role_ManufacturingEngineer>> | = <<role_OrganizationManager>> | = <<role_ProductObsolescenceManager>> | = <<role_ECRCoordinator>> | = <<role_ECRChairman>> | = <<role_ChangeBoards>> | = <<role_SupplierRepresentative>> | = <<role_SupplierEngineer>> | != ! | = <<role_MCOCoordinator>> | = SEM_DepartmentContacts | = SEM_DesignPM | = SEM_FinancialPM | = SEM_GeneralManager | = SEM_MerchandisingModellingPM | = SEM_ProductionManagePM | = SEM_ProductionPM | = SEM_ProductionTechPM | = SEM_ProjectManager | = SEM_ProjectUser | = SEM_QualityPM | = SEM_GeneralManagerPM | = SEM_SalesPM | = SEM_SecretariatPM | = SEM_ServicePM | = SEM_StrategyProjectLeader | = SEM_SupplierQualityPM | = SEM_TeamContacts	FALSE	FALSE		0	FALSE	FALSE	
+SEM Lock StartTime	SEM Lock StartTime	timestamp			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Lock FinishTime	SEM Lock FinishTime	timestamp			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Type1	SEM Issue Type1	string			 = Assess Issue | = Case Issue | = Empty | = Performance Test Issue | = SEG Engineer Issue | = SEG Model Issue | = Market Survey Issue | = Test Drive Issue | = Try Assembly Issue | = Try Coating Issue | = Try Stamping Issue | = Try Welding Issue | = Vehicle Check Issue | = Vehicle Test Issue | = Structure Analyse Issue | = Budget Issue	FALSE	FALSE		0	FALSE	FALSE	
+LS Recycled Number	LS Recycled Number	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM IssueSolution Dealer	SEM IssueSolution Dealer	string			 	FALSE	TRUE		0	FALSE	FALSE	
+SEM Issue Owner Department	SEM Issue Owner Department	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Phase To Resolution	SEM Phase To Resolution	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM IssueSolution Dealer Department	SEM IssueSolution Dealer Department	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Issue Undertaker	SEM Issue Undertaker	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM TestIssue Number	SEM TestIssue Number	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM IssueImportance ID	SEM IssueImportance ID	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM IssueCar Number	SEM IssueCar Number	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM IssuePoints Deduction	SEM IssuePoints Deduction	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Production Related Issue	SEM Production Related Issue	string			 =   | = Yes	FALSE	FALSE		0	FALSE	FALSE	
+SEM IssueCar Property	SEM IssueCar Property	string			 = SEMNormalCar | = SEMQualityImprovementCar | = SEMQualityTestCar	FALSE	FALSE		0	FALSE	FALSE	
+SEM Car Leakage State	SEM Car Leakage State	string			 = 5min | = 8H	FALSE	FALSE		0	FALSE	FALSE	
+SEM Equipment Type	SEM Equipment Type	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Test Engine	SEM Test Engine	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Test Gearbox	SEM Test Gearbox	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Test Mileage	SEM Test Mileage	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Test Item	SEM Test Item	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM DataRecieved Date	SEM DataRecieved Date	timestamp			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Production Date	SEM Production Date	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM UPG Part	SEM UPG Part	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Part	SEM Part	string			 	FALSE	FALSE		0	FALSE	FALSE	
+LS Is Signed	LS Is Signed	boolean		FALSE	 	FALSE	FALSE		0	FALSE	FALSE	
+LS Route Identifier	LS Route Identifier	string			 	FALSE	FALSE		0	FALSE	FALSE	
+LS Route Filter	LS Route Filter	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM File Compiled Department	SEM File Compiled Department	string			 	FALSE	FALSE		0	FALSE	FALSE	
+LS Allow Delete	LS Allow Delete	string		YES	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+LS Allow EmptyPerson	LS Allow EmptyPerson	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+LS Approver Range	LS Approver Range	string			 	FALSE	FALSE		0	FALSE	FALSE	
+LS Allow ReAssign	LS Allow ReAssign	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+LS Auto Assign	LS Auto Assign	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+LS Allow Jump	LS Allow Jump	string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+LS Jump Condition	LS Jump Condition	string			 	FALSE	FALSE		0	FALSE	FALSE	
+LS Task Finish Expression	LS Task Finish Expression	string			 	FALSE	FALSE		0	FALSE	FALSE	
+LS CustomView PreProcessor	LS CustomView PreProcessor	string			 	FALSE	FALSE		0	FALSE	FALSE	
+LS CustomView URL	LS CustomView URL	string			 	FALSE	FALSE		0	FALSE	FALSE	
+LS CustomView PostProcessor	LS CustomView PostProcessor	string			 	FALSE	FALSE		0	FALSE	FALSE	
+LS Is Readed	LS Is Readed	string			 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+Task Requirement	Task Requirement	string	Identifies whether a task is mandatory or optional	Mandatory	 = Optional | = Mandatory	FALSE	FALSE		0	FALSE	FALSE	
+Needs Review	Needs Review	string	"Contains ranges as Yes,No for Task Review"	Yes	 = No | = Yes	FALSE	FALSE		0	FALSE	FALSE	
+Priority	Priority	string	define the priority of the change		 =   | = Urgent | = <<Pre-assigned>> | = <<Medium>> | = <<Low>> | = <<High>>	FALSE	FALSE		0	FALSE	FALSE	
+SEM DevConcept NO		string	SEM DevConcept NO		 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Drawing NO		string	SEM Drawing NO		 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Drawing Revision		string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Subject Content	SEM Subject Content	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Task Assignee Department	SEM_Task_Assignee_Department	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Task Reviewer Department	SEM_Task_Reviewer_Department	string			 	FALSE	FALSE		0	FALSE	FALSE	
+Planned Cost	Planned Cost	real	Real attribute storing the totaled interval cost for a specified date.	0	 	FALSE	FALSE	SEM_Currency	0	FALSE	FALSE	
+Standard Cost	Standard Cost	real	This will allow user to assign a standard cost rate	0	 	FALSE	FALSE	SEM_Currency	0	FALSE	FALSE	
+SEM CostRequest Category	SEM CostRequest Category	string		2	 = 01 | = 02 | = 03	FALSE	FALSE		0	FALSE	FALSE	
+SEM Project Progress	SEM Project Progress	string			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Deliverable Judge		string			 =  | = G | = R | = Y	FALSE	FALSE		0	FALSE	FALSE	
+SEM Deliverable Updated		string		NO	 = NO | = YES	FALSE	FALSE		0	FALSE	FALSE	
+SEM Body Code	SEM Body Code	string	SEM Body Code		 	FALSE	FALSE		0	FALSE	FALSE	
+SEM Budget Access	SEM Budget Access	string	SEM Budget Access		 	FALSE	FALSE		0	FALSE	FALSE	
+Year	Year	string	Determines the year to be used for a Task	2010	 = 2004 | = 2005 | = 2006 | = 2007 | = 2008 | = 2009 | = 2010 | = 2011 | = 2012 | = 2013 | = 2014 | = 2015 | = 2016 | = 2017 | = 2018 | = 2019 | = 2020 | = 2021 | = 2022 | = 2023 | = 2024 | = 2025 | = 2026 | = 2027 | = 2028 | = 2029 | = 2030 | = 2031	FALSE	FALSE		0	FALSE	FALSE	
+Benefit Interval End Date	Benefit Interval End Date	timestamp	Date attribute storing the interval in the benefit spreadsheet	4/27/2017	 	FALSE	FALSE		0	FALSE	FALSE	
+Benefit Interval Start Date	Benefit Interval Start Date	timestamp	Date attribute storing the interval in the benefit spreadsheet.	4/27/2017	 	FALSE	FALSE		0	FALSE	FALSE	
+Cost Interval End Date	Cost Interval End Date	timestamp	Date attribute storing the interval in the cost spreadsheet	4/27/2017	 	FALSE	FALSE		0	FALSE	FALSE	
+Cost Interval Start Date	Cost Interval Start Date	timestamp	Date attribute storing the interval in the cost spreadsheet.	4/27/2017	 	FALSE	FALSE		0	FALSE	FALSE	
+SEM BudgetChange PlannedCost	SEM BudgetChange PlannedCost	real			 	FALSE	FALSE		0	FALSE	FALSE	
+SEM BudgetChange ResidualCost	SEM BudgetChange ResidualCost	real			 	FALSE	FALSE		0	FALSE	FALSE	

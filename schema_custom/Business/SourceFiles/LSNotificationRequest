@@ -1,0 +1,258 @@
+/*
+ **   LSNotificationRequest
+ */
+/*
+ **   LSNotificationRequest
+ */
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import com.matrixone.apps.common.util.ComponentsUIUtil;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+
+import matrix.util.MatrixException;
+import matrix.util.StringList;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+
+import matrix.db.Attribute;
+import matrix.db.AttributeList;
+import matrix.db.AttributeType;
+import com.matrixone.apps.domain.util.PropertyUtil;
+
+
+
+public class ${CLASSNAME} extends ${CLASS:emxSpool}
+{
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	/**
+	 * Constructs a new emxSpool JPO object
+	 * 
+	 * @param context the eMatrix <code>Context</code> object
+	 * @param args an array of String arguments for this method
+	 * @throws Exception if the operation fails
+	 * @since R210
+	 */
+	public ${CLASSNAME} (Context context, String[] args) throws Exception 
+	{
+		super(context, args);
+	}
+	
+	public void processNotificationRequest(Context context, String[] args) throws MatrixException
+	{
+		String strSpoolName = args[0];
+		try 
+		{
+			m_logger.debug("processNotificationRequest (" + strSpoolName + ")");
+
+			StringList slBusSelect = new StringList(SELECT_ID);
+
+		    //Queries on the given criteria into a map list containing a mapping of selectable names to values
+			MapList mlSpool = DomainObject.findObjects(
+													context,  									// The current context object
+													TYPE_NOTIFICATION_SPOOL,  					// The type pattern
+													strSpoolName,								// The name pattern
+													"-",										// The revision pattern
+													null,										// The owner pattern
+													"*", 										// The vault pattern
+													null, 										// The where expression
+													false,										// expandType
+													slBusSelect);								// The select clause
+
+			if (mlSpool == null || mlSpool.size() == 0)
+			{
+                String[] formatArgs = {strSpoolName};
+                String message =  ComponentsUIUtil.getI18NString(context, "emxComponents.SpoolBase.SpoolNotFound",formatArgs);
+				throw new MatrixException(message);
+			}
+
+			Map mapSpoolInfo = (Map)mlSpool.get(0);
+			String strObjectIdSpool = (String)mapSpoolInfo.get(SELECT_ID);
+			m_logger.debug("Spool Id " + strObjectIdSpool);
+
+			DomainObject domNotificationSpool = DomainObject.newInstance(context, strObjectIdSpool);
+
+			StringList objectSelects = new StringList(DomainObject.SELECT_ID);
+			objectSelects.add(SELECT_ATTRIBUTE_FROM_AGENT);
+			objectSelects.add(SELECT_ATTRIBUTE_STATIC_TO_LIST);
+			objectSelects.add(SELECT_ATTRIBUTE_STATIC_CC_LIST);
+			objectSelects.add(SELECT_ATTRIBUTE_STATIC_BCC_LIST);
+			objectSelects.add(SELECT_ATTRIBUTE_SUBJECT_TEXT);
+			objectSelects.add(SELECT_ATTRIBUTE_BODY_TEXT);
+			objectSelects.add(SELECT_ATTRIBUTE_BODY_HTML);
+			objectSelects.add(SELECT_ATTRIBUTE_ATTACHMENTS);
+			objectSelects.add(SELECT_ATTRIBUTE_NOTIFICATION_NAME);
+			objectSelects.add(SELECT_ATTRIBUTE_NOTIFICATION_TYPE);
+			objectSelects.add(SELECT_ATTRIBUTE_REPLY_TO);
+			
+			String strWhereClause = "(current == \"Create\")";
+
+			// expand to get Notification Spool
+			MapList mlNotificationRequests =  DomainObject.findObjects(
+					context,  									// The current context object
+					"LS Notification Request",  					// The type pattern
+					"*",								// The name pattern
+					"*",										// The revision pattern
+					null,										// The owner pattern
+					"*", 										// The vault pattern
+					strWhereClause, 										// The where expression
+					false,										// expandType
+					objectSelects);								// The select clause
+
+			mlNotificationRequests.addSortKey(SELECT_ATTRIBUTE_NOTIFICATION_NAME, "ascending", "String");
+			mlNotificationRequests.addSortKey(SELECT_ATTRIBUTE_NOTIFICATION_TYPE, "ascending", "String");
+			mlNotificationRequests.sort();
+
+			m_logger.debug("Total Notification Request=" + mlNotificationRequests.size());
+
+			MapList mlSimilarNotificationRequest = new MapList();
+			Map mapLastNotificationSpool = new HashMap();
+			for(int itr = 0; itr < mlNotificationRequests.size(); itr++)
+			{
+				Map mapNotificationRequest = (Map) mlNotificationRequests.get(itr);
+				String strNotificationName = (String)mapNotificationRequest.get(SELECT_ATTRIBUTE_NOTIFICATION_NAME);
+
+				if(mlSimilarNotificationRequest.size() == 0)
+				{
+					mlSimilarNotificationRequest.add(mapNotificationRequest);
+				}
+				else
+				{
+					mapLastNotificationSpool = (Map)mlSimilarNotificationRequest.get(mlSimilarNotificationRequest.size() - 1);
+
+					if (isSimilarNotificationName(mapNotificationRequest, mapLastNotificationSpool))
+					{
+						mlSimilarNotificationRequest.add(mapNotificationRequest);
+					}
+					else
+					{
+						// Calls this method to process similar Notification Requests
+						processSimilarRequests(context, mlSimilarNotificationRequest);
+
+						mlSimilarNotificationRequest.clear();
+						mlSimilarNotificationRequest.add(mapNotificationRequest);
+					}
+				}
+			}
+
+			if(!mlSimilarNotificationRequest.isEmpty())
+			{
+				// Calls this method to process similar Notification Requests
+				processSimilarRequests(context, mlSimilarNotificationRequest);
+
+				mlSimilarNotificationRequest.clear();
+			}
+		}
+		catch(Exception e){
+			if (isDebugEnabled) {
+				m_logger.error(e.getMessage(), e);
+			}
+			throw new MatrixException(e);
+		}
+		finally {
+			debug("processNotificationRequest (" + strSpoolName + ")");
+		}
+	}
+	public Map createLSNotificationRequest(Context context,String[]args)throws Exception
+	{
+   	    HashMap programMap = (HashMap)JPO.unpackArgs(args);
+   		String preRow=(String)programMap.get("preRows");
+  		String[] preRows=preRow.split(",");
+        Map returnMap = new HashMap();
+   		String subject=(String)programMap.get("SubjectText");
+   		String url=(String) programMap.get("baseURL");
+   		String description="<div>"+(String) programMap.get("Description")+"</div>";
+   		String notifyType="Email";
+   		String fromAgent="Test Everything";
+   		String notificationName="APPObjectProjectTaskAssignedEvent";
+
+     	AttributeList attributes = new AttributeList();
+        AttributeType attrType = null;
+        Attribute attrObject = null;
+     	for(int i=0;i<preRows.length;i++){
+         	StringBuffer content=new StringBuffer(description);
+     		String taskId=preRows[i];
+     		DomainObject taskObj=new DomainObject(taskId);
+     		String taskName=taskObj.getName(context);
+     		content.append("<div>");
+     		content.append("<p style=\"text-indent: 1em;\">\u8981\u4E86\u89E3\u6709\u5173\u8BE5\u4EFB\u52A1\u7684\u66F4\u591A\u4FE1\u606F\uFF0C\u4F7F\u7528\u5982\u4E0B URL:");
+     		content.append("<a href=\""+url+ "?objectId="+taskId+"\">"+taskName+"</a>");
+     		content.append("</div>");
+     		StringList personIdList=taskObj.getInfoList(context,"to[Assigned Tasks].from.id");
+     		if(personIdList.size()>0)
+			{
+				for(int j = 0 ;j < personIdList.size();j++)
+				{
+					String personId = (String)personIdList.get(j);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					if(strPersonName!=null){
+					   	attrType = new AttributeType(
+				        PropertyUtil.getSchemaProperty(context, "attribute_SubjectText"));
+				        attrObject = new Attribute(attrType,subject);
+				        attributes.addElement(attrObject);
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_NotificationType"));
+				        attrObject = new Attribute(attrType, notifyType);
+				        attributes.addElement(attrObject);
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_NotificationName"));
+				        attrObject = new Attribute(attrType, notificationName);
+				        attributes.addElement(attrObject);
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_StaticToList"));
+				        attrObject = new Attribute(attrType,strPersonName);
+				        attributes.addElement(attrObject);
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_BodyText"));
+				        attrObject = new Attribute(attrType,content.toString());
+				        attributes.addElement(attrObject);
+				        
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_BodyHTML"));
+				        attrObject = new Attribute(attrType,content.toString());
+				        attributes.addElement(attrObject);
+				        
+				        attrType = new AttributeType(
+				        		PropertyUtil.getSchemaProperty(context, "attribute_FromAgent"));
+				        attrObject = new Attribute(attrType, fromAgent);
+				        attributes.addElement(attrObject);
+				        boolean isContextPushed = false;
+			            try{
+				            ContextUtil.pushContext(context);
+				            isContextPushed = true;
+				            String strNotificationRequestId = FrameworkUtil.autoName(context, "type_LSNotificationRequest", "", "policy_LSNotificationRequest");
+			                DomainObject notificationRequestObj = DomainObject.newInstance(context, strNotificationRequestId);
+			                notificationRequestObj.setAttributes(context, attributes);
+				   		    String projectId =notificationRequestObj.getInfo(context, "id");
+				   	        returnMap.put("id", projectId);
+			            }
+			            catch(Exception e){
+			            	m_logger.error(e.getMessage(), e);
+			            	throw new MatrixException(e);
+			            }finally{
+			            	if (isContextPushed) {
+			            		ContextUtil.popContext(context);
+			            	}
+			            }
+					}
+				}					
+			}			
+     	}
+   	    return returnMap;
+	}
+	
+}
+
+
+

@@ -1,0 +1,128 @@
+/*
+ *  emxRoute.java
+ *
+ * Copyright (c) 1992-2015 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ */
+import matrix.db.*;
+import matrix.util.StringList;
+
+import java.lang.*;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.matrixone.apps.common.Route;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.MapList;
+/**
+ * @version AEF Rossini - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxRouteBase}
+{
+
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF Rossini
+     * @grade 0
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+    
+    public int demoteObject(Context context, String[] args)throws Exception
+    {
+    	String objectId = args[0];
+    	String attrName = args[1];
+    	String attrValue=args[2];
+  	  
+    	if(!"Route Status".equals(attrName))
+    	{
+    		return 0 ;
+    	}
+    	if(!"Stopped".equals(attrValue))
+    	{
+    		return 0 ;
+    	}
+
+    	
+    	Route route = (Route)DomainObject.newInstance(context,DomainObject.TYPE_ROUTE);
+    	route.setId(objectId);
+    	StringList selObjectList = new StringList();
+    	selObjectList.addElement("id");
+    	selObjectList.addElement("name");
+    	selObjectList.addElement(DomainObject.SELECT_CURRENT);
+    	selObjectList.addElement(DomainObject.SELECT_TYPE);
+    	StringList selRelObjectRouteList = new StringList();
+    	selRelObjectRouteList.addElement(DomainObject.SELECT_RELATIONSHIP_ID);
+    	selRelObjectRouteList.addElement("attribute[Route Base State]");
+    	selRelObjectRouteList.addElement("attribute[Route Base Policy]");
+	    MapList mlObjectList = route.getRelatedObjects(context, 
+												"Object Route", 
+												"*", 
+												selObjectList,
+												selRelObjectRouteList,
+												true,
+												false,
+												(short)1,
+												null,
+												null);   
+	    
+	    Map tempMap = null;
+	    if(mlObjectList != null && mlObjectList.size()>0)
+	    {
+	    	for(int i = 0;i < mlObjectList.size();i++)
+	    	{
+	    		tempMap = (Map)mlObjectList.get(i);
+	    		String objCurrent = (String)tempMap.get("current");
+	    		String objType = (String)tempMap.get("type");
+	    		String attrRouteBaseState = (String)tempMap.get("attribute[Route Base State]");
+	    		String strObjId = (String)tempMap.get("id");
+	    		DomainObject strObject = new DomainObject(strObjId);
+	    		String strCurrent = strObject.getInfo(context, DomainObject.SELECT_CURRENT);
+	    		if(objType.equals("SEM PrjChange Request"))
+	    		{
+	    			continue;
+	    		}
+    			ContextUtil.pushContext(context);
+    			strObject.gotoState(context, "Create");
+				ContextUtil.popContext(context);
+	    		
+	    	}
+	    }	
+    	return 0;
+    }
+    
+    public boolean isRelateRoute(Context context, String[] args)throws Exception{
+    	boolean flag = false;
+    	try{
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+            String  objId = (String) programMap.get("objectId");
+            DomainObject strObject = new DomainObject(objId);
+            StringList busList = new StringList("id");
+     		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+     		MapList mapList= strObject.getRelatedObjects(context,"Object Route","Route", busList, relList,false,true, (short)1, null, null);
+     		if(mapList.size()>0){
+     			flag = false;
+     		}else{
+     			flag = true;
+     		}
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}    	
+    	return flag;
+    }
+}
+
+

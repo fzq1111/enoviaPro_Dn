@@ -1,0 +1,89 @@
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.State;
+import matrix.util.StringList;
+import java.util.*;
+
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.common.Person;
+public class ${CLASSNAME} 
+{
+    public ${CLASSNAME}(Context context, String[] args)throws Exception
+    {
+    }
+    //add by fzq
+    public MapList getPerson(Context context, String[] args) throws Exception {
+		HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+		String objectId     = (String) programMap.get("objectId");
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		relList.add("attribute[SEM Reviewed]");
+		MapList personList = null;
+		DomainObject strObj = new DomainObject(objectId);
+	    personList= strObj.getRelatedObjects(context, "SEM Task Reviewer","Person", busList, relList,false,true, (short)1, null, null);
+		//System.out.println("personList=="+personList);
+	    MapList resultList=new MapList();
+	    for(int i=0;i<personList.size();i++)
+		{
+			Map personMap=(Map)personList.get(i);
+			/*String SEMReviewed=(String)personMap.get("attribute[SEM Reviewed]");
+			if(SEMReviewed.equals("NO"))
+			{	
+			}*/
+			resultList.add(personMap);
+		}
+	    return resultList;
+    }
+    public Vector getNameColumn(Context context, String[] args) throws Exception {
+    	Vector vc=new Vector();
+ 	    HashMap programMap = JPO.unpackArgs(args);
+ 		MapList objectList = (MapList)programMap.get("objectList");
+ 		Iterator it = objectList.iterator();
+ 		while(it.hasNext())
+ 		{
+ 			Map map = (Map)it.next();
+ 			String objectId =(String)map.get("id");
+    	    DomainObject personObj = new DomainObject(objectId);
+    	    String name=personObj.getName(context);
+    	    String fullName=PersonUtil.getFullName(context,name);
+    	    String names[]=fullName.split(" ");
+    	    if(names.length>1){
+    	    	 fullName=names[1]+names[0];
+    	    }
+    	    String sNextUrl = "./emxTree.jsp?objectId=" + XSSUtil.encodeForJavaScript(context,objectId);
+            String sUrl  = "javascript:emxTableColumnLinkClick('" + sNextUrl + "','800','575',false,'popup','')";
+            String NameUrl= "<a  href=\""+sUrl+"\">"+XSSUtil.encodeForHTML(context,fullName)+"</a>";
+    	    vc.add(NameUrl);
+ 		}
+ 		return vc;
+    }
+    public Vector getPersonDepartName(Context context, String[] args) throws Exception {
+    	Vector vc=new Vector();
+ 	    HashMap programMap = JPO.unpackArgs(args);
+ 		MapList objectList = (MapList)programMap.get("objectList");
+ 		Iterator it = objectList.iterator();
+ 		while(it.hasNext())
+ 		{
+ 			Map map = (Map)it.next();
+ 			String objectId =(String)map.get("id");
+    	    DomainObject personObj = new DomainObject(objectId);
+    	    StringList busList = new StringList();
+    	    busList.add(DomainObject.SELECT_ID);
+    	    busList.add(DomainObject.SELECT_NAME);
+    	    MapList mapList = personObj.getRelatedObjects(context,"Member", "Department", busList, null, true, false, (short)1, null, null);
+    	    Iterator items = mapList.iterator();
+    	    String departmentName =new String();
+    	    while(items.hasNext()){
+    		  Map map1 = (Map)items.next();
+    		  departmentName+=(String)map1.get(DomainObject.SELECT_NAME)+" ";
+    	    }
+    	    vc.add(departmentName);
+    	}
+    	return vc;
+    }
+}

@@ -1,0 +1,54 @@
+Program Name	Registry Name	Description	Type (mql<default>/java/ekl/external)	Execute (immediate<default>/deferred)	Needs Bus Obj (boolean)	Downloadable (boolean)	Piped (boolean)	Pooled (boolean)	Hidden (boolean)	User	Icon File
+emxProjectSpace		Project Space JPO	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+emxTask		Task JPO	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE
+SEMTypeCreateRouteUtil			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+SEMACO			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE
+SEMTaskCheck			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE			
+SEMTask			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+SEMInvestmentManagement			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+DrawingBOM			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE
+SEMBudget			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxTaskBase		JPO Task	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+SEMBudgetWebservice			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+LSPropertyKey		LSPropertyKey	mql	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+SEMIssue			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxProjectMember		JPO for Project Members	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+SEMProjectSpace			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxTeamcenterClient		Java program for teamcenter client.	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxAEFFullSearch		Full Search JPO	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+emxCommonDocument		JPO used in Common Document Management	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+SEMRelatedWBSTask			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxNotificationUtilBase		The program for Email Enhancement	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+LSNotificationRequest		JPO used for managing notification spool	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxSpoolBase		JPO used for managing notification spool	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxCommonInitiateRoute		JPO used for managing notification spool	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE
+LSEmailProcess			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxNotificationUtil		The program to Email Enhancement	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+LSCreateRouteUtil		LSCreateRouteUtil	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+SEMTrigger			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxInboxTask		JPO used in Inbox Task	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+emxMeeting		JPO used in Meeting	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE
+mxCommonRUAuthentication		LDAP Auth JPO	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+mxCommonRUAuthenticationBase		Program JPO	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+emxProgramCentralUtil		Mail Utility for PMC	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+SEMExport		JPO for SEMExport	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxRoute		JPO used in Route	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+SEMExportIssue		SEMExportIssue	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE
+emxMeetingBase		JPO used in Meeting	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+emxRisk		Risk JPO	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE		
+SEMExportDrawingPlan		JPO for SEMExportDrawingPlan	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxDashboardRoutesBase		JPO for Dashboard Routes	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxDecision		Decision functionality JPO	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+emxTeamStructureTree		JPO emxTeamStructureTree used in custom sort	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+emxWorkspaceFolder		JPO emxWorkspaceFolder used in custom sort	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+SEMIssueBOM		SEMExportIssue	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+SEMCheckoutManage			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE
+SEMProjectBoard			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxDashboardRoutes		JPO for Dashboard Routes	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxExtendedHeaderBase		JPO for Extended Header Functionality	java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxCommonCompleteTaskBase		JPO used after Task is completed for post completion actions	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+SEMInvestmentReportExport			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+emxCommonDocumentUI		Utility JPO used in Common Document Management GUI	java	immediate	FALSE	FALSE	FALSE	FALSE	TRUE	
+SEMIssueSummarize			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+SEMProjectComparsionReportExport			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	
+SEMCostBaselineReportExport			java	immediate	FALSE	FALSE	FALSE	FALSE	FALSE	

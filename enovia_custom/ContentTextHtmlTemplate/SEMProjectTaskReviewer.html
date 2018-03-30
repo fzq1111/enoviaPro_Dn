@@ -1,0 +1,57 @@
+<html>
+  <head>
+  	<META http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Project Task Reviewer Notification</title>
+  </head>
+  
+  <body style="font-size: 14px; font-family: times">
+  	<div>
+  		
+  		<p style="text-indent: 1em;">任务：''${TaskType}' '${TaskName}' 已经完成，请您复核.</p>
+		
+  	</div>
+	
+	<div>
+		<p>
+			<table height="70" border = 1>
+			  <tr>
+			    <td><div align="center">项目名称</div></td>
+			    <td><div align="center">任务类型</div></td>
+			    <td><div align="center">任务名称</div></td>
+			    <td><div align="center">百分比</div></td>
+			    <td><div align="center">所有者</div></td>
+			    <td><div align="center">所有者组</div></td>
+			    <td>估计开始日期</td>
+			    <td><div align="center">估计结束日期</div></td>
+			    <td>实际开始日期</td>
+			    <td><div align="center">实际结束日期</div></td>
+			    <td><div align="center">任务负责人</div></td>
+			    <td><div align="center">任务负责人组</div></td>
+			    <td><div align="center">交付件要求</div></td>
+			    <td><div align="center">关键任务</div></td>
+		      </tr>
+			  <tr>
+			    <td><div align="center">${TaskInProject}</div></td>
+			    <td><div align="center">${TaskType}</div></td>
+			    <td><div align="center"><a href="${TaskURL}">${TaskName}</a></div></td>
+			    <td><div align="center">${TaskPercentComplete}</div></td>
+			    <td><div align="center">${TaskOwner}</div></td>
+			    <td><div align="center">${TaskOwnerDepartment}</div></td>
+			    <td><div align="center">${TaskEstStartDate}</div></td>
+			    <td><div align="center">${TaskEstFinishDate}</div></td>
+			    <td><div align="center">${TaskActStartDate}</div></td>
+			    <td><div align="center">${TaskActFinishDate}</div></td>
+			    <td><div align="center">${TaskAssignee}</div></td>
+			    <td><div align="center">${TaskAssigneeDepartment}</div></td>
+			    <td><div align="center">${TaskSEMDeliverable}</div></td>
+			    <td><div align="center">${TaskSEMIsKeytask}</div></td>
+		      </tr>
+	  </table>
+			</p>
+	</div>
+	<div><span style="text-indent: 1em;">该任务的详细信息打开链接为：<a href="${TaskURL}">${TaskName}</a></span><br/>
+  		<p><div>提醒：本邮件为东南PM系统后台自动发送的邮件，请勿回复。</div></p>
+  	</div>
+	
+  </body>
+</html>

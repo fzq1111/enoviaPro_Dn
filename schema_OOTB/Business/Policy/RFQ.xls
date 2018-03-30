@@ -1,0 +1,122 @@
+State	User	Read	Modify	Delete	Checkout	Checkin	Schedule	Lock	Unlock	Execute	Freeze	Thaw	Create	Revise	MajorRevise	Promote	Demote	Grant	Enable	Disable	Override	ChangeName	ChangeType	ChangeOwner	ChangePolicy	Revoke	ChangeVault	FromConnect	ToConnect	FromDisconnect	ToDisconnect	ViewForm	Modifyform	Show	Filter
+Started	Owner	Y	Y	Y	-	-	-	Y	Y	-	-	-	Y	-	-	Y	-	Y	-	-	-	Y	-	Y	Y	Y	-	Y	-	Y	-	-	-	Y	
+Started	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Started	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Started	Buyer	Y	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Started	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Started	Customer	Y	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Started	Route Access Grantor	Y	Y	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Started	Route Delegation Grantor	Y	Y	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Started	Sales Engineer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Started	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Started	Supplier	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Started	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Started	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Started	VPLMAdmin	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Started	VPLMCreator	Y	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Started	VPLMProjectLeader	Y	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Started	VPLMViewer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Started	Workspace Access Grantor	Y	Y	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Started	Workspace Lead Grantor	Y	Y	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Started	Workspace Member Grantor	Y	Y	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Initial Review	Owner	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	
+Initial Review	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Initial Review	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Initial Review	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Initial Review	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Initial Review	Customer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Initial Review	Route Access Grantor	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Initial Review	Route Delegation Grantor	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Initial Review	Sales Engineer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Initial Review	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Initial Review	Supplier	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Initial Review	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Initial Review	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Initial Review	VPLMAdmin	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Initial Review	VPLMCreator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Initial Review	VPLMProjectLeader	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Initial Review	VPLMViewer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Initial Review	Workspace Access Grantor	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Initial Review	Workspace Lead Grantor	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Initial Review	Workspace Member Grantor	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Sent	Owner	-	Y	-	-	-	-	Y	Y	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	-	Y	-	-	-	-	
+Sent	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Sent	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Sent	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Sent	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Sent	Customer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Sent	Route Access Grantor	Y	Y	-	Y	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Sent	Route Delegation Grantor	Y	Y	-	Y	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Sent	Sales Engineer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Sent	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Sent	Supplier	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Sent	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Sent	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Sent	VPLMAdmin	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Sent	VPLMCreator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Sent	VPLMProjectLeader	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Sent	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Sent	Workspace Access Grantor	Y	Y	-	Y	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Sent	Workspace Lead Grantor	Y	Y	-	Y	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Sent	Workspace Member Grantor	Y	Y	-	Y	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	Y	Y	Y	Y	-	-	Y	
+Response Complete	Owner	-	-	-	-	-	-	Y	Y	-	-	-	-	Y	-	Y	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	
+Response Complete	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Response Complete	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Response Complete	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Response Complete	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Response Complete	Customer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Response Complete	Route Access Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Response Complete	Route Delegation Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Response Complete	Sales Engineer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Response Complete	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Response Complete	Supplier	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Response Complete	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Response Complete	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Response Complete	VPLMAdmin	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Response Complete	VPLMCreator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Response Complete	VPLMProjectLeader	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Response Complete	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Response Complete	Workspace Access Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Response Complete	Workspace Lead Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Response Complete	Workspace Member Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Final Review	Owner	-	-	-	-	-	-	Y	Y	-	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	
+Final Review	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Final Review	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Final Review	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Final Review	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Final Review	Customer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Final Review	Route Access Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Final Review	Route Delegation Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Final Review	Sales Engineer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Final Review	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Final Review	Supplier	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Final Review	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Final Review	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Final Review	VPLMAdmin	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Final Review	VPLMCreator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Final Review	VPLMProjectLeader	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Final Review	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Final Review	Workspace Access Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Final Review	Workspace Lead Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Final Review	Workspace Member Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	Y	-	-	-	-	-	Y	Y	Y	-	-	-	-	-	-	-	Y	
+Complete	Owner	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Complete	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Complete	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Complete	Customer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value == attribute[Primary Key]
+Complete	Route Access Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	Route Delegation Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	Sales Engineer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Complete	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	Supplier	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	context.user.property[Company Key].value matchlist attribute[Secondary Keys] ,'~' || context.user.property[Company Key].value == attribute[Primary Key]
+Complete	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	VPLMAdmin	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	VPLMCreator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	VPLMProjectLeader	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	Workspace Access Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	Workspace Lead Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	Workspace Member Grantor	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+

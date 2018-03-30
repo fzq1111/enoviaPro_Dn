@@ -1,0 +1,4 @@
+public class ${CLASSNAME} extends ${CLASS:VPLMIntegBOMVPLMSynchronizeBase} {
+	//do nothing
+}
+

@@ -1,0 +1,12 @@
+Schema Type	Schema Name	Property Name	Property Value	To Schema Type	To Schema Name
+store	CONFIDENTIAL_STORE	application	Framework		
+store	CONFIDENTIAL_STORE	installed date	10/26/2016 12:00:00 PM		
+store	CONFIDENTIAL_STORE	installer	ENOVIAEngineering		
+store	CONFIDENTIAL_STORE	original name	CONFIDENTIAL_STORE		
+store	CONFIDENTIAL_STORE	version	8-0-0-0		
+store	TopSECRET_STORE	application	Framework		
+store	TopSECRET_STORE	installed date	10/26/2016 12:00:00 PM		
+store	TopSECRET_STORE	installer	ENOVIAEngineering		
+store	TopSECRET_STORE	original name	TopSECRET_STORE		
+store	TopSECRET_STORE	version	8-0-0-0		
+

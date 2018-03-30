@@ -1,0 +1,19 @@
+tcl;
+eval {
+	set fname VPLMxIntegration-PD-R418HF2-downgrade.mql
+	puts "$fname - Start..."	
+	
+	#X32: BGTP Streamline(R2016xFD01) New behavior
+	puts {Cancel mapping parameters modifications...}
+	mql mod bus VPLMInteg-SynchParameters vplm NewTypingTeam \
+	VPLMInteg-TypeDefaultPolicy "Part|Development Part\nVPMReference|VPLM_SMB_Definition\nGeneral Library|Libraries\nGeneral Class|Classification" ;
+	mql mod bus VPLMInteg-SynchParameters vplm NewTypingVPM \
+	VPLMInteg-TypeDefaultPolicy "Part|Development Part\nVPMReference|VPLM_SMB\nGeneral Library|Libraries\nGeneral Class|Classification" ;
+	mql mod bus VPLMInteg-SynchParameters vplm VPM \
+	VPLMInteg-TypeDefaultPolicy "Part|Development Part\nPLMProductDS|VPLM_SMB\nGeneral Library|Libraries\nGeneral Class|Classification" ;
+	mql mod bus VPLMInteg-SynchParameters vplm Team \
+	VPLMInteg-TypeDefaultPolicy "Part|Development Part\nPLMProductDS|VPLM_SMB\nGeneral Library|Libraries\nGeneral Class|Classification" ;
+	
+	puts "$fname - Completed"
+}
+

@@ -1,0 +1,7 @@
+# File: CollaborativeDesign-Security-R418HFx-downgrade.mql
+#
+# LFE 15:10:27 Created file
+#
+##
+modify policy "VPLM_PosResourceRef" state "DEFAULT" login user "Local Administrator" all related organization;
+

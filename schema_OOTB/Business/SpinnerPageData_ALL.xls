@@ -1,0 +1,34 @@
+Page Name	Registry Name	Description	Mime Type	Hidden (boolean)	Icon File
+UI_PRG_WIDGETS				FALSE
+Installation Log 10-26-16 - TVC Core version 2015.2.0		Installation information		TRUE
+Installation Log 10-26-16 - ENOVIA RPT version V6R2016x		Installation information		TRUE
+RPTGenericFooter.xsl				FALSE
+RPTGenericHeader.xsl				FALSE
+RPTGenericPieChart.xsl				FALSE
+RPTGenericStyleAttributes.xsl				FALSE
+RPTIssueReportStylesheet.xsl				FALSE
+RPT Report Generator Print Output Handler Configuration				FALSE
+RPT Report Generator Print Output Handler Configuration (Template)				FALSE
+RPT Settings				FALSE
+RPT Settings (Template)				FALSE
+WhereUsedDefinition				FALSE
+master-services				FALSE
+e6w-master-services				FALSE
+e6w-widgetization-services				FALSE
+document-services				FALSE
+ParameterizationCentralConfiguration		Page for Parameterization Central Configuration	text/plain	FALSE
+ECMConfig				FALSE
+GovMdlLoggingPreferences				FALSE
+UI_PLC_WIDGETS				FALSE
+DomainAccess				FALSE
+UI__MASTER_WIDGETS				FALSE
+UI_BPS_WIDGETS				FALSE
+tsk-services				FALSE
+UI_ECM_WIDGETS				FALSE
+foundation-services				FALSE
+image-services				FALSE
+3DSpaceControlCenter			text/plain	FALSE
+tsk-services-v2				FALSE
+Installation Log 10-26-16 - TVC Core version 2015.3.0		Installation information		TRUE
+Installation Log 10-26-16 - ENOVIA RPT version V6R2016x.HF1		Installation information		TRUE
+

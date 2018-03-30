@@ -1,0 +1,575 @@
+/**
+ *   Copyright (c) 1992-2015 Dassault Systemes.
+ *   All Rights Reserved.
+ *
+ */
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.Vector;
+import org.apache.log4j.Logger;
+import com.matrixone.apps.common.TaskDateRollup;
+import com.matrixone.apps.common.WorkCalendar;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.DateUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UIForm;
+import com.matrixone.apps.program.Financials;
+import com.matrixone.apps.program.ProgramCentralConstants;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.apps.program.ProjectSpace;
+import com.matrixone.apps.program.Task;
+import com.matrixone.apps.domain.util.ContextUtil;
+// modi by ryan 2012-11-26
+// import matrix.db.*;
+import matrix.db.Context;
+import matrix.db.JPO;
+import com.matrixone.apps.common.Person;
+// modi end
+import matrix.util.MatrixException;
+import matrix.util.StringList;
+
+/**
+ * The <code>emxNotificationUtil</code> class contains static methods for sending email.
+ *
+ * @version AEF 10.0.0.0
+ */
+
+public class ${CLASSNAME} extends ${CLASS:emxNotificationUtilBase} {
+    /**
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since EC 10.0.0.0
+     */
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+    private static final int slash=47; // ASCII 47 == '/'
+    public ${CLASSNAME} (Context context, String[] args) throws Exception {
+        super(context, args);
+    }
+    
+    
+    
+    /**
+     * @param context
+     * @param args
+     * @return
+     * @throws Exception
+     * @author watts
+     * get assign html content
+     */
+    public String getCHRouteTaskApprovedMessageHTML(Context context, String args[])throws Exception{
+    	String message="";
+    	try {
+
+        	String taskType ="";
+        	String taskName ="";
+        	String workflowName ="";
+        	String workflowType ="";
+        	String workflowid ="";
+        	String workflowOwner ="";
+        	String attachmentName ="";
+        	String taskURL ="";
+        	String workflowURL ="";
+        	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("id");
+    		DomainObject projectObject = DomainObject.newInstance(context, objectId);
+    		taskType = projectObject.getType(context);
+    		taskName = projectObject.getName(context);
+    		
+    		String fileName ="";
+    		try {
+    			
+    			String url = 	this.getClass().getResource("/").getPath();
+    			url = url.substring(1,url.length()-16);
+    			fileName = url+"ContentTextHtmlTemplate"+String.format("%c", slash)+"CHRouteTaskApproved.html";
+    		} catch (Exception e) {
+    			m_logger.error(e.getMessage(), e);
+    			message = "Can Not Find Email Template \"CHRouteTaskApproved\", Please Connect Administrator.";
+    			return message;
+    		}
+    		
+    		try {
+    			taskURL = FrameworkProperties.getProperty(context, "CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+    			workflowURL = FrameworkProperties.getProperty(context, "CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+    		} catch (Exception e) {
+    			taskURL = "http://10.1.69.14/enovia/common/emxNavigator.jsp";
+    			workflowURL = "http://10.1.69.14/enovia/common/emxNavigator.jsp";
+    		}
+    		taskURL =taskURL + "?objectId="+objectId;
+    		
+    		StringList routeClause = new StringList();
+    		routeClause.add("name");
+    		routeClause.add("type");
+    		routeClause.add("id");
+    		routeClause.add("owner");
+    		MapList routes = projectObject.getRelatedObjects(context,
+    														"Route Task", 
+    														"Route", 
+    														routeClause,
+    														null, 
+    														false, 
+    														true, 
+    														(short) 1,
+    														null, 
+    														null);
+    		for (int i = 0; i < routes.size(); i++) {
+    			Map route = (Map) routes.get(0);
+    			workflowName = workflowName + route.get("name").toString();
+    			workflowType = workflowType + route.get("type").toString();
+    			workflowid = workflowid + route.get("id").toString();
+    			workflowOwner = workflowOwner + route.get("owner").toString();
+    		}
+    		
+    		workflowURL = workflowURL + "?objectId="+workflowid;
+    		
+    		if (workflowid != null && !"".equals(workflowid)) { 
+    			
+    			DomainObject objWorkflow = DomainObject.newInstance(context,workflowid);
+    			MapList attachments = objWorkflow.getRelatedObjects(context, 
+    																"Object Route", 
+    																"*",
+    																routeClause, 
+    																null, 
+    																true, 
+    																false, 
+    																(short) 1,
+    																null,
+    																null);
+    			
+    			for (int i = 0; i < attachments.size(); i++) {
+    				
+    				Map attachment = (Map) attachments.get(i);
+    				attachmentName = attachmentName + attachment.get("name") + " | ";
+    			}
+    			
+    		}
+    		
+			attachmentName = attachmentName.substring(0,attachmentName.length()-2);
+			
+    		File file = new File(fileName);
+    		InputStreamReader imput = new InputStreamReader(new FileInputStream(file), "UTF-8");
+    		BufferedReader reader = new BufferedReader(imput);
+    		String htmlStr = "";
+    		StringBuffer htmlContent = new StringBuffer();
+    		String tmpStr = "";
+    		while ((tmpStr = reader.readLine()) != null) {
+    			
+    			htmlContent.append(tmpStr);
+    		}
+    		reader.close();
+    		imput.close();
+    	
+    	/*	System.out.println("+++++++++++++++++++++++++++"+htmlContent.toString()); 
+    		System.out.println("+++++++++++++++++++++++++++"+taskType); 
+    		System.out.println("+++++++++++++++++++++++++++"+taskName); 
+    		System.out.println("+++++++++++++++++++++++++++"+workflowType); 
+    		System.out.println("+++++++++++++++++++++++++++"+workflowName); 
+    		System.out.println("+++++++++++++++++++++++++++"+workflowOwner); 
+    		System.out.println("+++++++++++++++++++++++++++"+attachmentName); 
+    		System.out.println("+++++++++++++++++++++++++++"+taskURL); 
+    		System.out.println("+++++++++++++++++++++++++++"+workflowURL); */
+    		htmlStr = htmlContent.toString();
+    		htmlStr = htmlStr.replace("${TaskType}", taskType);
+    		htmlStr = htmlStr.replace("${TaskName}", taskName);
+    		htmlStr = htmlStr.replace("${WorkflowType}", workflowType);
+    		htmlStr = htmlStr.replace("${WorkflowName}", workflowName);
+    		htmlStr = htmlStr.replace("${WorkflowOwner}", workflowOwner);
+    		htmlStr = htmlStr.replace("${AttachmentName}", attachmentName);
+    		htmlStr = htmlStr.replace("${TaskURL}", taskURL);
+    		htmlStr = htmlStr.replace("${WorkflowURL}", workflowURL);
+    		
+    		//System.out.println("+++++++++++++++++++++++++++"+htmlStr); 
+    		
+    		message = htmlStr;
+        	return message;
+        
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+    	return message;
+    }
+    
+    
+    /**
+     * @param context
+     * @param args
+     * @return
+     * @throws Exception
+     * @author watts
+     * get assign html content
+     */
+    public String getRouteTaskAssignedMessageHTML(Context context, String args[])throws Exception{
+    	String message="";
+    	try {
+    		String RouteInProject="";
+        	String taskType ="";
+        	String taskName ="";
+        	String TaskDescription="";
+			String TaskTitle="";
+        	String workflowName ="";
+        	String workflowType ="";
+        	String workflowid ="";
+        	String workflowOwner ="";
+        	String RouteDescription="";
+        	String attachmentName ="";
+        	String attachmentDes="";
+        	String taskURL ="";
+        	String workflowURL ="";
+        	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("id");
+    		DomainObject projectObject = DomainObject.newInstance(context, objectId);
+    		TaskDescription=projectObject.getDescription(context);
+
+    		String strRouteAction = projectObject.getAttributeValue(context, "Route Action");
+    		if(strRouteAction.equals("Approve") || strRouteAction.equals("Comment"))
+    		{
+    			taskType ="\u6279\u51C6";
+    		}else if(strRouteAction.equals("Notify Only")){
+    			taskType="\u901A\u77E5";
+    		}
+    		//taskName = projectObject.getName(context);
+			taskName = projectObject.getInfo(context, "name");
+    		TaskTitle= projectObject.getAttributeValue(context,"Title");
+    		String fileName ="";
+    		try {
+    			String url = 	this.getClass().getResource("/").getPath();
+    			url = url.substring(1,url.length()-16);
+    			fileName = url+"ContentTextHtmlTemplate"+String.format("%c", slash)+"SEMRouteTaskAssigned.html";
+    			//fileName = FrameworkProperties.getProperty(context, "CH.Notification.CHRouteTaskAssigned.FilePath");
+    		} catch (Exception e) {
+    			m_logger.error(e.getMessage(), e);
+    			message = "Can Not Find Email Template \"RouteTaskAssigned\", Please Connect Administrator.";
+    			return message;
+    		}
+    		
+    		try {
+    			taskURL = FrameworkProperties.getProperty(context, "CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+    			workflowURL = FrameworkProperties.getProperty(context, "CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+    		} catch (Exception e) {
+    			//taskURL = "http://172.16.1.173:8080/internal/common/emxNavigator.jsp";
+    			//workflowURL = "http://172.16.1.173:8080/internal/common/emxNavigator.jsp";
+    			taskURL =(String) programMap.get("baseURL");
+    			workflowURL=(String) programMap.get("baseURL");
+    		}
+    		taskURL =taskURL + "?objectId="+objectId;
+    		
+    		StringList routeClause = new StringList();
+    		routeClause.add("name");
+    		routeClause.add("type");
+    		routeClause.add("id");
+    		routeClause.add("owner");
+    		routeClause.add("description");
+    		MapList routes = projectObject.getRelatedObjects(context,
+    														"Route Task", 
+    														"Route", 
+    														routeClause,
+    														null, 
+    														false, 
+    														true, 
+    														(short) 1,
+    														null, 
+    														null);
+    		for (int i = 0; i < routes.size(); i++) {
+    			Map route = (Map) routes.get(0);
+    			workflowName = workflowName + route.get("name").toString();
+    			workflowType = workflowType + route.get("type").toString();
+    			workflowid = workflowid + route.get("id").toString();
+    			workflowOwner = route.get("owner").toString();
+    			RouteDescription=RouteDescription+route.get("description").toString();
+    		}
+    		if(routes.size()==1){
+    			Map route = (Map) routes.get(0);
+    			String routeId=(String)route.get("id");
+    		    DomainObject routeObj=DomainObject.newInstance(context,routeId);
+    		    String sRelName = DomainConstants.RELATIONSHIP_OBJECT_ROUTE;
+    		    StringList busList = new StringList("id");
+    			busList.add(DomainConstants.SELECT_NAME);
+    			busList.add(DomainConstants.SELECT_TYPE);
+    		    StringList relList = new StringList(DomainRelationship.SELECT_ID);
+          	    MapList mapList=routeObj.getRelatedObjects(context, sRelName, "*",busList, null,true, false,
+							(short) 0, "", "");
+          	   if(mapList.size()==1){
+          		   Map map=(Map)mapList.get(0);
+          		   DomainObject dzObj=DomainObject.newInstance(context,(String)map.get("id"));
+          		   String type=(String)map.get("type");
+          		   String rel="SEM Project Change";
+          		   if(type.equals("SEM Contact Order")){
+          			   rel="SEM Meeting ContactOrder,Meeting Context";
+          		   }
+          		   if(dzObj.isKindOf(context,"DOCUMENTS")){
+          			   rel="Reference Document,Subtask";
+          		   } 
+          		   MapList mapList1=dzObj.getRelatedObjects(context,rel, "*",busList,relList,true,false,(short)0, "", "");
+          		   Iterator items=mapList1.iterator();
+              	   while(items.hasNext()){
+              		   Map map1=(Map)items.next();
+              		   String type1=(String) map1.get("type");
+              		   if(type1.equals("Project Space")){
+              			   RouteInProject=(String) map1.get("name");
+              			   break;
+              		   }
+              		   
+              	   }  
+          	   }     
+    		}
+    		Person person = Person.getPerson(context, workflowOwner);
+    		String firstName  =  person.getAttributeValue(context, "First Name");
+    		String lastName  =  person.getAttributeValue(context, "Last Name");
+    		workflowOwner = firstName + lastName;
+    		workflowURL = workflowURL + "?objectId="+workflowid;
+    		
+    		if (workflowid != null && !"".equals(workflowid)) { 
+    			
+    			DomainObject objWorkflow = DomainObject.newInstance(context,workflowid);
+    			MapList attachments = objWorkflow.getRelatedObjects(context, 
+    																"Object Route", 
+    																"*",
+    																routeClause, 
+    																null, 
+    																true, 
+    																false, 
+    																(short) 1,
+    																null,
+    																null);
+    			for (int i = 0; i < attachments.size(); i++) {
+    				
+    				Map attachment = (Map) attachments.get(i);
+    				attachmentName = attachmentName + attachment.get("name") + " | ";
+    				
+    				String attachmentId= (String)attachment.get("id");
+    				DomainObject strAttachmentObj = new DomainObject(attachmentId);
+    				attachmentDes += strAttachmentObj.getDescription(context) + " | ";
+    			}
+    			
+    		}
+    		
+			attachmentName = attachmentName.substring(0,attachmentName.length()-2);
+			attachmentDes = attachmentDes.substring(0,attachmentDes.length()-2);
+
+			
+    		File file = new File(fileName);
+    		InputStreamReader imput = new InputStreamReader(new FileInputStream(file), "UTF-8");
+    		BufferedReader reader = new BufferedReader(imput);
+    		String htmlStr = "";
+    		StringBuffer htmlContent = new StringBuffer();
+    		String tmpStr = "";
+    		while ((tmpStr = reader.readLine()) != null) {
+    			
+    			htmlContent.append(tmpStr);
+    		}
+    		reader.close();
+    		imput.close();
+    	
+ 
+    		htmlStr = htmlContent.toString();
+    		htmlStr = htmlStr.replace("${RouteInProject}",RouteInProject);
+    		htmlStr = htmlStr.replace("${TaskType}", taskType);
+    		htmlStr = htmlStr.replace("${TaskName}", taskName);
+    		htmlStr = htmlStr.replace("${TaskDescription}",TaskDescription);
+			htmlStr = htmlStr.replace("${TaskTitle}", TaskTitle);
+    		htmlStr = htmlStr.replace("${WorkflowType}", workflowType);
+    		htmlStr = htmlStr.replace("${WorkflowName}", workflowName);
+    		htmlStr = htmlStr.replace("${WorkflowOwner}", workflowOwner);
+    		htmlStr = htmlStr.replace("${RouteDescription}",RouteDescription);
+    		htmlStr = htmlStr.replace("${AttachmentName}", attachmentName);
+    		htmlStr = htmlStr.replace("${AttachmentDes}", attachmentDes);
+    		htmlStr = htmlStr.replace("${TaskURL}", taskURL);
+    		htmlStr = htmlStr.replace("${WorkflowURL}", workflowURL);
+    		
+    		//System.out.println("+++++++++++++++++++++++++++"+htmlStr); 
+    		
+    		message = htmlStr;
+        	return message;
+        
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+    	return message;
+    }
+    
+    
+    /**
+     * @param context
+     * @param args
+     * @return
+     * @throws Exception
+     * @author watts
+     * get assign html content
+     */
+    public String getCHRouteTaskRejectedMessageHTML(Context context, String args[])throws Exception{
+    	String message="";
+    	try {
+
+        	String taskType ="";
+        	String taskName ="";
+        	String workflowName ="";
+        	String workflowType ="";
+        	String workflowid ="";
+        	String workflowOwner ="";
+        	String attachmentName ="";
+        	String attachmentDes ="";
+        	String taskURL ="";
+        	String workflowURL ="";
+        	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("id");
+    		DomainObject projectObject = DomainObject.newInstance(context, objectId);
+    		//taskType = projectObject.getType(context);
+    		String strRouteAction = projectObject.getAttributeValue(context, "Route Action");
+    		if(strRouteAction.equals("Approve") || strRouteAction.equals("Comment"))
+    		{
+    			taskType ="\u6279\u51C6";
+    		}else if(strRouteAction.equals("Notify Only")){
+    			taskType="\u901A\u77E5";
+    		}
+    		taskName = projectObject.getName(context);
+    		
+    		String fileName ="";
+    		try {
+    			
+    			String url = 	this.getClass().getResource("/").getPath();
+    			url = url.substring(1,url.length()-16);
+    			fileName = url+"ContentTextHtmlTemplate"+String.format("%c", slash)+"CHRouteTaskRejected.html";
+
+    			//fileName = FrameworkProperties.getProperty(context, "CH.Notification.CHRouteTaskRejected.FilePath");
+    		} catch (Exception e) {
+    			m_logger.error(e.getMessage(), e);
+    			message = "Can Not Find Email Template \"CHRouteTaskApproved\", Please Connect Administrator.";
+    			return message;
+    		}
+    		
+    		try {
+    			taskURL = FrameworkProperties.getProperty(context, "CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+    			workflowURL = FrameworkProperties.getProperty(context, "CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+    		} catch (Exception e) {
+    			taskURL = "http://10.1.69.14/enovia/common/emxNavigator.jsp";
+    			workflowURL = "http://10.1.69.14/enovia/common/emxNavigator.jsp";
+    		}
+    		taskURL =taskURL + "?objectId="+objectId;
+    		
+    		StringList routeClause = new StringList();
+    		routeClause.add("name");
+    		routeClause.add("type");
+    		routeClause.add("id");
+    		routeClause.add("owner");
+    		//routeClause.add("description");
+    		MapList routes = projectObject.getRelatedObjects(context,
+    														"Route Task", 
+    														"Route", 
+    														routeClause,
+    														null, 
+    														false, 
+    														true, 
+    														(short) 1,
+    														null, 
+    														null);
+    		for (int i = 0; i < routes.size(); i++) {
+    			Map route = (Map) routes.get(0);
+    			workflowName = workflowName + route.get("name").toString();
+    			workflowType = workflowType + route.get("type").toString();
+    			workflowid = workflowid + route.get("id").toString();
+    			workflowOwner = workflowOwner + route.get("owner").toString();
+    		}
+    		Person person = Person.getPerson(context, workflowOwner);
+    		String firstName  =  person.getAttributeValue(context, "First Name");
+    		String lastName  =  person.getAttributeValue(context, "Last Name");
+    		workflowOwner = firstName + lastName;
+    		workflowURL = workflowURL + "?objectId="+workflowid;
+    		
+    		if (workflowid != null && !"".equals(workflowid)) { 
+    			
+    			DomainObject objWorkflow = DomainObject.newInstance(context,workflowid);
+    			MapList attachments = objWorkflow.getRelatedObjects(context, 
+    																"Object Route", 
+    																"*",
+    																routeClause, 
+    																null, 
+    																true, 
+    																false, 
+    																(short) 1,
+    																null,
+    																null);
+    			
+    			for (int i = 0; i < attachments.size(); i++) {
+    				
+    				Map attachment = (Map) attachments.get(i);
+    				attachmentName = attachmentName + attachment.get("name") + " | ";
+    				//attachmentDes = attachmentDes+ attachment.get("description") +" | ";
+    				String attachmentId= (String)attachment.get("id");
+    				DomainObject strAttachmentObj = new DomainObject(attachmentId);
+    				attachmentDes += strAttachmentObj.getDescription(context) + " | ";
+    			}
+    			
+    		}
+    		
+			attachmentName = attachmentName.substring(0,attachmentName.length()-2);
+			attachmentDes = attachmentDes.substring(0,attachmentDes.length()-2);
+    		File file = new File(fileName);
+    		InputStreamReader imput = new InputStreamReader(new FileInputStream(file), "UTF-8");
+    		BufferedReader reader = new BufferedReader(imput);
+    		String htmlStr = "";
+    		StringBuffer htmlContent = new StringBuffer();
+    		String tmpStr = "";
+    		while ((tmpStr = reader.readLine()) != null) {
+    			
+    			htmlContent.append(tmpStr);
+    		}
+    		reader.close();
+    		imput.close();
+    	
+    	/*	System.out.println("+++++++++++++++++++++++++++"+htmlContent.toString()); 
+    		System.out.println("+++++++++++++++++++++++++++"+taskType); 
+    		System.out.println("+++++++++++++++++++++++++++"+taskName); 
+    		System.out.println("+++++++++++++++++++++++++++"+workflowType); 
+    		System.out.println("+++++++++++++++++++++++++++"+workflowName); 
+    		System.out.println("+++++++++++++++++++++++++++"+workflowOwner); 
+    		System.out.println("+++++++++++++++++++++++++++"+attachmentName); 
+    		System.out.println("+++++++++++++++++++++++++++"+taskURL); 
+    		System.out.println("+++++++++++++++++++++++++++"+workflowURL); */
+    		htmlStr = htmlContent.toString();
+    		htmlStr = htmlStr.replace("${TaskType}", taskType);
+    		htmlStr = htmlStr.replace("${TaskName}", taskName);
+    		htmlStr = htmlStr.replace("${WorkflowType}", workflowType);
+    		htmlStr = htmlStr.replace("${WorkflowName}", workflowName);
+    		htmlStr = htmlStr.replace("${WorkflowOwner}", workflowOwner);
+    		htmlStr = htmlStr.replace("${AttachmentName}", attachmentName);
+    		htmlStr = htmlStr.replace("${AttachmentDes}", attachmentDes);
+    		htmlStr = htmlStr.replace("${TaskURL}", taskURL);
+    		htmlStr = htmlStr.replace("${WorkflowURL}", workflowURL);
+    		
+    		//System.out.println("+++++++++++++++++++++++++++"+htmlStr); 
+    		
+    		message = htmlStr;
+        	return message;
+        
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+    	return message;
+    }
+}
+
+
+

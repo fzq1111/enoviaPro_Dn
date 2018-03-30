@@ -1,0 +1,88 @@
+/*
+ *  emxCommonDocumentUI.java
+ *
+ * Copyright (c) 1992-2015 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ */
+import matrix.db.*;
+import matrix.util.Pattern;
+import matrix.util.StringList;
+
+import java.lang.*;
+import java.util.HashMap;
+import java.util.StringTokenizer;
+
+import com.matrixone.apps.common.CommonDocument;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.PropertyUtil;
+/**
+ * @version AEF Rossini - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxCommonDocumentUIBase}
+{
+
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF Rossini
+     * @grade 0
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+    
+    @com.matrixone.apps.framework.ui.ProgramCallable
+    public Object getDocumentsCopy(Context context, String[] args)
+        throws Exception
+    {
+        try
+        {
+            HashMap programMap        = (HashMap) JPO.unpackArgs(args);
+            String  parentId          = (String) programMap.get("objectId");
+            DomainObject prtidObj=DomainObject.newInstance(context,parentId);
+            String sQCObjectidTr = prtidObj.getInfo(context, "to[SEM Meeting ContactOrder].from.id");
+            String strObjectIdReplace = sQCObjectidTr;
+           
+
+            DomainObject masterObject = DomainObject.newInstance(context, strObjectIdReplace);
+
+            StringList typeSelects = new StringList(1);
+            typeSelects.add(CommonDocument.SELECT_ID);
+            StringList relSelects = new StringList(1);
+            relSelects.add(CommonDocument.SELECT_RELATIONSHIP_ID);
+            MapList documentList = masterObject.getRelatedObjects(context,
+                                                          "Meeting Attachments",
+                                                          "*",
+                                                          typeSelects,
+                                                          relSelects,
+                                                          false,
+                                                          true,
+                                                          (short)1,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null);
+
+            return documentList;
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            throw ex;
+        }
+    }
+
+    
+}
+

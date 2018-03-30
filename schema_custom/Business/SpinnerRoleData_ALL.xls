@@ -1,0 +1,18 @@
+Role Name	Registry Name	Description	"Parent Roles (use ""|"" delim)"	"Child Roles (use ""|"" delim)"	"Assignments (use ""|"" delim)"	Site	Hidden (boolean)	Role Type (Project/Org)	Icon File
+SEM_Advanced_Quality_Engineer	SEM_Advanced_Quality_Engineer	SEM_Advanced_Quality_Engineer	Project User				FALSE		
+SEM_Company_Leader	SEM_Company_Leader	SEM_Company_Leader	Project User				FALSE		
+SEM_Dep_Leader	SEM_Dep_Leader	SEM_Dep_Leader	Project User				FALSE		
+SEM_Design_Engineer	SEM_Design_Engineer	SEM_Design_Engineer	Project User				FALSE		
+SEM_Financial_Manager	SEM_Financial_Manager	SEM_Financial_Manager	Project User				FALSE		
+SEM_Financial_Reviewer	SEM_Financial_Reviewer	SEM_Financial_Reviewer	Project User				FALSE		
+SEM_Group_Leader	SEM_Group_Leader	SEM_Group_Leader	Project User				FALSE		
+SEM_Manufacturing_Engineer	SEM_Manufacturing_Engineer	SEM_Manufacturing_Engineer	Project User				FALSE		
+SEM_Modelling_Engineer	SEM_Modelling_Engineer	SEM_Modelling_Engineer	Project User				FALSE		
+SEM_Product_Planner	SEM_Product_Planner	SEM_Product_Planner	Project User				FALSE		
+SEM_Project_Leader	SEM_Project_Leader	SEM_Project_Leader	Project Administrator | Project Lead				FALSE		
+SEM_Sales_Engineer	SEM_Sales_Engineer	SEM_Sales_Engineer	Project User				FALSE		
+SEM_Service_Engineer	SEM_Service_Engineer	SEM_Service_Engineer	Project User				FALSE		
+SEM_Supplier_Engineer	SEM_Supplier_Engineer	SEM_Supplier_Engineer	Project User				FALSE		
+SEM_Supplier_Quality_Engineer	SEM_Supplier_Quality_Engineer	SEM_Supplier_Quality_Engineer	Project User				FALSE		
+SEM_Team_Leader	SEM_Team_Leader	SEM_Team_Leader	Project User				FALSE		
+SEM_Dep_Director	SEM_Dep_Director	SEM_Dep_Director	Project User				FALSE		

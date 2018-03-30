@@ -1,0 +1,761 @@
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
+
+import javax.xml.ws.BindingProvider;
+
+import matrix.db.*;
+import matrix.util.*;
+
+import com.teamcenter.custom.web.adapter.TcService;
+import com.teamcenter.custom.web.adapter.TcService_Service;
+
+import com.dassault_systemes.platform.ven.jackson.databind.ObjectMapper;
+import com.matrixone.apps.domain.*;
+import com.matrixone.apps.domain.util.*;
+
+/**
+ * @author Yun.Lee 2016/12/08
+ */
+public class ${CLASSNAME} {
+
+	enum Whether {
+		YES, NO
+	}
+
+	private static final String separator = "|";
+	private static final char slash = 92; // 92 == '\\'
+
+	private static final String KEY_SECTION_KEY = "Key";
+	private static final String KEY_SECTION_DEFINE = "Define";
+	private static final String KEY_SECTION_FORMAT = "Format";
+
+	private static final String KEY_TEAMCENTER = "emxFramework.Interface.Teamcenter";
+	private static final String KEY_TEAMCENTER_HOST = KEY_TEAMCENTER + ".Host";
+	private static final String KEY_TEAMCENTER_VIRTUAL_ID = KEY_TEAMCENTER + ".Virtual.Id";
+	private static final String KEY_TEAMCENTER_QUERY = KEY_TEAMCENTER + ".Query";
+
+	private static final String KEY_PART_REVISION = "SEM Part Revision";
+	private static final String KEY_IS_NEW_PART = "SEM Is NewPart";
+
+	private static final String KEY_ITEM_REVISION_ID = "item_revision_id";
+	private static final String KEY_ITEM_ID = "item_id";
+	private static final String KEY_LAST_RELEASE_STATUS = "last_release_status";
+	private static final String KEY_STATUS_F1 = "F1";
+	private static final String KEY_STATUS_P2 = "P2";
+	private static final String KEY_STATUS_F3 = "F3";
+	private static final String KEY_STATUS_P3 = "P3";
+	private static final String KEY_STATUS_COMPLETED = "COMPLETED";
+	private static final String KEY_DATE_RELEASED = "date_released";
+	private static final String KEY_OBJECT_NAME = "object_name";
+	private static final String KEY_OBJECT_TYPE = "object_type";
+	private static final String KEY_OWNING_USER = "owning_user";
+	private static final String KEY_BL_REAL_QUANTITY = "bl_real_quantity";
+	private static final String KEY_BL_SEQUENCE_NO = "bl_sequence_no";
+	private static final String KEY_3D_F = "3D-F";
+	private static final String KEY_3D_P = "3D-P";
+
+	private static final String TYPE_PART_TASK = "SEM Part Task";
+	private static final String TYPE_TASK_ITEM = "SEM Task Item";
+	private static final String TYPE_TEAMCENTER_OBJECT = "SEM Teamcenter Object";
+	private static final String TYPE_TEAMCENTER_PART = "SEM Teamcenter Part";
+	private static final String TYPE_TEAMCENTER_DOCUMENT = "SEM Teamcenter Document";
+
+	private static final String TYPE_TEAMCENTER_ITEM = "Item";
+	private static final String TYPE_TEAMCENTER_ITEMREVISION = "ItemRevision";
+
+	private static final String POLICY_PART_TASK = "SEM Part Task";
+	private static final String POLICY_EXTERNAL_OBJECT = "SEM External Object";
+	private static final String POLICY_TASK_ITEM = "SEM Task Item";
+
+	private static final String RELATIONSHIP_SUB_PART = "SEM SubPart";
+	private static final String RELATIONSHIP_PROJECT_PART_TASK = "SEM Project PartTask";
+	private static final String RELATIONSHIP_TASK_DELIVERABLE = "Task Deliverable";
+	private static final String RELATIONSHIP_RELATED_DRW_TASK = "SEM Related DrwTask";
+
+	private static final String ATTR_ACTUAL_FINISH_DATE = "Task Actual Finish Date";
+	private static final String ATTR_ESTIMATED_START_DATE = "Task Estimated Start Date";
+	private static final String ATTR_ESTIMATED_FINISH_DATE = "Task Estimated Finish Date";
+
+	private static TcService service = null; // use getTcService()
+	private static String idVirtual = null; // use getIdVirtual()
+
+	private static int recurseToLevel = 1;
+	private static SimpleDateFormat emxDateFormat = new SimpleDateFormat(eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+	private static Map<String, String> TEAMCENTER_OBJECTS = new HashMap<String, String>();
+	static {
+		TEAMCENTER_OBJECTS.put(TYPE_TEAMCENTER_PART, "Item");
+		TEAMCENTER_OBJECTS.put(TYPE_TEAMCENTER_DOCUMENT, "Document");
+	}
+
+	private static Map<String, String> TEAMCENTER_DRAWING = new HashMap<String, String>();
+	static {
+		TEAMCENTER_DRAWING.put("\u5382\u5546\u5B9A\u70B9", "");
+		TEAMCENTER_DRAWING.put("\u8BBE\u8BA1\u6784\u60F3\u4E66", "");
+		TEAMCENTER_DRAWING.put("\u7EC4\u7ACB\u56FE", "S9_ASSEMBLYRevision|ASSEMBLYRevision");
+		TEAMCENTER_DRAWING.put(KEY_3D_F, KEY_STATUS_F1);
+		TEAMCENTER_DRAWING.put(KEY_3D_P, KEY_STATUS_P2);
+		TEAMCENTER_DRAWING.put("\u8BBE\u8BA1\u4ED5\u6837\u56FE", "S9_SAMPLERevision|SAMPLERevision");
+		TEAMCENTER_DRAWING.put("\u90E8\u54C1\u56FE", "S9_DRAWINGRevision|DrawingRevision");
+		TEAMCENTER_DRAWING.put("\u627F\u8BA4\u56FE", "S9_PDRAWINGRevision|Provide DrawingRevision");
+	}
+
+	private Map<String, String> fieldValues = null;
+
+	@SuppressWarnings("rawtypes")
+	public Vector getColumnValue(Context context, String[] args) throws Exception {
+		Vector<String> columnValue = new Vector<String>();
+		try {
+			Map params = JPO.unpackArgs(args);
+			MapList objects = (MapList) params.get("objectList");
+			Map column = (Map) params.get("columnMap");
+			String columnName = (String) column.get("name");
+			for (Object object : objects) {
+				columnValue.add((String) ((Map) object).get(columnName));
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		return columnValue;
+	}
+
+	@SuppressWarnings("rawtypes")
+	public String getFieldValue(Context context, String[] args) throws Exception {
+		try {
+			Map params = JPO.unpackArgs(args);
+			Map fields = (Map) params.get("fieldMap");
+			String expression = (String) fields.get(DomainObject.SELECT_NAME);
+			if (null != fieldValues) {
+				return fieldValues.get(expression);
+			}
+			String objectId = (String) ((Map) params.get("requestMap")).get("objectId");
+			DomainObject domainObject = new DomainObject(objectId);
+			String teamcenterId = domainObject.getInfo(context, DomainObject.SELECT_NAME);
+			fieldValues = toObject(getTcService(context).getInfo(teamcenterId, TYPE_TEAMCENTER_ITEM, getDeliverableSelects(), 0), HashMap.class);
+			if (fieldValues.isEmpty()) {
+				throw new Exception(String.format("The object can not be found in teamcenter. (item_id: %s)", teamcenterId));
+			}
+			// String description = fieldValues.get(KEY_OBJECT_NAME);
+			// if (!isNullOrEmpty(description) &&
+			// !description.equals(domainObject.getDescription(context))) {
+			// domainObject.setDescription(context, description);
+			// }
+			return fieldValues.get(expression);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw ex;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static MapList getEmptyList(int size) {
+		MapList mapList = new MapList();
+		mapList.add(new Integer(size));
+		return mapList;
+	}
+
+	private static boolean isNullOrEmpty(String valueString) {
+		return (null == valueString || valueString.trim().length() <= 0);
+	}
+
+	private static boolean isInvalidLevel(StringList stringList, int level) {
+		return (0 < level && level < FrameworkUtil.split((String) stringList.get(stringList.size() - 1), ",").size());
+	}
+
+	private static String toString(Object object) throws Exception {
+		return (new ObjectMapper()).writeValueAsString(object);
+	}
+
+	private static <T> T toObject(String valueString, Class<T> classObject) throws Exception {
+		return (new ObjectMapper()).readValue(valueString, classObject);
+	}
+
+	private static TcService getTcService(Context context) throws Exception {
+		if (null != service) {
+			return service;
+		}
+		String host = EnoviaResourceBundle.getProperty(context, KEY_TEAMCENTER_HOST);
+		if (isNullOrEmpty(host)) {
+			throw new Exception(String.format("The teamcenter host ip can not be empty. (key: %s)", KEY_TEAMCENTER_HOST));
+		}
+		String address = String.format("http://%s:8110/TcService?WSDL", host);
+		service = (new TcService_Service(new URL(address))).getTcServiceImplPort();
+		Map<String, Object> requestContext = ((BindingProvider) service).getRequestContext();
+		requestContext.put("com.sun.xml.internal.ws.connect.timeout", 0);
+		requestContext.put("com.sun.xml.internal.ws.request.timeout", 0);
+		return service;
+	}
+
+	private static String getIdVirtual(Context context) throws Exception {
+		if (!isNullOrEmpty(idVirtual)) {
+			return idVirtual;
+		}
+		String idString = EnoviaResourceBundle.getProperty(context, KEY_TEAMCENTER_VIRTUAL_ID);
+		if (isNullOrEmpty(idString)) {
+			throw new Exception(String.format("The id for teamcenter can not be empty. (key: %s)", KEY_TEAMCENTER_VIRTUAL_ID));
+		}
+		StringList stringList = FrameworkUtil.split(idString, separator);
+		@SuppressWarnings("rawtypes")
+		Iterator iterator = stringList.iterator();
+		String format = "print bus $1 select $2 dump $3";
+		MQLCommand mqlCommand = new MQLCommand();
+		while (iterator.hasNext()) {
+			if (mqlCommand.executeCommand(context, format, (String) iterator.next(), DomainObject.SELECT_ID, separator)) {
+				idVirtual = mqlCommand.getResult();
+				break;
+			}
+		}
+		if (isNullOrEmpty(idVirtual)) {
+			throw new Exception(String.format("The id for teamcenter error. (key: %s)", KEY_TEAMCENTER_VIRTUAL_ID));
+		}
+		return idVirtual;
+	}
+
+	private static String getQueryProperty(Context context, String section, String key) throws Exception {
+		String propertyKey = String.format("%s.%s.%s", KEY_TEAMCENTER_QUERY, section, key);
+		String propertyValue = EnoviaResourceBundle.getProperty(context, propertyKey);
+		if (isNullOrEmpty(propertyValue)) {
+			throw new Exception(String.format("The teamcenter query can not be empty. (key: %s)", propertyKey));
+		}
+		return propertyValue;
+	}
+
+	private static String getLastId(Context context, String type, String name) throws Exception {
+		String revision = DomainObject.QUERY_WILDCARD;
+		String where = DomainObject.SELECT_REVISION + " == " + DomainObject.SELECT_LATEST_REVISION;
+		return getId(context, type, name, revision, where);
+	}
+
+	private static String getId(Context context, String type, String name, String revision, String objectWhere) throws Exception {
+		if (isNullOrEmpty(name)) {
+			return DomainObject.EMPTY_STRING;
+		}
+		String format = "temp query bus \"$1\" \"$2\" \"$3\" limit 1 where \"$4\" select $5 dump $6";
+		String id = MqlUtil.mqlCommand(context, format, type, name, revision, objectWhere, DomainObject.SELECT_ID, separator);
+		if (isNullOrEmpty(id)) {
+			return id;
+		}
+		StringList stringList = FrameworkUtil.split(id, separator);
+		return (String) stringList.getElement(stringList.size() - 1);
+	}
+
+	private static String getRelatedObjectId(Context context, DomainObject domainObject, String relationship, boolean from, String objectWhere) throws Exception {
+		String type = DomainObject.QUERY_WILDCARD;
+		StringList objectSelects = new StringList(DomainObject.SELECT_ID);
+		StringList relationshipSelects = new StringList(DomainRelationship.SELECT_ID);
+		String relationshipWhere = DomainRelationship.EMPTY_STRING;
+		MapList mapList = domainObject
+				.getRelatedObjects(context, relationship, type, objectSelects, relationshipSelects, !from, from, (short) 1, objectWhere, relationshipWhere, 1);
+		if (mapList.isEmpty()) {
+			return DomainObject.EMPTY_STRING;
+		}
+		@SuppressWarnings("rawtypes")
+		Map map = (Map) mapList.get(0);
+		return map.get(DomainRelationship.SELECT_ID) + separator + map.get(DomainObject.SELECT_ID);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static Map putTeamcenterSearchResult(Context context, Map object) throws Exception {
+		object.put(DomainObject.SELECT_ID, getIdVirtual(context));
+		object.put(DomainRelationship.SELECT_ID, object.get(KEY_ITEM_ID));
+		return object;
+	}
+
+	private static StringList getIdList(Context context, @SuppressWarnings("rawtypes") Map params, int index, int level) throws Exception {
+		StringList idList = new StringList();
+		String[] rowIds = (String[]) params.get("emxTableRowIds");
+		for (String rowId : rowIds) {
+			StringList stringList = FrameworkUtil.split(rowId, separator);
+			String id = (String) stringList.get(index);
+			if (!isNullOrEmpty(id) && !isInvalidLevel(stringList, level)) {
+				idList.add(id);
+			}
+		}
+		return idList;
+	}
+
+	private static String getDeliverableSelects() throws Exception {
+		StringList deliverableSelects = new StringList();
+		deliverableSelects.add(KEY_ITEM_REVISION_ID);
+		deliverableSelects.add(KEY_LAST_RELEASE_STATUS);
+		deliverableSelects.add(KEY_DATE_RELEASED);
+		deliverableSelects.add(KEY_OBJECT_NAME);
+		deliverableSelects.add(KEY_OBJECT_TYPE);
+		deliverableSelects.add(KEY_OWNING_USER);
+		return toString(deliverableSelects);
+	}
+
+	private static String getObjectSelects() throws Exception {
+		StringList objectSelects = new StringList();
+		objectSelects.add(KEY_ITEM_REVISION_ID);
+		objectSelects.add(KEY_ITEM_ID);
+		objectSelects.add(KEY_LAST_RELEASE_STATUS);
+		objectSelects.add(KEY_OBJECT_NAME);
+		objectSelects.add(KEY_OBJECT_TYPE);
+		objectSelects.add(KEY_OWNING_USER);
+		return toString(objectSelects);
+	}
+
+	private static String getBOMSelects() throws Exception {
+		StringList bomSelects = new StringList();
+		bomSelects.add(KEY_BL_REAL_QUANTITY);
+		bomSelects.add(KEY_BL_SEQUENCE_NO);
+		return toString(bomSelects);
+	}
+
+	private static String getStatusSelects() throws Exception {
+		StringList statusSelects = new StringList();
+		statusSelects.add(KEY_DATE_RELEASED);
+		statusSelects.add(DomainObject.SELECT_NAME);
+		return toString(statusSelects);
+	}
+
+	@SuppressWarnings("rawtypes")
+	private static Map<String, String> getWhereType(Context context, Map filters) throws Exception {
+		Map<String, String> where = new HashMap<String, String>();
+		filters.remove("TYPES");
+		List types = (List) filters.remove("Type");
+		if (null == types || types.isEmpty()) {
+			return where;
+		}
+		// 0: (= > <), 1: value
+		String type = TEAMCENTER_OBJECTS.get(FrameworkUtil.split((String) types.get(0), separator).get(1));
+		if (!isNullOrEmpty(type)) {
+			where.put(getQueryProperty(context, KEY_SECTION_KEY, DomainObject.SELECT_TYPE.toUpperCase()), type);
+		}
+		return where;
+	}
+
+	@SuppressWarnings("rawtypes")
+	private static Map getWhereAll(Context context, Map filters) throws Exception {
+		Map<String, String> where = getWhereType(context, filters);
+		for (Object key : filters.keySet()) {
+			String queryValue = (String) FrameworkUtil.split((String) ((List) filters.get(key)).get(0), separator).get(1);
+			String queryKey = getQueryProperty(context, KEY_SECTION_KEY, key.toString().toUpperCase());
+			where.put(queryKey, queryValue);
+		}
+		return where;
+	}
+
+	private static String getDeliverTime(List drawings, StringList types, SimpleDateFormat format) throws Exception {
+		for (int i = 0; i < drawings.size(); i++) {
+			@SuppressWarnings("rawtypes")
+			Map drawing = (Map) drawings.get(i);
+			String released = (String) drawing.get(KEY_DATE_RELEASED);
+			if (isNullOrEmpty(released)) {
+				continue;
+			}
+			if (types.contains((String) drawing.get(KEY_OBJECT_TYPE))) {
+				return emxDateFormat.format(format.parse(released));
+			}
+		}
+		return DomainObject.EMPTY_STRING;
+	}
+
+	private static String getDeliverTime(Context context, MapList revisions, String status, SimpleDateFormat format) throws Exception {
+		Date date = null;
+		for (int i = 0; i < revisions.size(); i++) {
+			@SuppressWarnings("rawtypes")
+			Map revision = (Map) revisions.get(i);
+			String current = (String) revision.get(KEY_LAST_RELEASE_STATUS);
+			if (!status.equals(current)) {
+				continue;
+			}
+			String released = (String) revision.get(KEY_DATE_RELEASED);
+			if (isNullOrEmpty(released)) {
+				continue;
+			}
+			Date published = format.parse(released);
+			if (null == date || published.before(date)) {
+				date = published;
+			}
+		}
+		return null == date ? DomainObject.EMPTY_STRING : emxDateFormat.format(date);
+	}
+
+	private static MapList getTeamcenterItemRevisions(Context context, String teamcenterId) throws Exception {
+		Map<String, String> where = new HashMap<String, String>();
+		String queryKey = getQueryProperty(context, KEY_SECTION_KEY, DomainObject.SELECT_NAME.toUpperCase());
+		where.put(queryKey, teamcenterId);
+		String queryName = getQueryProperty(context, KEY_SECTION_DEFINE, TYPE_TEAMCENTER_ITEMREVISION);
+		String objectSelects = getDeliverableSelects();
+		return toObject(getTcService(context).findObjects(queryName, toString(where), objectSelects, 0), MapList.class);
+	}
+
+	@SuppressWarnings("rawtypes")
+	private static Whether isNewPart(Context context, String teamcenterId, String status) throws Exception {
+		MapList revisions = getTeamcenterItemRevisions(context, teamcenterId);
+		for (Object revision : revisions) {
+			if (status.equals(((Map) revision).get(KEY_LAST_RELEASE_STATUS))) {
+				return Whether.NO;
+			}
+		}
+		return Whether.YES;
+	}
+
+	@SuppressWarnings("rawtypes")
+	private static DomainObject getTeamcenterObject(Context context, String type, String policy, Map attributes) throws Exception {
+		String teamcenterId = (String) attributes.get(KEY_ITEM_ID);
+		if (isNullOrEmpty(teamcenterId)) {
+			throw new Exception("The teamcenter id can not be empty.");
+		}
+		DomainObject domainObject = DomainObject.newInstance(context);
+		String existingId = getLastId(context, type, teamcenterId);
+		if (isNullOrEmpty(existingId)) {
+			domainObject.createObject(context, type, teamcenterId, null, null, "eService Production");
+		} else {
+			domainObject.setId(existingId);
+		}
+		String description = (String) attributes.get(KEY_OBJECT_NAME);
+		if (null != description && !description.equals(domainObject.getDescription(context))) {
+			domainObject.setDescription(context, description);
+		}
+		if (!policy.equals(domainObject.getPolicy(context).getName())) {
+			domainObject.setPolicy(context, policy);
+		}
+		return domainObject;
+	}
+
+	private static DomainObject getPartTask(Context context, @SuppressWarnings("rawtypes") Map attributes) throws Exception {
+		DomainObject domainObject = getTeamcenterObject(context, TYPE_PART_TASK, POLICY_PART_TASK, attributes);
+		if (isNullOrEmpty(domainObject.getAttributeValue(context, KEY_IS_NEW_PART))) {
+			// domainObject.setAttributeValue(context, KEY_IS_NEW_PART,
+			// isNewPart(context, domainObject.getInfo(context,
+			// DomainObject.SELECT_NAME), KEY_STATUS_P2).name());
+			domainObject.setAttributeValue(context, KEY_IS_NEW_PART, Whether.YES.name());
+		}
+		String revision = (String) attributes.get(KEY_ITEM_REVISION_ID);
+		if (null != revision && !revision.equals(domainObject.getAttributeValue(context, KEY_PART_REVISION))) {
+			domainObject.setAttributeValue(context, KEY_PART_REVISION, revision);
+		}
+		return domainObject;
+	}
+
+	private static Map<String, String> getTaskItems(Context context, DomainObject domainObject, String[] names) throws Exception {
+		Map<String, String> taskItems = new HashMap<String, String>();
+		for (String name : names) {
+			String where = String.format("%s == '%s'", DomainObject.SELECT_NAME, name);
+			String idString = getRelatedObjectId(context, domainObject, RELATIONSHIP_RELATED_DRW_TASK, true, where);
+			if (!isNullOrEmpty(idString)) {
+				String id = (String) FrameworkUtil.split(idString, separator).getElement(1);
+				taskItems.put(name, id);
+			}
+		}
+		if (taskItems.isEmpty()) {
+			String revision = FrameworkUtil.autoName(context, "type_SEMTaskItem", null, "policy_SEMTaskItem", null, null, true, true);
+			String date = emxDateFormat.format(new java.util.Date());
+			DomainObject object = DomainObject.newInstance(context);
+			for (String name : names) {
+				object.createAndConnect(context, TYPE_TASK_ITEM, name, revision, POLICY_TASK_ITEM, "eService Production", RELATIONSHIP_RELATED_DRW_TASK, domainObject, true);
+				object.setAttributeValue(context, ATTR_ESTIMATED_START_DATE, date);
+				object.setAttributeValue(context, ATTR_ESTIMATED_FINISH_DATE, date);
+				taskItems.put(name, object.getId(context));
+			}
+		}
+		return taskItems;
+	}
+
+	private static void delNonexistentChildren(Context context, DomainObject domainObject, MapList children) throws Exception {
+		String type = DomainObject.QUERY_WILDCARD;
+		StringList objectSelects = new StringList(DomainObject.SELECT_ID), relationshipSelects = new StringList(DomainRelationship.SELECT_ID);
+		objectSelects.add(DomainObject.SELECT_NAME);
+		String objectWhere = DomainObject.EMPTY_STRING, relationshipWhere = DomainRelationship.EMPTY_STRING;
+		MapList mapList = domainObject.getRelatedObjects(context, RELATIONSHIP_SUB_PART, type, objectSelects, relationshipSelects, false, true, (short) 1, objectWhere,
+				relationshipWhere, 0);
+		if (mapList.isEmpty()) {
+			return;
+		}
+		HashSet<String> set = new HashSet<String>();
+		if (null != children) {
+			for (int i = 0; i < children.size(); i++) {
+				Map attributes = (Map) children.get(i);
+				set.add((String) attributes.get(KEY_ITEM_ID));
+			}
+		}
+		for (Object map : mapList) {
+			Map part = (Map) map;
+			String partName = (String) part.get(DomainObject.SELECT_NAME);
+			if (!set.contains(partName)) {
+				String relationshipId = (String) part.get(DomainRelationship.SELECT_ID);
+				DomainRelationship.disconnect(context, relationshipId);
+			}
+		}
+	}
+
+	private static void doImportPartTask(Context context, DomainObject domainObject, String teamcenterId) throws Exception {
+		@SuppressWarnings("rawtypes")
+		Map attributes = toObject(getTcService(context).getInfo(teamcenterId, TYPE_TEAMCENTER_ITEM, getObjectSelects(), 0), HashMap.class);
+		if (attributes.isEmpty()) {
+			throw new Exception(String.format("The part task can not be found in teamcenter. (item_id: %s)", teamcenterId));
+		}
+		DomainObject partTask = getPartTask(context, attributes);
+		// System.out.println(attributes);
+		if ("Total VehicleRevision".equals(attributes.get(KEY_OBJECT_TYPE))) {
+			doSynchronization(context, partTask, "S9_UPGRevision");
+		} else {
+			doSynchronization(context, partTask, 1);
+		}
+		if (null == domainObject) {
+			return;
+		}
+		
+		if ("Total VehicleRevision".equals(attributes.get(KEY_OBJECT_TYPE))) {
+			String objectWhere = String.format("%s == '%s'", DomainObject.SELECT_ID, partTask.getId(context));
+			if (isNullOrEmpty(getRelatedObjectId(context, domainObject, RELATIONSHIP_PROJECT_PART_TASK, true, objectWhere))) {
+				domainObject.addToObject(context, new RelationshipType(RELATIONSHIP_PROJECT_PART_TASK), partTask.getId(context));
+			}
+		} else {
+			Map rootMap = domainObject.getRelatedObject(context, RELATIONSHIP_PROJECT_PART_TASK, true, new StringList("id"), null);
+			if (null == rootMap || rootMap.isEmpty()) {
+				throw new Exception("Not found the root node.");
+			}
+			String rootId = (String) rootMap.get("id");
+			DomainObject rootObject = new DomainObject(rootId);
+			String objectWhere = String.format("%s == '%s'", DomainObject.SELECT_ID, partTask.getId(context));
+			if (isNullOrEmpty(getRelatedObjectId(context, rootObject, RELATIONSHIP_SUB_PART, true, objectWhere))) {
+				rootObject.addToObject(context, new RelationshipType(RELATIONSHIP_SUB_PART), partTask.getId(context));
+			}
+		}
+	}
+
+	private static void addDeliverablePart(Context context, DomainObject domainObject, String teamcenterId) throws Exception {
+		@SuppressWarnings("rawtypes")
+		Map attributes = toObject(getTcService(context).getInfo(teamcenterId, TYPE_TEAMCENTER_ITEM, getObjectSelects(), 0), HashMap.class);
+		if (attributes.isEmpty()) {
+			throw new Exception(String.format("The part task can not be found in teamcenter. (item_id: %s)", teamcenterId));
+		}
+		DomainObject teamcenterObject = getTeamcenterObject(context, TYPE_TEAMCENTER_OBJECT, POLICY_EXTERNAL_OBJECT, attributes);
+		String objectWhere = String.format("%s == '%s'", DomainObject.SELECT_ID, teamcenterObject.getId(context));
+		if (isNullOrEmpty(getRelatedObjectId(context, domainObject, RELATIONSHIP_TASK_DELIVERABLE, true, objectWhere))) {
+			domainObject.addToObject(context, new RelationshipType(RELATIONSHIP_TASK_DELIVERABLE), teamcenterObject.getId(context));
+		}
+	}
+
+	private static void doSynchronization(Context context, DomainObject domainObject) throws Exception {
+		String teamcenterId = domainObject.getInfo(context, DomainObject.SELECT_NAME);
+		@SuppressWarnings("rawtypes")
+		Map attributes = toObject(getTcService(context).getInfo(teamcenterId, TYPE_TEAMCENTER_ITEM, getObjectSelects(), 0), HashMap.class);
+		if (attributes.isEmpty()) {
+			domainObject.deleteObject(context);
+			return;
+		}
+		DomainObject partTask = getPartTask(context, attributes);
+		// System.out.println(attributes);
+		if ("Total VehicleRevision".equals(attributes.get(KEY_OBJECT_TYPE))) {
+			doSynchronization(context, partTask, "S9_UPGRevision");
+		} else {
+			doSynchronization(context, partTask, 1);
+		}
+	}
+
+	private static void doSynchronization(Context context, DomainObject domainObject, int currentLevel) throws Exception {
+		MapList children = toObject(getTcService(context).getBOM(domainObject.getInfo(context, DomainObject.SELECT_NAME), TYPE_TEAMCENTER_ITEM, getObjectSelects(), null, 1, null),
+				MapList.class);
+		delNonexistentChildren(context, domainObject, children);
+		for (int i = 0; i < children.size(); i++) {
+			@SuppressWarnings("rawtypes")
+			DomainObject child = getPartTask(context, (Map) children.get(i));
+			if (0 == recurseToLevel || currentLevel < recurseToLevel) {
+				doSynchronization(context, child, currentLevel + 1);
+			}
+			String objectWhere = String.format("%s == '%s'", DomainObject.SELECT_ID, child.getId(context));
+			if (isNullOrEmpty(getRelatedObjectId(context, domainObject, RELATIONSHIP_SUB_PART, true, objectWhere))) {
+				domainObject.addToObject(context, new RelationshipType(RELATIONSHIP_SUB_PART), child.getId(context));
+			}
+		}
+	}
+
+	private static void doSynchronization(Context context, DomainObject domainObject, String type) throws Exception {
+		MapList children = toObject(getTcService(context).getBOM(domainObject.getInfo(context, DomainObject.SELECT_NAME), TYPE_TEAMCENTER_ITEM, getObjectSelects(), null, 0, type),
+				MapList.class);
+		delNonexistentChildren(context, domainObject, children);
+		for (int i = 0; i < children.size(); i++) {
+			Map attributes = (Map) children.get(i);
+			if (!type.contains((String) attributes.get(KEY_OBJECT_TYPE))) {
+				continue;
+			}
+			DomainObject child = getPartTask(context, attributes);
+			doSynchronization(context, child, 1);
+			String objectWhere = String.format("%s == '%s'", DomainObject.SELECT_ID, child.getId(context));
+			if (isNullOrEmpty(getRelatedObjectId(context, domainObject, RELATIONSHIP_SUB_PART, true, objectWhere))) {
+				domainObject.addToObject(context, new RelationshipType(RELATIONSHIP_SUB_PART), child.getId(context));
+			}
+		}
+	}
+
+	private static void doRefreshDeliverStatus(Context context, DomainObject domainObject) throws Exception {
+		String typeWhereUsed = TEAMCENTER_DRAWING.values().toString(), flag = KEY_STATUS_F3 + separator + KEY_STATUS_P3 + separator + KEY_STATUS_COMPLETED;
+		String teamcenterId = domainObject.getInfo(context, DomainObject.SELECT_NAME);
+		Map drawings = toObject(getTcService(context).getDeliverStatus(teamcenterId, TYPE_TEAMCENTER_ITEM, getObjectSelects(), getStatusSelects(), typeWhereUsed, flag), Map.class);
+		Map<String, String> taskItems = getTaskItems(context, domainObject, TEAMCENTER_DRAWING.keySet().toArray(new String[TEAMCENTER_DRAWING.size()]));
+		MapList revisions = getTeamcenterItemRevisions(context, teamcenterId);
+		DomainObject object = DomainObject.newInstance(context);
+		SimpleDateFormat format = new SimpleDateFormat(getQueryProperty(context, KEY_SECTION_FORMAT, "DATE"));
+		for (Map.Entry<String, String> entry : taskItems.entrySet()) {
+			String name = entry.getKey();
+			String type = TEAMCENTER_DRAWING.get(name);
+			if (isNullOrEmpty(type)) {
+				continue;
+			}
+			String infoKey = "\u7ec4\u7acb\u56fe".equals(name) ? "WHERE_USED_ALL" : "WHERE_USED_PRECISE";
+			List drawInfos = (List) drawings.get(infoKey);
+			// System.out.println(name+ "," + infoKey+","+ drawInfos);
+			String time = name.contains("3D") ? getDeliverTime(context, revisions, type, format) : getDeliverTime(drawInfos, FrameworkUtil.split(type, separator), format);
+			// System.out.println(name + ":" + time);
+			// if (isNullOrEmpty(time)) {
+			// continue;
+			// }
+			object.setId(entry.getValue());
+			object.setAttributeValue(context, ATTR_ACTUAL_FINISH_DATE, time);
+		}
+	}
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * @param context
+	 * @param params
+	 *            params from enovia.
+	 * @return result from teamcenter.
+	 * @throws Exception
+	 */
+	@SuppressWarnings("rawtypes")
+	public static MapList search(Context context, String[] args) throws Exception {
+		try {
+			Map params = JPO.unpackArgs(args);
+			String filters = (String) params.get("ftsFilters");
+			Map where = getWhereAll(context, toObject(filters, HashMap.class));
+			if (where.isEmpty()) {
+				return getEmptyList(0);
+			}
+
+			String queryName = getQueryProperty(context, KEY_SECTION_DEFINE, TYPE_TEAMCENTER_ITEM);
+			int limit = Integer.parseInt((String) params.get("queryLimit"));
+			MapList objects = toObject(getTcService(context).findObjects(queryName, toString(where), getObjectSelects(), limit), MapList.class);
+			MapList mapList = getEmptyList(objects.size());
+			for (Object object : objects) {
+				mapList.add(putTeamcenterSearchResult(context, (Map) object));
+			}
+			return mapList;
+		} catch (Exception ex) {
+			ContextUtil.abortTransaction(context);
+			ex.printStackTrace();
+			throw ex;
+		}
+	}
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////
+	public static void doImportPartTask(Context context, String[] args) throws Exception {
+		try {
+			@SuppressWarnings("rawtypes")
+			Map params = JPO.unpackArgs(args);
+			String parentId = (String) params.get("busObjId");
+			if (isNullOrEmpty(parentId)) {
+				throw new Exception("The enovia parent id can not be empty.");
+			}
+			DomainObject domainObject = new DomainObject(parentId);
+			// @see search(), 0 for teamcenter id.
+			StringList idList = getIdList(context, params, 0, 0);
+			ContextUtil.startTransaction(context, true);
+			for (Object id : idList) {
+				doImportPartTask(context, domainObject, (String) id);
+			}
+			ContextUtil.commitTransaction(context);
+		} catch (Exception ex) {
+			ContextUtil.abortTransaction(context);
+			ex.printStackTrace();
+			throw ex;
+		}
+	}
+
+	public static void addDeliverablePart(Context context, String[] args) throws Exception {
+		try {
+			@SuppressWarnings("rawtypes")
+			Map params = JPO.unpackArgs(args);
+			String parentId = (String) params.get("busObjId");
+			if (isNullOrEmpty(parentId)) {
+				throw new Exception("The enovia parent id can not be empty.");
+			}
+			DomainObject domainObject = new DomainObject(parentId);
+			// @see search(), 0 for teamcenter id.
+			StringList idList = getIdList(context, params, 0, 0);
+			ContextUtil.startTransaction(context, true);
+			for (Object id : idList) {
+				addDeliverablePart(context, domainObject, (String) id);
+			}
+			ContextUtil.commitTransaction(context);
+		} catch (Exception ex) {
+			ContextUtil.abortTransaction(context);
+			ex.printStackTrace();
+			throw ex;
+		}
+	}
+
+	public static void doSynchronization(Context context, String[] args) throws Exception {
+		try {
+			@SuppressWarnings("rawtypes")
+			Map params = JPO.unpackArgs(args);
+			int syncLevel = 3;
+			String parentId = (String) params.get("busObjId");
+			if (isNullOrEmpty(parentId)) {
+				throw new Exception("The enovia parent id can not be empty.");
+			}
+			DomainObject parentObject = new DomainObject(parentId);
+			Map rootMap = parentObject.getRelatedObject(context, RELATIONSHIP_PROJECT_PART_TASK, true, new StringList("id"), null);
+			String rootId = (String) rootMap.get("id");
+			//System.out.println(rootMap);
+			StringList idList = getIdList(context, params, 1, syncLevel);
+			ContextUtil.startTransaction(context, true);
+			for (Object id : idList) {
+				// @ see OOTB code, 0 for relationship id, 1 for object id.
+				if (id.equals(parentId))
+					continue;
+				else if (id.equals(rootId)) {
+					DomainObject rootObject = new DomainObject(rootId);
+					String teamcenterId = rootObject.getInfo(context, DomainObject.SELECT_NAME);
+					@SuppressWarnings("rawtypes")
+					Map attributes = toObject(getTcService(context).getInfo(teamcenterId, TYPE_TEAMCENTER_ITEM, getObjectSelects(), 0), HashMap.class);
+					if (attributes.isEmpty()) {
+						MapList mapList = rootObject.getRelatedObjects(context, RELATIONSHIP_SUB_PART, "*", new StringList("id"), null, false, true, (short) 1, "", "", 0);
+						// System.out.println(mapList);
+						for (Object child : mapList) {
+							String childId = (String) ((Map) child).get("id");
+							doSynchronization(context, new DomainObject(childId));
+						}
+					} else {
+						DomainObject partTask = getPartTask(context, attributes);
+						doSynchronization(context, partTask, "S9_UPGRevision");
+					}
+				} else {
+					doSynchronization(context, new DomainObject((String) id));
+				}
+			}
+			ContextUtil.commitTransaction(context);
+		} catch (Exception ex) {
+			ContextUtil.abortTransaction(context);
+			ex.printStackTrace();
+			throw ex;
+		}
+	}
+
+	public static void doRefreshDeliverStatus(Context context, String[] args) throws Exception {
+		try {
+			@SuppressWarnings("rawtypes")
+			StringList idList = getIdList(context, (Map) JPO.unpackArgs(args), 1, 0);
+			ContextUtil.startTransaction(context, true);
+			for (Object id : idList) {
+				DomainObject domainObject = new DomainObject((String) id);
+				// @ see OOTB code, 0 for relationship id, 1 for object id.
+				if (Whether.YES.name().equalsIgnoreCase(domainObject.getAttributeValue(context, KEY_IS_NEW_PART))) {
+					doRefreshDeliverStatus(context, domainObject);
+				}
+			}
+			ContextUtil.commitTransaction(context);
+		} catch (Exception ex) {
+			ContextUtil.abortTransaction(context);
+			ex.printStackTrace();
+			throw ex;
+		}
+	}
+}

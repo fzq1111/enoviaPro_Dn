@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ds:services xmlns:ds="http://www.3ds.com/enovia/e6wv2"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.3ds.com/enovia/e6wv2 servicesv2.xsd ">
+
+	<!--  Master Page for Foundation V2. For V1 e6w-master-services is still used. -->
+
+    <!-- Page object defined may or may not exist.  They can all be defined/referenced using the importServices function below and deployed
+         when a given application is installed.
+         An equivalent "custom" page is automatically loaded for each page object defined using same name as prefix and "-custom" as suffix.
+         For example, when importing e6w-widgetization-services, e6w-widgetization-services-custom will also be imported if the given page object exists.
+         The "custom" page may define new services and/or overwrite existing services.
+
+         Also, when the Master page object is modified, the service cache is reloaded.  To reload the cache when one of the other page objects has been
+         modified, force an update to the master page to reload the cache.
+    -->
+
+  <ds:importServices page="foundation-services"/>
+  <ds:importServices page="document-services"/>
+  <ds:importServices page="image-services"/>
+  <ds:importServices page="tsk-services-v2"/>
+  <!-- not supported anymore
+  <ds:importServices page="bpm-services-v2"/>-->
+  <ds:importServices page="dpg-services-v2"/>
+</ds:services>
+

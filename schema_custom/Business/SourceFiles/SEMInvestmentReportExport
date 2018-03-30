@@ -1,0 +1,1314 @@
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.State;
+import matrix.util.StringList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+
+import com.matrixone.apps.domain.util.mxAttr;
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UINavigatorUtil;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import java.math.BigDecimal;
+
+public class ${CLASSNAME} {
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	static protected final String Atr_SEM_DepCode = "attribute[SEM DepCode]";
+	static protected final String Atr_SEM_Sequence = "attribute[SEM Sequence]";
+	static protected final String Atr_SEM_Frozen_Cost = "attribute[SEM Frozen Cost]";
+	static protected final String Atr_SEM_BudgetChange_Type = "attribute[SEM BudgetChange Resource]";
+	static protected final String Atr_SEM_BudgetChange_Remark = "attribute[SEM BudgetChange Remark]";
+	static protected final String Atr_SEM_BudgetChange_Number = "attribute[SEM BudgetChange Number]";
+	static protected final String Atr_SEM_RequestCode = "attribute[SEM RequestCode]";
+	static protected final String Atr_SEM_Request_Item = "description";
+	static protected final String Atr_SEM_Request_Amount = "attribute[SEM Request Amount]";
+	static protected final String Atr_SEM_Contract_Amount = "attribute[SEM Contract Amount]";
+	static protected final String Atr_SEM_Pay_Amount = "attribute[SEM Pay Amount]";
+	static protected final String Atr_SEM_CostRequest_Category = "attribute[SEM CostRequest Category]";
+	static protected final String Atr_Year = "attribute[Year]";
+	static protected final String Atr_SEM_Item_Attribute = "attribute[SEM Item Attribute]";
+
+	StringList busList = new StringList("id");
+	StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	String where = "current=='Approved'||current=='Complete'";
+
+	public ${CLASSNAME}(Context context, String[] args)
+			throws Exception {
+	}
+    public  double addDouble(double v1, double v2) {
+		  BigDecimal b1 = new BigDecimal(Double.toString(v1));
+		  BigDecimal b2 = new BigDecimal(Double.toString(v2));
+		  return b1.add(b2).doubleValue();
+	}
+	public  double subDouble(double v1, double v2) {
+	   BigDecimal b1 = new BigDecimal(Double.toString(v1));
+	   BigDecimal b2 = new BigDecimal(Double.toString(v2));
+	   return b1.subtract(b2).doubleValue();
+	}
+	// get data
+	public MapList getDepartmentDetailsReport(Context context, String[] args) {
+		MapList mapList = new MapList();
+		String titles[] = new String[] { "\u5E8F\u53F7", "\u7EC4\u522B",
+				"\u6295\u8D44\u9879", "\u6295\u8D44\u91D1\u989D",
+				"\u8C03\u6574\u5355\u53F7", "\u53D8\u5316\u7C7B\u522B",
+				"\u53D8\u5316\u9879\u76EE", "\u53D8\u5316\u91D1\u989D",
+				"\u7533\u8BF7\u5355\u53F7", "\u7533\u8BF7\u9879\u76EE",
+				"\u7533\u8BF7\u91D1\u989D", "\u5408\u540C\u91D1\u989D",
+				"\u4ED8\u6B3E\u91D1\u989D", "\u8D44\u672C/\u8D39\u7528",
+				"\u5E74\u4EFD", "\u9879\u76EE\u5C5E\u6027", "C/D\u91D1\u989D" };
+		Map titleMap = new HashMap();
+		for (int i = 0; i < titles.length; i++) {
+			titleMap.put(i + "", titles[i]);
+		}
+		mapList.add(titleMap);
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String objectId = (String) programMap.get("objectId");
+			StringList groupIdList = (StringList) programMap.get("groupIdList");
+			//System.out.println("groupIdList---" + groupIdList);
+			/*
+			 * DomainObject
+			 * projectObj=DomainObject.newInstance(context,objectId);
+			 * busList.add("name"); StringList busList1= new StringList("id");
+			 * busList1.add("name"); busList1.add(Atr_SEM_DepCode);
+			 */
+			 busList.add("name");
+			StringList busList2 = new StringList("id");
+			busList2.add("name");
+			busList2.add(Atr_SEM_Frozen_Cost);
+			StringList relList1 = new StringList(DomainRelationship.SELECT_ID);
+			relList1.add(Atr_SEM_BudgetChange_Type);
+			relList1.add(Atr_SEM_BudgetChange_Remark);
+			relList1.add(Atr_SEM_BudgetChange_Number);
+			StringList busList3 = new StringList("id");
+			busList3.add("name");
+			busList3.add(Atr_SEM_RequestCode);
+			busList3.add(Atr_SEM_Request_Item);
+			busList3.add(Atr_SEM_Request_Amount);
+			busList3.add(Atr_SEM_Contract_Amount);
+			busList3.add(Atr_SEM_Pay_Amount);
+			busList3.add(Atr_SEM_CostRequest_Category);
+			busList3.add(Atr_Year);
+			busList3.add(Atr_SEM_Item_Attribute);
+
+			ContextUtil.pushContext(context);
+			int hjSBCNumber = 0;
+			double hjSFC = 0, hjSRAmount = 0, hjSCAmount = 0, hjSPAmount = 0, hjCD = 0;
+			for (int y = 0; y < groupIdList.size(); y++) {
+				String groupId = (String) groupIdList.get(y);
+				DomainObject groupObj = DomainObject.newInstance(context,
+						groupId);
+				String groupName = groupObj.getName(context)
+						+ groupObj.getAttributeValue(context, "SEM DepCode");
+				int zjSBCNumber = 0;
+				double zjSFC = 0, zjSRAmount = 0, zjSCAmount = 0, zjSPAmount = 0, zjCD = 0;
+				MapList costItemList = groupObj.getRelatedObjects(context,
+						"Financial Items", "Cost Item", busList2, relList,
+						false, true, (short) 1, "", null);
+				Iterator costItems = costItemList.iterator();
+				while (costItems.hasNext()) {
+					Map costMap = (Map) costItems.next();
+					String costId = (String) costMap.get("id");
+					String costName = (String) costMap.get("name");
+					String SEMFrozenCost = (String) costMap
+							.get(Atr_SEM_Frozen_Cost);
+					zjSFC += Double.parseDouble(SEMFrozenCost);
+					DomainObject costObj = DomainObject.newInstance(context,
+							costId);
+					MapList SBCRList = costObj.getRelatedObjects(context,
+							"SEM Affected Budget", "SEM BudgetChange Request",
+							busList, relList1, true, false, (short) 1, where,
+							null);
+					MapList SCRList = costObj
+							.getRelatedObjects(context,
+									"SEM CostRequest Budget",
+									"SEM Cost Request", busList3, relList,
+									false, true, (short) 1, "", null);
+					double xjSBCNumber = 0;
+					double xjSRAmount = 0, xjSCAmount = 0, xjSPAmount = 0, xjCD = 0;
+					int N3 = Math.max(SBCRList.size(), SCRList.size());
+					if (N3 == 0) {
+						String[] datas = new String[17];
+						datas[0] = y + 1 + "";
+						datas[1] = groupName;
+						datas[2] = costName;
+						datas[3] = SEMFrozenCost;
+						for (int k = 4; k < 17; k++) {
+							datas[k] = "";
+						}
+						Map rowMap = new HashMap();
+						for (int num = 0; num < datas.length; num++) {
+							rowMap.put(num + "", datas[num]);
+						}
+						mapList.add(rowMap);
+					} else {
+						for (int j = 0; j < N3; j++) {
+							int xb = 4;
+							String[] datas = new String[17];
+							datas[0] = y + 1 + "";
+							datas[1] = groupName;
+							datas[2] = costName;
+							datas[3] = SEMFrozenCost;
+							for (int k = 4; k < 17; k++) {
+								datas[k] = "";
+							}
+							if (j < SBCRList.size()) {
+								Map SBCRMap = (Map) SBCRList.get(j);
+								datas[xb++] = (String) SBCRMap.get("name");
+								datas[xb++] = (String) SBCRMap
+										.get(Atr_SEM_BudgetChange_Type);
+								datas[xb++] = (String) SBCRMap
+										.get(Atr_SEM_BudgetChange_Remark);
+								datas[xb++] = (String) SBCRMap
+										.get(Atr_SEM_BudgetChange_Number);
+								xjSBCNumber += Double.parseDouble(datas[xb - 1]);
+							} else {
+								xb = 8;
+							}
+							if (j < SCRList.size()) {
+								Map SRCMap = (Map) SCRList.get(j);
+								datas[xb++] = (String) SRCMap
+										.get(Atr_SEM_RequestCode);
+								datas[xb++] = (String) SRCMap
+										.get(Atr_SEM_Request_Item);
+								datas[xb++] = (String) SRCMap
+										.get(Atr_SEM_Request_Amount);
+								double request = Double
+										.parseDouble(datas[xb - 1]);
+								xjSRAmount=addDouble(xjSRAmount,request);
+								datas[xb++] = (String) SRCMap
+										.get(Atr_SEM_Contract_Amount);
+								double contract = Double
+										.parseDouble(datas[xb - 1]);
+								xjSCAmount=addDouble(xjSCAmount,contract);;
+								datas[xb++] = (String) SRCMap
+										.get(Atr_SEM_Pay_Amount);
+								xjSPAmount=addDouble(xjSPAmount,Double.parseDouble(datas[xb - 1]));
+								String category = (String) SRCMap
+										.get(Atr_SEM_CostRequest_Category);
+								if (category.equals("01")) {
+									datas[xb++] = "\u8D44\u672C";
+								} else if (category.equals("02")) {
+									datas[xb++] = "\u8D39\u7528";
+								} else {
+									datas[xb++] = "\u5176\u4ED6";
+								}
+								datas[xb++] = (String) SRCMap.get(Atr_Year);
+								datas[xb++] = (String) SRCMap
+										.get(Atr_SEM_Item_Attribute);
+								if (contract == 0) {
+									datas[xb++] = "0";
+								} else {
+									double cd = subDouble(request,contract);
+									datas[xb++] = cd + "";
+								}
+								xjCD=addDouble(xjCD,Double.parseDouble(datas[xb - 1]));
+							}
+							Map rowMap = new HashMap();
+							for (int num = 0; num < datas.length; num++) {
+								rowMap.put(num + "", datas[num]);
+							}
+							mapList.add(rowMap);
+						}
+					}
+					zjSBCNumber+=xjSBCNumber;
+					zjSRAmount=addDouble(zjSRAmount,xjSRAmount);
+					zjSCAmount=addDouble(zjSCAmount,xjSCAmount);
+					zjSPAmount=addDouble(zjSPAmount,xjSPAmount);
+					zjCD=addDouble(zjCD,xjCD);
+					String[] xjdatas = new String[17];
+					for (int xjcolum = 0; xjcolum < 17; xjcolum++) {
+						if (xjcolum == 6) {
+							xjdatas[xjcolum++] = "\u5C0F\u8BA1";
+							xjdatas[xjcolum] = xjSBCNumber + "";
+						} else if (xjcolum == 9) {
+							xjdatas[xjcolum++] = "\u5C0F\u8BA1";
+							xjdatas[xjcolum++] = xjSRAmount + "";
+							xjdatas[xjcolum++] = xjSCAmount + "";
+							xjdatas[xjcolum] = xjSPAmount + "";
+						} else if (xjcolum == 15) {
+							xjdatas[xjcolum++] = "\u5C0F\u8BA1";
+							xjdatas[xjcolum] = xjCD + "";
+						} else {
+							xjdatas[xjcolum] = "";
+						}
+					}
+					Map rowMap1 = new HashMap();
+					for (int num1 = 0; num1 < xjdatas.length; num1++) {
+						rowMap1.put(num1 + "", xjdatas[num1]);
+					}
+					mapList.add(rowMap1);
+				}
+				hjSFC=addDouble(hjSFC,zjSFC);
+				hjSBCNumber+=zjSBCNumber;
+				hjSRAmount=addDouble(hjSRAmount,zjSRAmount);
+				hjSCAmount=addDouble(hjSCAmount,zjSCAmount);
+				hjSPAmount=addDouble(hjSPAmount,zjSPAmount);
+				hjCD=addDouble(hjCD,zjCD);
+				String[] zjdatas = new String[17];
+				for (int zjcolum = 0; zjcolum < 17; zjcolum++) {
+					if (zjcolum == 2) {
+						zjdatas[zjcolum++] = "\u603B\u8BA1";
+						zjdatas[zjcolum] = zjSFC + "";
+					} else if (zjcolum == 6) {
+						zjdatas[zjcolum++] = "\u603B\u8BA1";
+						zjdatas[zjcolum] = zjSBCNumber + "";
+					} else if (zjcolum == 9) {
+						zjdatas[zjcolum++] = "\u603B\u8BA1";
+						zjdatas[zjcolum++] = zjSRAmount + "";
+						zjdatas[zjcolum++] = zjSCAmount + "";
+						zjdatas[zjcolum] = zjSPAmount + "";
+					} else if (zjcolum == 15) {
+						zjdatas[zjcolum++] = "\u603B\u8BA1";
+						zjdatas[zjcolum] = zjCD + "";
+					} else {
+						zjdatas[zjcolum] = "";
+					}
+				}
+				Map rowMap2 = new HashMap();
+				for (int num2 = 0; num2 < zjdatas.length; num2++) {
+					rowMap2.put(num2 + "", zjdatas[num2]);
+				}
+				mapList.add(rowMap2);
+			}
+			String[] hjdatas = new String[17];
+			for (int zjcolum = 0; zjcolum < 17; zjcolum++) {
+				if (zjcolum == 2) {
+					hjdatas[zjcolum] = "\u90E8\u95E8\u603B\u8BA1";
+				} else if (zjcolum == 3) {
+					hjdatas[zjcolum] = hjSFC + "";
+				} else if (zjcolum == 7) {
+					hjdatas[zjcolum] = hjSBCNumber + "";
+				} else if (zjcolum == 10) {
+					hjdatas[zjcolum++] = hjSRAmount + "";
+					hjdatas[zjcolum++] = hjSCAmount + "";
+					hjdatas[zjcolum] = hjSPAmount + "";
+				} else if (zjcolum == 16) {
+					hjdatas[zjcolum] = hjCD + "";
+				} else {
+					hjdatas[zjcolum] = "";
+				}
+			}
+			Map rowMap3 = new HashMap();
+			for (int num3 = 0; num3 < hjdatas.length; num3++) {
+				rowMap3.put(num3 + "", hjdatas[num3]);
+			}
+			//System.out.println("rowMap3=="+rowMap3);
+			mapList.add(rowMap3);
+
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		} finally {
+			try {
+				ContextUtil.popContext(context);
+			} catch (Exception e) {
+				m_logger.error(e.getMessage(), e);
+			}
+		}
+		return mapList;
+	}
+
+	public MapList getDepartmentSummaryReport(Context context, String[] args) {
+		MapList mapList = new MapList();
+		String titles[] = new String[] { "\u7EC4\u522B",
+				"\u6295\u8D44\u91D1\u989DA", "\u53D8\u5316\u91D1\u989DB",
+				"\u6700\u65B0\u6295\u8D44\u91D1\u989DC=A+B",
+				"\u73B0\u9636\u6BB5\u5DF2\u53D1\u751F\u91D1\u989DD",
+				"\u4ED8\u6B3E\u91D1\u989D", "\u73B0\u9636\u6BB5C/D\u91D1\u989DE",
+				"\u5269\u4F59\u6295\u8D44C-D-E" };
+		Map titleMap = new HashMap();
+		for (int i = 0; i < titles.length; i++) {
+			titleMap.put(i + "", titles[i]);
+		}
+		mapList.add(titleMap);
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String objectId = (String) programMap.get("objectId");
+			StringList departmentIdList = (StringList) programMap
+					.get("departmentIdList");
+			busList.add("name");
+			StringList busList1 = new StringList("id");
+			busList1.add("name");
+			busList1.add(Atr_SEM_DepCode);
+			StringList busList2 = new StringList("id");
+			busList2.add("name");
+			busList2.add(Atr_SEM_Frozen_Cost);
+			StringList relList1 = new StringList(DomainRelationship.SELECT_ID);
+			relList1.add(Atr_SEM_BudgetChange_Type);
+			relList1.add(Atr_SEM_BudgetChange_Remark);
+			relList1.add(Atr_SEM_BudgetChange_Number);
+			StringList busList3 = new StringList("id");
+			busList3.add("name");
+			busList3.add(Atr_SEM_RequestCode);
+			busList3.add(Atr_SEM_Request_Item);
+			busList3.add(Atr_SEM_Request_Amount);
+			busList3.add(Atr_SEM_Contract_Amount);
+			busList3.add(Atr_SEM_Pay_Amount);
+			busList3.add(Atr_SEM_CostRequest_Category);
+			busList3.add(Atr_Year);
+			busList3.add(Atr_SEM_Item_Attribute);
+			ContextUtil.pushContext(context);
+			double hzSBCNumber = 0, hzSFC = 0, hzSRAmount = 0, hzZX = 0, hzXJD = 0, hzSPAmount = 0, hzCD = 0, hzSY = 0;
+			for (int y = 0; y < departmentIdList.size(); y++) {
+				String departmentId = (String) departmentIdList.get(y);
+				DomainObject departmentObj = DomainObject.newInstance(context,
+						departmentId);
+				MapList groupList = departmentObj.getRelatedObjects(context,
+						"SEM Sub Budget", "Budget", busList1, relList, false,
+						true, (short) 1, "", null);
+				Iterator groupItems = groupList.iterator();
+				while (groupItems.hasNext()) {
+					double hjSBCNumber = 0, hjSFC = 0, hjSRAmount = 0, hjSPAmount = 0, hjCD = 0,hjPC = 0;
+					Map groupMap = (Map) groupItems.next();
+					String groupId = (String) groupMap.get("id");
+					String groupName = (String) groupMap.get("name")
+							+ (String) groupMap.get(Atr_SEM_DepCode);
+					DomainObject groupObj = DomainObject.newInstance(context,
+							groupId);
+					MapList costItemList = groupObj.getRelatedObjects(context,
+							"Financial Items", "Cost Item", busList2, relList,
+							false, true, (short) 1, "", null);
+					Iterator costItems = costItemList.iterator();
+					while (costItems.hasNext()) {
+						Map costMap = (Map) costItems.next();
+						String costId = (String) costMap.get("id");
+						String costName = (String) costMap.get("name");
+						String SEMFrozenCost = (String) costMap
+								.get(Atr_SEM_Frozen_Cost);
+						hjSFC=addDouble(hjSFC,Double.parseDouble(SEMFrozenCost));
+						DomainObject costObj = DomainObject.newInstance(
+								context, costId);
+						if("\u6295\u8d44COSTDOWN".equals(costName)){
+							String SEMPlannedCost = costObj.getAttributeValue(context, "Planned Cost");
+							hjPC= addDouble(hjPC,Double.parseDouble(SEMPlannedCost));
+						}
+						
+						MapList SBCRList = costObj.getRelatedObjects(context,
+								"SEM Affected Budget",
+								"SEM BudgetChange Request", busList, relList1,
+								true, false, (short) 1, where, null);
+						MapList SCRList = costObj.getRelatedObjects(context,
+								"SEM CostRequest Budget", "SEM Cost Request",
+								busList3, relList, false, true, (short) 1, "",
+								null);
+						Iterator SBCRItems = SBCRList.iterator();
+						while (SBCRItems.hasNext()) {
+							Map SBCRMap = (Map) SBCRItems.next();
+							String SBNumber = (String) SBCRMap
+									.get(Atr_SEM_BudgetChange_Number);
+							hjSBCNumber=addDouble(hjSBCNumber, Double.parseDouble(SBNumber));
+
+						}
+						Iterator SCRItems = SCRList.iterator();
+						while (SCRItems.hasNext()) {
+							Map SCRMap = (Map) SCRItems.next();
+							String SRAmount = (String) SCRMap
+									.get(Atr_SEM_Request_Amount);
+							hjSRAmount=addDouble(hjSRAmount,Double.parseDouble(SRAmount));
+							String SCAmount = (String) SCRMap
+									.get(Atr_SEM_Contract_Amount);
+							double contract = Double.parseDouble(SCAmount);
+							String SPAmount = (String) SCRMap
+									.get(Atr_SEM_Pay_Amount);
+							hjSPAmount=addDouble(hjSPAmount,Double.parseDouble(SPAmount));
+							String CDAmount = "";
+							if (contract==0) {
+								CDAmount = "0";
+							} else {
+								hjCD=addDouble(hjCD,subDouble(Double.parseDouble(SRAmount),contract));
+							}
+						}
+						
+					}
+					String[] hjdatas = new String[8];
+					hjdatas[0] = groupName;
+					
+					hjSFC=hjSFC / 10000;
+					long l1= Math.round(hjSFC*100); 
+					hjSFC=l1/100.0;
+					
+					hjdatas[1] = hjSFC+ "";
+					hzSFC=addDouble(hzSFC,hjSFC);
+					
+					hjSBCNumber= hjSBCNumber/10000;
+					long l2= Math.round(hjSBCNumber*100); 
+					hjSBCNumber=l2/100.0;	
+					hjdatas[2] = hjSBCNumber+ "";
+					hzSBCNumber=addDouble(hzSBCNumber,hjSBCNumber);
+					
+					hjdatas[3] =addDouble(hjSFC,hjSBCNumber)+ "";
+					hzZX=addDouble(hzZX,addDouble(hjSFC,hjSBCNumber));
+					
+					hjSRAmount=hjSRAmount/10000;
+					long l3= Math.round(hjSRAmount*100); 
+					hjSRAmount=l3/100.0;
+					
+					hjCD=hjCD/10000;
+					long l4= Math.round(hjCD*100); 
+					hjCD=l4/100.0;	
+					
+					
+					hjdatas[4] =subDouble(hjSRAmount,hjCD)+ "";
+					hzXJD=addDouble(hzXJD,subDouble(hjSRAmount,hjCD));
+					
+					hjSPAmount=hjSPAmount/10000;
+					long l5= Math.round(hjSPAmount*100); 
+					hjSPAmount=l5/100.0;	
+					
+					hjdatas[5] = hjSPAmount+ "";
+					hzSPAmount= addDouble(hzSPAmount,hjSPAmount);
+					
+					hjPC=hjPC/10000;
+					long l6= Math.round(hjPC*100); 
+					hjPC=l6/100.0;
+					hjCD = addDouble(hjCD,hjPC);
+					hjdatas[6] = hjCD+ "";
+					hzCD=addDouble(hzCD, hjCD);
+					hjdatas[7]=subDouble((subDouble(Double.parseDouble(hjdatas[3]),Double.parseDouble(hjdatas[4]))),Double.parseDouble(hjdatas[6]))+"";
+					hzSY=addDouble(hzSY,Double.parseDouble(hjdatas[7]));
+					Map rowMap = new HashMap();
+					for (int hjcolum = 0; hjcolum < 8; hjcolum++) {
+						rowMap.put(hjcolum + "", hjdatas[hjcolum]);
+					}
+					mapList.add(rowMap);
+				}
+			}
+			String[] hzdatas = new String[] { "\u5408\u8BA1", hzSFC + "",
+					hzSBCNumber + "", hzZX + "", hzXJD + "", hzSPAmount + "",
+					hzCD + "", hzSY + "" };
+			Map rowMap1 = new HashMap();
+			for (int hjcolum1 = 0; hjcolum1 < 8; hjcolum1++) {
+				rowMap1.put(hjcolum1 + "", hzdatas[hjcolum1]);
+			}
+			mapList.add(rowMap1);
+
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		} finally {
+			try {
+				ContextUtil.popContext(context);
+			} catch (Exception e) {
+				m_logger.error(e.getMessage(), e);
+			}
+		}
+		return mapList;
+	}
+
+	public MapList getCompanySummaryReport(Context context, String[] args) {
+		MapList mapList = new MapList();
+		String titles[] = new String[] { "\u7EC4\u522B",
+				"\u6295\u8D44\u91D1\u989DA", "\u53D8\u5316\u91D1\u989DB",
+				"\u6700\u65B0\u6295\u8D44\u91D1\u989DC=A+B",
+				"\u73B0\u9636\u6BB5\u5DF2\u53D1\u751F\u91D1\u989DD",
+				"\u4ED8\u6B3E\u91D1\u989D", "\u73B0\u9636\u6BB5C/D\u91D1\u989DE",
+				"\u5269\u4F59\u6295\u8D44C-D-E" };
+		Map titleMap = new HashMap();
+		for (int i = 0; i < titles.length; i++) {
+			titleMap.put(i + "", titles[i]);
+		}
+		mapList.add(titleMap);
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String objectId = (String) programMap.get("objectId");
+			busList.add("name");
+			StringList busList1 = new StringList("id");
+			busList1.add("name");
+			busList1.add(Atr_SEM_DepCode);
+			StringList busList2 = new StringList("id");
+			busList2.add("name");
+			busList2.add(Atr_SEM_Frozen_Cost);
+			StringList relList1 = new StringList(DomainRelationship.SELECT_ID);
+			relList1.add(Atr_SEM_BudgetChange_Type);
+			relList1.add(Atr_SEM_BudgetChange_Remark);
+			relList1.add(Atr_SEM_BudgetChange_Number);
+			StringList busList3 = new StringList("id");
+			busList3.add("name");
+			busList3.add(Atr_SEM_RequestCode);
+			busList3.add(Atr_SEM_Request_Item);
+			busList3.add(Atr_SEM_Request_Amount);
+			busList3.add(Atr_SEM_Contract_Amount);
+			busList3.add(Atr_SEM_Pay_Amount);
+			busList3.add(Atr_SEM_CostRequest_Category);
+			busList3.add(Atr_Year);
+			busList3.add(Atr_SEM_Item_Attribute);
+			double szSBCNumber = 0, szSFC = 0, szSRAmount = 0, szZX = 0, szXJD = 0, szSPAmount = 0, szCD = 0, szSY = 0;
+			ContextUtil.pushContext(context);
+			DomainObject projectObj = DomainObject.newInstance(context,
+					objectId);
+			MapList departmentList = projectObj.getRelatedObjects(context,
+					"Project Financial Item", "Budget", busList1, relList,
+					false, true, (short) 1, "", null);
+			Iterator departmentItems = departmentList.iterator();
+			while (departmentItems.hasNext()) {
+				double hzSBCNumber = 0, hzSFC = 0, hzSRAmount = 0, hzZX = 0, hzXJD = 0, hzSPAmount = 0, hzCD = 0, hzSY = 0;
+				Map departmentMap = (Map) departmentItems.next();
+				String departmentId = (String) departmentMap.get("id");
+				String departmentName = (String) departmentMap.get("name");
+				DomainObject departmentObj = DomainObject.newInstance(context,
+						departmentId);
+				MapList groupList = departmentObj.getRelatedObjects(context,
+						"SEM Sub Budget", "Budget", busList1, relList, false,
+						true, (short) 1, "", null);
+				Iterator groupItems = groupList.iterator();
+				while (groupItems.hasNext()) {
+					double hjSBCNumber = 0, hjSFC = 0, hjSRAmount = 0, hjSPAmount = 0, hjCD = 0,hjPC = 0;
+					Map groupMap = (Map) groupItems.next();
+					String groupId = (String) groupMap.get("id");
+					String groupName = (String) groupMap.get("name")
+							+ (String) groupMap.get(Atr_SEM_DepCode);
+					DomainObject groupObj = DomainObject.newInstance(context,
+							groupId);
+					MapList costItemList = groupObj.getRelatedObjects(context,
+							"Financial Items", "Cost Item", busList2, relList,
+							false, true, (short) 1, "", null);
+					Iterator costItems = costItemList.iterator();
+					while (costItems.hasNext()) {
+						Map costMap = (Map) costItems.next();
+						String costId = (String) costMap.get("id");
+						String costName = (String) costMap.get("name");
+						String SEMFrozenCost = (String) costMap
+								.get(Atr_SEM_Frozen_Cost);
+						hjSFC=addDouble(hjSFC,Double.parseDouble(SEMFrozenCost));
+						DomainObject costObj = DomainObject.newInstance(
+								context, costId);
+						if("\u6295\u8d44COSTDOWN".equals(costName)){
+							String SEMPlannedCost = costObj.getAttributeValue(context, "Planned Cost");
+							hjPC= addDouble(hjPC,Double.parseDouble(SEMPlannedCost));
+						}
+						MapList SBCRList = costObj.getRelatedObjects(context,
+								"SEM Affected Budget",
+								"SEM BudgetChange Request", busList, relList1,
+								true, false, (short) 1, where, null);
+						MapList SCRList = costObj.getRelatedObjects(context,
+								"SEM CostRequest Budget", "SEM Cost Request",
+								busList3, relList, false, true, (short) 1, "",
+								null);
+						Iterator SBCRItems = SBCRList.iterator();
+						while (SBCRItems.hasNext()) {
+							Map SBCRMap = (Map) SBCRItems.next();
+							String SBNumber = (String) SBCRMap
+									.get(Atr_SEM_BudgetChange_Number);
+							hjSBCNumber=addDouble(hjSBCNumber,Double.parseDouble(SBNumber));
+
+						}
+						Iterator SCRItems = SCRList.iterator();
+						while (SCRItems.hasNext()) {
+							Map SCRMap = (Map) SCRItems.next();
+							String SRAmount = (String) SCRMap
+									.get(Atr_SEM_Request_Amount);
+							hjSRAmount += Double.parseDouble(SRAmount);
+							String SCAmount = (String) SCRMap
+									.get(Atr_SEM_Contract_Amount);
+							double contract = Double.parseDouble(SCAmount);
+							String SPAmount = (String) SCRMap
+									.get(Atr_SEM_Pay_Amount);
+							hjSPAmount=addDouble(hjSPAmount,Double.parseDouble(SPAmount));
+							String CDAmount = "";
+							if (contract==0) {
+								CDAmount = "0";
+							} else {
+								hjCD=addDouble(hjCD,subDouble(Double.parseDouble(SRAmount),contract));
+							}
+						}
+						
+					}
+					hjSFC =hjSFC /10000;
+					long l1= Math.round(hjSFC*100); 
+					hjSFC=l1/100.0;	
+					hzSFC=addDouble(hzSFC,hjSFC);
+					hjSBCNumber=hjSBCNumber /10000;
+					long l2= Math.round(hjSBCNumber*100); 
+					hjSBCNumber=l2/100.0;	
+					
+					hzSBCNumber=addDouble(hzSBCNumber, hjSBCNumber);
+					hzZX=addDouble(hzZX,addDouble(hjSFC,hjSBCNumber));
+					
+					hjSRAmount=hjSRAmount/10000;
+					long l3= Math.round(hjSRAmount*100); 
+					hjSRAmount=l3/100.0;
+					
+					hjCD=hjCD/10000;
+					long l4= Math.round(hjCD*100); 
+					hjCD=l4/100.0;	
+					hzXJD=addDouble(hzXJD,subDouble(hjSRAmount,hjCD));
+					
+					hjSPAmount=hjSPAmount/10000;
+					long l5= Math.round(hjSPAmount*100); 
+					hjSPAmount=l5/100.0;
+					hzSPAmount=addDouble(hzSPAmount,hjSPAmount);
+					
+					hjPC=hjPC/10000;
+					long l6= Math.round(hjPC*100); 
+					hjPC=l6/100.0;	
+					hjCD = addDouble(hjCD,hjPC);
+					hzCD=addDouble(hzCD, hjCD);
+				}
+				szSFC =addDouble(szSFC, hzSFC);
+				szSBCNumber=addDouble(szSBCNumber, hzSBCNumber);
+				szZX=addDouble(szZX, hzZX);
+				szXJD=addDouble(szXJD,hzXJD);
+				szSPAmount=addDouble(szSPAmount, hzSPAmount);
+				szCD=addDouble(szCD, hzCD);
+				hzSY=subDouble(subDouble(hzZX,hzXJD),hzCD);
+				szSY=addDouble(szSY,hzSY);
+				String[] hzdatas = new String[] { departmentName, hzSFC + "",
+						hzSBCNumber + "", hzZX + "", hzXJD + "",
+						hzSPAmount + "", hzCD + "", hzSY + "" };
+				Map rowMap1 = new HashMap();
+				for (int hjcolum1 = 0; hjcolum1 < 8; hjcolum1++) {
+					rowMap1.put(hjcolum1 + "", hzdatas[hjcolum1]);
+				}
+				mapList.add(rowMap1);
+			}
+			String[] szdatas = new String[] { "\u5408\u8BA1", szSFC + "",
+					szSBCNumber + "", szZX + "", szXJD + "", szSPAmount + "",
+					szCD + "", szSY + "" };
+			Map rowMap2 = new HashMap();
+			for (int hjcolum2 = 0; hjcolum2 < 8; hjcolum2++) {
+				rowMap2.put(hjcolum2 + "", szdatas[hjcolum2]);
+			}
+			mapList.add(rowMap2);
+
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		} finally {
+			try {
+				ContextUtil.popContext(context);
+			} catch (Exception e) {
+				m_logger.error(e.getMessage(), e);
+			}
+		}
+		return mapList;
+	}
+
+	public MapList getInvestmentComparisonReport(Context context, String[] args) {
+		MapList mapList = new MapList();
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			StringList projectIdList = (StringList) programMap
+					.get("projectIdList");
+			ContextUtil.pushContext(context);
+			String projectId1 = (String) projectIdList.get(0);
+			String projectId2 = (String) projectIdList.get(1);
+			DomainObject projectObj1 = DomainObject.newInstance(context,
+					projectId1);
+			DomainObject projectObj2 = DomainObject.newInstance(context,
+					projectId2);
+			String project1Name = projectObj1.getName(context);
+			String project2Name = projectObj2.getName(context);
+
+			String titles[] = new String[] { "\u90E8\u95E8",
+					"\u90E8\u95E8\u4EE3\u7801", "\u7EC4\u522B",
+					"\u7EC4\u522B\u4EE3\u7801", project1Name+"\uFF081\uFF09", "", "",
+					project2Name+"\uFF082\uFF09", "", "",
+					"\u6295\u8D44\u5DEE\u989D\uFF081\uFF09-\uFF082\uFF09",
+					"\u8BF4\u660E" };
+			Map titleMap = new HashMap();
+			for (int i = 0; i < titles.length; i++) {
+				titleMap.put(i + "", titles[i]);
+			}
+			mapList.add(titleMap);
+			String titles1[] = new String[] { "", "", "", "", "\u9879\u6B21",
+					"\u6295\u8D44\u9879", "\u6295\u8D44\u91D1\u989D",
+					"\u9879\u6B21", "\u6295\u8D44\u9879",
+					"\u6295\u8D44\u91D1\u989D", "", "" };
+			Map title1Map = new HashMap();
+			for (int i = 0; i < titles1.length; i++) {
+				title1Map.put(i + "", titles1[i]);
+			}
+			mapList.add(title1Map);
+
+			busList.add("name");
+			StringList busList1 = new StringList("id");
+			busList1.add("name");
+			busList1.add(Atr_SEM_DepCode);
+			StringList busList2 = new StringList("id");
+			busList2.add("name");
+			busList2.add(Atr_SEM_Frozen_Cost);
+			StringList relList1 = new StringList(DomainRelationship.SELECT_ID);
+			relList1.add(Atr_SEM_Sequence);
+			double hjSFCost1 = 0, hjSFCost2 = 0,hjCZ=0;
+			MapList department1List = projectObj1.getRelatedObjects(context,
+					"Project Financial Item", "Budget", busList1, relList,
+					false, true, (short) 1, "", null);
+			Iterator department1Items = department1List.iterator();
+			while (department1Items.hasNext()) {
+				Map department1Map = (Map) department1Items.next();
+				String department1Id = (String) department1Map.get("id");
+				String department1Name = (String) department1Map.get("name");
+				String department1DepCode = (String) department1Map
+						.get(Atr_SEM_DepCode);
+				DomainObject department1Obj = DomainObject.newInstance(context,
+						department1Id);
+				MapList group1List = department1Obj.getRelatedObjects(context,
+						"SEM Sub Budget", "Budget", busList1, relList, false,
+						true, (short) 1, "", null);
+				Iterator group1Items = group1List.iterator();
+
+				while (group1Items.hasNext()) {
+					Map group1Map = (Map) group1Items.next();
+					String group1Id = (String) group1Map.get("id");
+					String group1Name = (String) group1Map.get("name");
+					String group1DepCode = (String) group1Map
+							.get(Atr_SEM_DepCode);
+					DomainObject group1Obj = DomainObject.newInstance(context,
+							group1Id);
+					MapList costItem1List = group1Obj.getRelatedObjects(
+							context, "Financial Items", "Cost Item", busList2,
+							relList1, false, true, (short) 1, "", null);
+
+					int n1 = costItem1List.size();
+					int n2 = 0;
+					MapList group2List = new MapList();
+					MapList costItem2List = new MapList();
+					DomainObject group2Obj = null;
+					String whereDepartment = "name=='" + department1Name
+							+ "'&&attribute[SEM DepCode]=='"
+							+ department1DepCode + "'";
+					String whereGroup = "name=='" + group1Name
+							+ "'&&attribute[SEM DepCode]=='" + group1DepCode
+							+ "'";
+					MapList department2List = projectObj2.getRelatedObjects(
+							context, "Project Financial Item", "Budget",
+							busList1, relList, false, true, (short) 1,
+							whereDepartment, null);
+					if (department2List.size() > 0) {
+						Map department2Map = (Map) department2List.get(0);
+						String department2Id = (String) department2Map
+								.get("id");
+						DomainObject department2Obj = DomainObject.newInstance(
+								context, department2Id);
+						group2List = department2Obj.getRelatedObjects(context,
+								"SEM Sub Budget", "Budget", busList1, relList,
+								false, true, (short) 1, whereGroup, null);
+						if (group2List.size() > 0) {
+							Map group2Map = (Map) group2List.get(0);
+							String group2Id = (String) group2Map.get("id");
+							group2Obj = DomainObject.newInstance(context,
+									group2Id);
+							costItem2List = group2Obj.getRelatedObjects(
+									context, "Financial Items", "Cost Item",
+									busList2, relList1, false, true, (short) 1,
+									"", null);
+							n2 = costItem2List.size();
+						}
+					}
+					double xjSFCost1 = 0, xjSFCost2 = 0,xjCZ=0;
+					if (group2List.size() > 0) {
+						if (n1 > n2 && n1 > 0) {
+							Iterator costItems = costItem1List.iterator();
+							while (costItems.hasNext()) {
+								double SFCost1 = 0, SFCost2 = 0;
+								String[] datas = new String[12];
+								datas[0] = department1Name;
+								datas[1] = department1DepCode;
+								datas[2] = group1Name;
+								datas[3] = group1DepCode;
+								Map cost1Map = (Map) costItems.next();
+								datas[5] = (String) cost1Map.get("name");
+								datas[4] = (String) cost1Map
+										.get(Atr_SEM_Sequence);
+								datas[6] = (String) cost1Map
+										.get(Atr_SEM_Frozen_Cost);
+								SFCost1 =Double.parseDouble(datas[6])/10000;
+								long l1= Math.round(SFCost1*100); 
+								SFCost1=l1/100.0;
+								datas[6]=SFCost1+"";
+								xjSFCost1+=SFCost1;
+								for (int k = 8; k < 12; k++) {
+									datas[k] = "";
+								}
+								MapList costItemList = group2Obj
+										.getRelatedObjects(context,
+												"Financial Items", "Cost Item",
+												busList2, relList, false, true,
+												(short) 1, "name==" + datas[5],
+												null);
+								if (costItemList.size() > 0) {
+									Map cost2Map = (Map) costItemList.get(0);
+									datas[8] = (String) cost2Map.get("name");
+									datas[7] = (String) cost2Map
+											.get(Atr_SEM_Sequence);
+									datas[9] = (String) cost2Map
+											.get(Atr_SEM_Frozen_Cost);
+									SFCost2 = Double.parseDouble(datas[9])/10000;
+									long l2= Math.round(SFCost2*100); 
+									SFCost2=l2/100.0;
+									datas[9]=SFCost2+"";
+									xjSFCost2+=SFCost2;
+								}
+								double cz=SFCost1-SFCost2;
+								long lc= Math.round(cz*100); 
+								cz=lc/100.0;
+								datas[10]=cz+"";
+								xjCZ+=cz;
+								Map rowMap = new HashMap();
+								for (int row = 0; row < 12; row++) {
+									rowMap.put(row + "", datas[row]);
+								}
+								mapList.add(rowMap);
+							}
+						} else {
+							if (n2 > 0) {
+								Iterator costItems = costItem2List.iterator();
+								while (costItems.hasNext()) {
+									double SFCost1 = 0, SFCost2 = 0;
+									String[] datas = new String[12];
+									datas[0] = department1Name;
+									datas[1] = department1DepCode;
+									datas[2] = group1Name;
+									datas[3] = group1DepCode;
+									Map cost1Map = (Map) costItems.next();
+									datas[8] = (String) cost1Map.get("name");
+									datas[7] = (String) cost1Map
+											.get(Atr_SEM_Sequence);
+									datas[9] = (String) cost1Map
+											.get(Atr_SEM_Frozen_Cost);
+									SFCost2 = Double.parseDouble(datas[9])/10000;
+									long l2= Math.round(SFCost2*100); 
+									SFCost2=l2/100.0;
+									datas[9]=SFCost2+"";
+									xjSFCost2+=SFCost2;
+									for (int k = 5; k < 7; k++) {
+										datas[k] = "";
+									}
+									datas[11] = "";
+									MapList costItemList = group1Obj
+											.getRelatedObjects(context,
+													"Financial Items",
+													"Cost Item", busList2,
+													relList, false, true,
+													(short) 1, "name=="
+															+ datas[8], null);
+									if (costItemList.size() > 0) {
+										Map cost2Map = (Map) costItemList
+												.get(0);
+										datas[5] = (String) cost2Map
+												.get("name");
+										datas[4] = (String) cost2Map
+												.get(Atr_SEM_Sequence);
+										datas[6] = (String) cost2Map
+												.get(Atr_SEM_Frozen_Cost);
+										SFCost1 =Double.parseDouble(datas[6])/10000;
+										long l1= Math.round(SFCost1*100); 
+										SFCost1=l1/100.0;
+										datas[6]=SFCost1+"";
+										xjSFCost1+=SFCost1;
+									}
+									double cz=SFCost1-SFCost2;
+									long lc= Math.round(cz*100); 
+									cz=lc/100.0;
+									datas[10]=cz+"";
+									xjCZ+=cz;
+									Map rowMap = new HashMap();
+									for (int row = 0; row < 12; row++) {
+										rowMap.put(row + "", datas[row]);
+									}
+									mapList.add(rowMap);
+								}
+							}
+						}
+						long l3= Math.round(xjSFCost1*100); 
+						xjSFCost1=l3/100.0;
+						long l4= Math.round(xjSFCost2*100); 
+						xjSFCost2=l4/100.0;
+						long l5= Math.round(xjCZ*100); 
+						xjCZ=l5/100.0;
+						
+						hjSFCost1 += xjSFCost1;
+						hjSFCost2 += xjSFCost2;
+						hjCZ+=xjCZ;
+						String[] xjdatas = new String[12];
+						for (int num = 0; num < 12; num++) {
+							if (num == 5) {
+								xjdatas[num++] = "\u5C0F\u8BA1";
+								xjdatas[num] = xjSFCost1 + "";
+							} else if (num == 8) {
+								xjdatas[num++] = "\u5C0F\u8BA1";
+								xjdatas[num++] = xjSFCost2 + "";
+								xjdatas[num]=xjCZ+ "";
+							} else {
+								xjdatas[num] = "";
+							}
+						}
+						Map xjMap = new HashMap();
+						for (int row = 0; row < 12; row++) {
+							xjMap.put(row + "", xjdatas[row]);
+						}
+						mapList.add(xjMap);
+					}
+				}
+			}
+			long l6= Math.round(hjSFCost1*100); 
+			hjSFCost1=l6/100.0;
+			long l7= Math.round(hjSFCost2*100); 
+			hjSFCost2=l7/100.0;
+			long l8= Math.round(hjCZ*100); 
+			hjCZ=l8/100.0;
+			String[] hjdatas = new String[12];
+			for (int num = 0; num < 12; num++) {
+				if (num == 5) {
+					hjdatas[num++] = "\u5408\u8BA1";
+					hjdatas[num] = hjSFCost1 + "";
+				} else if (num == 8) {
+					hjdatas[num++] = "\u5408\u8BA1";
+					hjdatas[num++] = hjSFCost2 + "";
+					hjdatas[num] =hjCZ+ "";
+				} else {
+					hjdatas[num] = "";
+				}
+			}
+			Map hjMap = new HashMap();
+			for (int row = 0; row < 12; row++) {
+				hjMap.put(row + "", hjdatas[row]);
+			}
+			mapList.add(hjMap);
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		} finally {
+			try {
+				ContextUtil.popContext(context);
+			} catch (Exception e) {
+				m_logger.error(e.getMessage(), e);
+			}
+		}
+		return mapList;
+	}
+	
+	//get Map key 
+	public String[] getKeys(MapList mapList) {
+		Map map = (Map) mapList.get(0);
+		int n = map.size();
+		String[] res = new String[n];
+		for (int i = 0; i < n; i++) {
+			res[i] = i + "";
+		}
+		return res;
+	}
+	// export data
+	public void exportExcel(Context context, String[] args) {
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList = (MapList) programMap.get("dataList");
+			if (dataList == null || dataList.size() == 0) {
+				return;
+			}
+			String sheetName = "\u90E8\u95E8\u660E\u7EC6";
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			String head = "\u90E8\u95E8\u660E\u7EC6\u62A5\u8868";
+			String[] keys = getKeys(dataList);
+			fillSheetInfo(context, head, 0, keys, dataList, workbook, sheet);
+
+			System.out.println("....exportExcel......end..");
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}// end method
+
+	public void exportExcelDSR(Context context, String[] args) {
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList = (MapList) programMap.get("dataList");
+			if (dataList == null || dataList.size() == 0) {
+				return;
+			}
+			String sheetName = "\u90E8\u95E8\u7EA7\u6C47\u603B";
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			String head = "\u90E8\u95E8\u7EA7\u6C47\u603B\u62A5\u8868\uFF08\u5355\u4F4D\uFF1A\u4E07\u5143\uFF09";
+			String[] keys = getKeys(dataList);
+			fillSheetInfo(context, head, 0, keys, dataList, workbook, sheet);
+
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}// end method
+
+	public void exportExcelCSR(Context context, String[] args) {
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList = (MapList) programMap.get("dataList");
+			if (dataList == null || dataList.size() == 0) {
+				return;
+			}
+			String sheetName = "\u516C\u53F8\u7EA7\u6C47\u603B";
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			String head = "\u516C\u53F8\u7EA7\u6C47\u603B\u62A5\u8868\uFF08\u5355\u4F4D\uFF1A\u4E07\u5143\uFF09";
+			String[] keys = getKeys(dataList);
+			fillSheetInfo(context, head, 0, keys, dataList, workbook, sheet);
+
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}// end method
+
+	public void exportExcelICR(Context context, String[] args) {
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList = (MapList) programMap.get("dataList");
+			if (dataList == null || dataList.size() == 0) {
+				return;
+			}
+			String sheetName = "\u8F66\u578B\u6295\u8D44\u5BF9\u6BD4\u62A5\u8868";
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			String head = "\u6295\u8D44\u5BF9\u6BD4\u62A5\u8868\uFF08\u5355\u4F4D\uFF1A\u4E07\u5143\uFF09";
+			String[] keys = getKeys(dataList);
+			fillSheetInfo(context, head, 0, keys, dataList, workbook, sheet);
+
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}// end method
+
+	public void fillSheetInfo(Context context, String head, int beginPosion,
+			String[] keys, MapList dataList, HSSFWorkbook workbook,
+			HSSFSheet sheet) throws Exception {
+		try {
+			int curRowIndex = beginPosion;
+			int curDataIndex = 0;
+			int maxRowCount = dataList.size();
+			int maxcolumnCount = ((Map) dataList.get(0)).size();
+			int maxSheetRow = 60000;
+			HSSFCell cell_dep;
+			HSSFRow row;
+
+			HSSFFont font = workbook.createFont();
+			font.setFontName("\u9ED1\u4F53");
+			font.setFontHeightInPoints((short) 16);// Set the font size
+
+			HSSFFont font1 = workbook.createFont();
+			font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+			font1.setFontHeightInPoints((short) 14);
+
+			HSSFCellStyle headStyle = workbook.createCellStyle();
+			headStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			headStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			headStyle.setFont(font);
+
+			HSSFCellStyle sheetStyle = workbook.createCellStyle();
+			sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			sheetStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+
+			HSSFFont columnHeadFont = workbook.createFont();
+			columnHeadFont.setColor(HSSFColor.BLUE.index);
+			columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+					.createCellStyle();
+			columnHeadStyle.setFont(font1);
+			columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+					.getIndex());
+			columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			// Set the table header
+			sheet.addMergedRegion(new CellRangeAddress(curRowIndex,
+					curRowIndex + 1, 0, 6));
+			row = sheet.createRow(curRowIndex);
+			HSSFCell begincell = row.createCell(0);
+			begincell.setCellValue(head);
+			begincell.setCellStyle(headStyle);
+			curRowIndex = curRowIndex + 2;//
+
+			for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+				row = sheet.createRow(curRowIndex);
+				if (i == 0) {
+					row.setHeight((short) 600);
+				}
+				Map map = (Map) dataList.get(curDataIndex);
+				for (int j = 0; j < map.size(); j++) {
+					if (i == 0) {
+						HSSFCell cell = row.createCell(j);
+						cell.setCellValue((String) map.get(keys[j]));
+						cell.setCellStyle(columnHeadStyle);
+					} else {
+						cell_dep = row.createCell(j);
+						cell_dep.setCellType(HSSFCell.CELL_TYPE_STRING);
+						cell_dep.setCellValue((String) map.get(keys[j]));
+						cell_dep.setCellStyle(sheetStyle);
+					}
+
+				}
+				curRowIndex = curRowIndex + 1;
+			}// for sheet
+
+			// Set the column size to auto-fit
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.autoSizeColumn(i);
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw new FrameworkException(e);
+		}
+	}
+	//add format(Integer,Decimal,Formula,String) export
+	public void fillSheetInfoNew(Context context, String head, int beginPosion,
+			String[] keys, MapList dataList, HSSFWorkbook workbook,
+			HSSFSheet sheet) throws Exception {
+		try {
+			int curRowIndex = beginPosion;
+			int curDataIndex = 0;
+			int maxRowCount = dataList.size();
+			int maxcolumnCount = ((Map) dataList.get(0)).size();
+			int maxSheetRow = 60000;
+			HSSFCell cell_dep;
+			HSSFRow row;
+
+			HSSFFont font = workbook.createFont();
+			font.setFontName("\u9ED1\u4F53");
+			font.setFontHeightInPoints((short) 16);// Set the font size
+
+			HSSFFont font1 = workbook.createFont();
+			font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+			font1.setFontHeightInPoints((short) 14);
+
+			HSSFCellStyle headStyle = workbook.createCellStyle();
+			headStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			headStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			headStyle.setFont(font);
+             
+			HSSFCellStyle sheetStyle = workbook.createCellStyle();
+			sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			sheetStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+
+			HSSFFont columnHeadFont = workbook.createFont();
+			columnHeadFont.setColor(HSSFColor.BLUE.index);
+			columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+					.createCellStyle();
+			columnHeadStyle.setFont(font1);
+			columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+					.getIndex());
+			columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			
+			//add
+			HSSFCellStyle IntegercellStyle =workbook.createCellStyle();  
+			IntegercellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));  
+			
+			HSSFCellStyle DecimalcellStyle =workbook.createCellStyle();  
+			DecimalcellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));  
+			
+			
+			// Set the table header
+			sheet.addMergedRegion(new CellRangeAddress(curRowIndex,
+					curRowIndex + 1, 0, 6));
+			row = sheet.createRow(curRowIndex);
+			HSSFCell begincell = row.createCell(0);
+			begincell.setCellValue(head);
+			begincell.setCellStyle(headStyle);
+			curRowIndex = curRowIndex + 2;//
+
+			for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+				row = sheet.createRow(curRowIndex);
+				if (i == 0) {
+					row.setHeight((short) 600);
+				}
+				Map map = (Map) dataList.get(curDataIndex);
+				for (int j = 0; j < map.size(); j++) {
+					if (i == 0) {
+						HSSFCell cell = row.createCell(j);
+						cell.setCellValue((String) map.get(keys[j]));
+						cell.setCellStyle(columnHeadStyle);
+					} else {
+						cell_dep = row.createCell(j);
+						String k="",value="";
+						Map  map1=(Map)map.get(keys[j]);
+						Set<String> items=map1.keySet();
+					    for(String key:items){
+					    	k=key;
+					    	value=(String)map1.get(key);
+					    	break;
+					    }
+						if(k.equals("Integer")){
+							cell_dep.setCellValue(Integer.parseInt(value));
+							cell_dep.setCellStyle(sheetStyle);
+							cell_dep.setCellStyle(IntegercellStyle);
+						}else if(k.equals("Decimal")){
+							cell_dep.setCellValue(Double.parseDouble(value));
+						    cell_dep.setCellStyle(sheetStyle);
+							cell_dep.setCellStyle(DecimalcellStyle);
+						}else if(k.equals("Formula")){
+							cell_dep.setCellType(HSSFCell.CELL_TYPE_FORMULA);
+							cell_dep.setCellFormula(value);
+							cell_dep.setCellStyle(DecimalcellStyle);
+						}else{
+							cell_dep.setCellType(HSSFCell.CELL_TYPE_STRING);
+							cell_dep.setCellValue(value);
+							cell_dep.setCellStyle(sheetStyle);
+						}	
+					}
+
+				}
+				curRowIndex = curRowIndex + 1;
+			}// for sheet
+
+			// Set the column size to auto-fit
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.autoSizeColumn(i);
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw new FrameworkException(e);
+		}
+	}
+	
+}
+

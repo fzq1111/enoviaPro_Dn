@@ -1,0 +1,12 @@
+public class ${CLASSNAME} {
+    public ${CLASSNAME}() {
+    }
+
+    public ${CLASSNAME}(matrix.db.Context ctx, String[] args) {
+    }
+
+    public int mxMain(matrix.db.Context ctx, String[] args) throws Exception {
+        return com.technia.tvc.core.db.domain.TriggerManager.perform(ctx, args);        
+    }
+}
+

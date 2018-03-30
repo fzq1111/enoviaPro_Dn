@@ -1,0 +1,199 @@
+#set context vault vplm user creator;
+#start transaction;
+#set escape on;
+
+delete table PARSearchResult system;
+
+add table PARSearchResult system
+	column
+		name ObjectName
+		businessobject name
+		label emxParameter.common.ObjectName
+		href "${COMMON_DIR}/emxTree.jsp"
+		setting "Registered Suite" Parameter
+		setting "RMB Menu" PlmParameterRMB
+		setting "Target Location" content
+	column
+		name ParameterRevision		
+		businessobject revision
+		label emxParameter.common.Revision
+		setting "Registered Suite" Parameter
+	column
+		name Title
+		businessobject $<attribute[attribute_Title]>
+		label emxParameter.common.Title
+		setting Required true
+		setting Editable true
+		setting "Registered Suite" Parameter
+		setting "Update Program" emxParameterEdit
+		setting "Update Function" setParameterName
+	column 
+		name Dimension
+		label emxParameter.common.Dimension
+		setting "Registered Suite" Parameter
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getParameterDimension
+	column
+		name Priority
+		businessobject $<attribute[ParameterPriority]>
+		label emxParameter.common.Priority
+		setting Editable true
+		setting "Registered Suite" Parameter
+		setting "Update Program" emxParameterEdit
+		setting "Update Function" setParameterPriority
+	column 
+		name Function
+		label emxParameter.Extension.Function
+		setting "Registered Suite" Parameter
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getParameterExtension
+	column 
+		name Separator1
+		setting "Registered Suite" Parameter
+		setting "Column Type" separator
+	column 
+		name "ObjectiveType"
+		label emxParameter.Objective.Type
+		setting "Registered Suite" Parameter
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getObjectiveType
+	column 
+		name "ObjectiveProbability"
+		label emxParameter.Objective.Probability
+		setting Editable true
+		setting "Registered Suite" Parameter
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getObjectiveProbability
+		setting "Update Program" emxParameterEdit
+		setting "Update Function" setObjectiveProbability
+		setting "Edit Access Program" emxParameterEdit
+		setting "Edit Access Function" setObjectiveEditable
+	column 
+		name "ConfidenceLevel"
+		label emxParameter.Objective.Confidence
+		setting Editable true
+		setting "Registered Suite" Parameter
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getConfidenceLevel
+		setting "Update Program" emxParameterEdit
+		setting "Update Function" setConfidenceLevel
+		setting "Edit Access Program" emxParameterEdit
+		setting "Edit Access Function" setObjectiveEditable
+	column 
+		name Separator2
+		setting "Registered Suite" Parameter
+		setting "Column Type" separator
+	column 
+		name "Valuation Type"
+		label emxParameter.common.ValuationType
+		setting Editable false
+		setting "Registered Suite" Parameter
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getParameterValuationType
+	column 
+		name "Parameter Value"
+		label emxParameter.common.NominalValue
+		setting Editable true
+		setting "Edit Access Program" emxParameterEdit
+		setting "Edit Access Function" setValueCellEditable
+		setting "Registered Suite" Parameter
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getParameterValue
+		setting "Update Program" emxParameterEdit
+		setting "Update Function" setParameterValue
+	column 
+		name "Minimal Value"
+		label emxParameter.common.Min
+		setting Editable true
+		setting "Edit Access Program" emxParameterEdit
+		setting "Edit Access Function" setMinValueCellEditable
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getParameterMinValue
+		setting "Registered Suite" Parameter
+		setting "Update Program" emxParameterEdit
+		setting "Update Function" setParameterValueMin
+	column 
+		name "Maximal Value"
+		label emxParameter.common.Max
+		setting Editable true
+		setting "Edit Access Program" emxParameterEdit
+		setting "Edit Access Function" setMaxValueCellEditable
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getParameterMaxValue
+		setting "Registered Suite" Parameter
+		setting "Update Program" emxParameterEdit
+		setting "Update Function" setParameterValueMax
+	column	
+		name MultipleValues
+		label emxParameter.common.MultipleValues
+		setting "Registered Suite" Parameter
+		setting Editable false
+		setting "Column Type" programHTMLOutput
+		setting program emxParameterEdit
+		setting function getMultiColumnHTML
+	column 
+		name Separator3
+		setting "Registered Suite" Parameter
+		setting "Column Type" separator
+	column
+		name Role
+		label emxParameter.common.Role
+		setting "Column Type" program
+		setting program emxParameterEdit
+		setting function getParameterRole
+		setting Editable false
+		setting "Registered Suite" Parameter
+	column
+		name ParameterAggregator
+		label emxParameter.Aggregation.AggregatorName
+		setting "Column Type" program
+		setting program emxParameter
+		setting function getAggregator
+		setting Editable false
+		setting "Registered Suite" Parameter
+	column 
+		name Owner
+		businessobject owner
+		label emxFramework.Basic.Owner
+		setting "Registered Suite" Parameter
+	column 
+		name State
+		label emxFramework.Basic.State
+		setting "Editable" false
+		setting "Input Type" "textbox"
+		setting "Column Type" "program"
+		setting "program" emxParameter
+		setting "function" "getCurrentState"
+		setting "Registered Suite" "Parameter"
+	column
+		name name2
+		businessobject name
+		label " "
+		href "${COMMON_DIR}/emxTree.jsp?mode=replace&submitAction=refreshCaller"
+		setting "Column Icon" "${COMMON_DIR}/images/iconNewWindow.gif"
+		setting "Column Type" icon
+		setting "Target Location" popup
+		setting "Registered Suite" Parameter
+		setting "Window Width" 930
+		setting "Window Height" 650
+;
+
+
+#Register UI elements
+
+mod program eServiceSchemaVariableMapping.tcl
+	add property table_PARSearchResult to table PARSearchResult	system
+;
+
+#set escape off;
+#commit transaction;
+

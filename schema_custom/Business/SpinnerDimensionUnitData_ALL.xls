@@ -1,0 +1,9 @@
+Dimension Name	Unit Name	Unit Label	Unit Description	Multiplier (real)	Offset (real)	Setting Names (use "|" delim)	Setting Values (use "|" delim)	SystemName (use "|" delim)	SystemUnit (use "|" delim)	Default (boolean)
+SEM_Currency	Dollar	Dollar		1.0	0.0					FALSE
+SEM_Currency	Won	Won		1.0	0.0					FALSE
+SEM_Currency	Yen	Yen		1.0	0.0					FALSE
+SEM_Currency	Yuan Renminbi	Yuan Renminbi		1.0	0.0					TRUE
+SEM_Currency	Pound	Pound		1.0	0.0					FALSE
+SEM_Currency	Euro	Euro		1.0	0.0					FALSE
+SEM_Currency	Unassigned	Unassigned		1.0	0.0					FALSE
+

@@ -1,0 +1,16 @@
+Name	Registry Name	Description	Label	Href	Alt	"Setting Name (use ""|"" delim)"	"Setting Value (use ""|"" delim)"	"Channels (use "","" w/ ""|"" delims)"	Hidden (boolean)	Icon File
+AssignedRelated			emxProgramCentral.Common.AssignedRelated			Registered Suite	ProgramCentral	My Task | AsssignmentSchedule	FALSE	
+SEM_Drawing_Plan			emxFramework.Command.SEM_Drawing_Plan			Registered Suite	Framework	SEM_Drawing_Plan	FALSE	
+Issue		Issue	emxProgramCentral.Common.Issue			Registered Suite	ProgramCentral	Issue	FALSE	
+IssueList		Task Portal Menu				Registered Suite	Components	TaskMonitoring	FALSE	
+SEMTaskMonitoring						Registered Suite	Framework	SEMTaskMonitoring	FALSE	
+SEMTaskViewPortal								SEMTaskViewPortal	FALSE	
+PMCTaskIssueMonitoring								SEMTaskMonitoring | SEMProjectIssueMonitoring	FALSE	
+PMCRouteTaskMyDesk								PMCRouteTaskMyDesk	FALSE	
+IssuePortal	IssuePortal	Issue Portal Menu				Registered Suite	Components	"IssueChannel1,IssueChannel2 | IssueChannel3"	FALSE	
+SEMMeetingDetails								SEMMeetingDetails | SEMMeetingDetails2	FALSE	
+SEMContactOrderPortal			emxFramework.Command.SEMContactOrderPortal			Registered Suite	Framework	SEMContactOrderPortal1 | SEMContactOrderPortal4 | SEMContactOrderPortal2 | SEMContactOrderPortal3	FALSE
+SEMIssueSummarizePortal						Registered Suite | Submit	Framework | true	SEMIssueSummarizeCriteria,SEMIssueSummarizeResult	FALSE
+ApproveOrderPortal								ApprveOrderChannel | SEMPrjChangeRequestChannel1	FALSE
+SEMBudgetChangeRequestPortal								SEMBudgetChangeRequestChannel | SEMPrjChangeRequestChannel1	FALSE
+SEMPrjChangeRequestPortal								SEMPrjChangeRequestChannel | SEMPrjChangeRequestChannel1	FALSE

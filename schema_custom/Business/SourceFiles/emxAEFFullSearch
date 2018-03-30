@@ -1,0 +1,71 @@
+import java.util.*;
+
+import com.matrixone.apps.domain.*;
+import com.matrixone.apps.domain.util.*;
+
+import matrix.db.*;
+
+// ${CLASSNAME}.java
+//
+// Created on jan 02, 2008
+//
+// Copyright (c) 2005-2015 Dassault Systems Limited.
+// All Rights Reserved
+// This program contains proprietary and trade secret information of
+// Dassault Systems, Inc.  Copyright notice is precautionary only and does
+// not evidence any actual or intended publication of such program.
+//
+
+/**
+ * @author Lanka
+ * 
+ *         The <code>${CLASSNAME}</code> class/interface contains .
+ * 
+ * @version AEF 10.7.3 - Copyright (c) 2005-2015, Dassault Systems, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxAEFFullSearchBase} {
+
+	/**
+	 * @param context
+	 * @param args
+	 * @throws Exception
+	 */
+	public ${CLASSNAME}(Context context, String[] args) throws Exception {
+		super(context, args);
+		// TODO Auto-generated constructor stub
+
+	}
+
+	/*
+	 * @author Yun.Lee 2016/12/15 (non-Javadoc)
+	 * 
+	 * @see ${CLASS:emxAEFFullSearchBase}#search(matrix.db.Context,
+	 * java.lang.String[])
+	 */
+	@Override
+	public MapList search(Context context, String[] args) throws Exception {
+		Map params = null;
+		String dataSource = DomainObject.EMPTY_STRING;
+		try {
+			params = JPO.unpackArgs(args);
+			dataSource = ((String) params.get("dataSource"));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		if ("teamcenter".equalsIgnoreCase(dataSource)) {
+			return JPO.invoke(context, "emxTeamcenterClient", null, "search", args, MapList.class);
+		}
+		// TODO search something? copy super.search code here and change it.
+
+		return super.search(context, args);
+	}
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+}

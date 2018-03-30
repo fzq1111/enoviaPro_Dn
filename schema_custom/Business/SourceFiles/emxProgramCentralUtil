@@ -1,0 +1,159 @@
+/*
+**   emxProgramCentralUtil
+**
+**   Copyright (c) 1992-2015 Dassault Systemes.
+**   All Rights Reserved.
+**   This program contains proprietary and trade secret information of MatrixOne,
+**   Inc.  Copyright notice is precautionary only
+**   and does not evidence any actual or intended publication of such program
+**
+**   static const char RCSID[] = $Id: ${CLASSNAME}.java.rca 1.20.2.2 Thu Dec  4 07:56:10 2008 ds-ss Experimental ${CLASSNAME}.java.rca 1.20.2.1 Thu Dec  4 01:55:01 2008 ds-ss Experimental ${CLASSNAME}.java.rca 1.20 Tue Oct 28 22:59:43 2008 przemek Experimental przemek $
+*/
+
+import java.util.HashMap;
+import java.util.Map;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+
+import com.matrixone.apps.domain.DomainObject;
+import org.apache.log4j.Logger;
+import com.matrixone.apps.domain.util.MapList;
+
+/**
+ * The <code>emxProgramCentralUtil</code> class contains utility methods.
+ */
+public class ${CLASSNAME}  extends ${CLASS:emxProgramCentralUtilBase}
+{
+   /**
+    *
+    * @param context the eMatrix <code>Context</code> object
+    * @param args holds no arguments
+    * @throws Exception if the operation fails
+    * @grade 0
+    */
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+        super(context, args);
+    }
+    
+    StringList busList = new StringList("id");
+    StringList relList = new StringList("id[connection]");
+
+    public StringList getIncludeProjectMemberOID(Context context,String[] args)throws Exception
+    {
+    	StringList returnList = new StringList();
+    	try{
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+            String  objectId = (String) programMap.get("objectId");
+            String projectId = getProjectSpaceId(context,objectId);
+            DomainObject projectObj = new DomainObject(projectId);
+            MapList mapList = projectObj.getRelatedObjects(context,"Member","*",busList,relList,false,true,(short)0,null,null);
+            for(int i = 0 ; i<mapList.size(); i++)
+    		{
+    			Map map = (Map)mapList.get(i);
+    			String personId = (String)map.get("id");
+    			returnList.add(personId);
+    		}	
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    	}
+    	return returnList;
+    }
+    
+    public String getProjectSpaceId(Context context,String objectId)throws Exception
+    {
+    	String projectId ="";
+    	try{
+    		DomainObject strTaskObj = new DomainObject(objectId);
+    		if(strTaskObj.isKindOf(context, "Task Management"))
+    		{
+    			StringList parentIdList = new StringList();
+        		MapList mapList = strTaskObj.getRelatedObjects(context,"Subtask","*",busList,relList,true,false,(short)0,null,null);
+        		for(int i = 0 ; i<mapList.size(); i++)
+        		{
+        			Map map = (Map)mapList.get(i);
+        			String parentId = (String)map.get("id");
+        			DomainObject strParentObj = new DomainObject(parentId);
+        			String partentType = strParentObj.getType(context);
+        			if(partentType.equals("Project Space"))
+        			{
+        				projectId = parentId;
+        			}
+        		}
+    		}else if(strTaskObj.isKindOf(context, "Project Management")){
+    			projectId = objectId;
+    		}else if(strTaskObj.isKindOf(context,"Issue")){
+    			StringList parentIdList = new StringList();
+        		MapList mapList = strTaskObj.getRelatedObjects(context,"Issue","Project Management",busList,relList,true,false,(short)0,null,null);
+        		for(int i = 0 ; i<mapList.size(); i++)
+        		{
+        			Map map = (Map)mapList.get(i);
+        			String parentId = (String)map.get("id");
+        			DomainObject strParentObj = new DomainObject(parentId);
+        			String partentType = strParentObj.getType(context);
+        			if(partentType.equals("Project Space"))
+        			{
+        				projectId = parentId;
+        			}
+        		}
+    		}else if(strTaskObj.isKindOf(context,"Risk")){
+    			MapList mapList=strTaskObj.getRelatedObjects(context,"Risk,Subtask","Project Space,Task Management",busList, relList,true,false, (short)0,null, null);
+    			for(int i = 0 ; i<mapList.size(); i++)
+        		{
+        			Map map = (Map)mapList.get(i);
+        			String parentId = (String)map.get("id");
+        			DomainObject strParentObj = new DomainObject(parentId);
+        			String partentType = strParentObj.getType(context);
+        			if(partentType.equals("Project Space"))
+        			{
+        				projectId = parentId;
+        			}
+        		}
+    		}else if(strTaskObj.isKindOf(context,"Meeting")){
+    			MapList mapList=strTaskObj.getRelatedObjects(context,"Meeting Context","Project Space",busList, relList,true,false, (short)0,null, null);
+    			for(int i = 0 ; i<mapList.size(); i++)
+        		{
+        			Map map = (Map)mapList.get(i);
+        			String parentId = (String)map.get("id");
+        			DomainObject strParentObj = new DomainObject(parentId);
+        			String partentType = strParentObj.getType(context);
+        			if(partentType.equals("Project Space"))
+        			{
+        				projectId=parentId;
+        			}
+        		}
+    		}
+    		
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    	}
+    	return projectId;
+    }
+    
+    
+    public StringList getIncludePartTaskOID(Context context,String[] args)throws Exception
+    {
+    	StringList returnList = new StringList();
+    	try{
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+            String  objectId = (String) programMap.get("objectId");
+            String projectId = getProjectSpaceId(context,objectId);
+            DomainObject projectObj = new DomainObject(projectId);
+            MapList mapList = projectObj.getRelatedObjects(context,"SEM Project PartTask,SEM SubPart","*",busList,relList,false,true,(short)0,null,null);
+            for(int i = 0 ; i<mapList.size(); i++)
+    		{
+    			Map map = (Map)mapList.get(i);
+    			String personId = (String)map.get("id");
+    			returnList.add(personId);
+    		}	
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    	}
+    	return returnList;
+    }
+}
+

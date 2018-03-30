@@ -1,0 +1,816 @@
+/*
+ **  ${CLASSNAME}.java
+ **
+ **  Copyright Dassault Systemes, 1992-2015.
+ **  All Rights Reserved.
+ **  This program contains proprietary and trade secret information of Dassault Systemes and its 
+ **  subsidiaries, Copyright notice is precautionary only
+ **  and does not evidence any actual or intended publication of such program
+ **
+ **	This Base JPO will take care of migration of C3D specific data generated on releases prior to R2015x
+ **  to R2015x server.
+ **  Directions to use:
+ **  1. On MQL prompt: Set Appropriate context, preferably creator.
+ **	 2. Make sure that DEC side Data Migration scripts are run successfully before going for C3D Data Migration.
+ **	 3. On MQL: compile program C3DMigration* -force (to make sure that program is compiled properly)
+ **	 4. On MQL: exec program C3DMigration -method main
+ **	 5. On Execution status log can be found at "UserProfileDir/C3D_Migration/MigrationLogXXXXX.log" (XXXX denots timestamp).
+ **	 6. If any error occurs, this JPO can be executed again.
+ History of changes:
+ 1.			???			 XLV	 Creation
+ 2. 		25 Nov 2014	 XLV	 Compilation Warnings Removal. 	
+ */
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Date;
+
+import matrix.db.Context;
+import matrix.db.MQLCommand;
+import matrix.util.StringList;
+
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.StringUtil;
+
+import com.ds.enovia.vif.util.ENOVIFUtil;
+import com.ds.enovia.vif.services.ENOVIFContext;
+import com.ds.enovia.cif.intrf.IENOCIFContext;
+import com.ds.enovia.cif.intrf.IENOCIFLogger;
+import com.ds.enovia.c3d.C3DLogger;
+
+// @SuppressWarnings("PMD.TooManyMethods")
+public class ${CLASSNAME}{
+
+	IENOCIFContext iefENOContext = null;
+	IENOCIFLogger logger = null;
+	Context mxContext = null;
+	FileOutputStream logOutputStream  = null;
+
+	private String C3D_MigrationDir = "C3D_Migration";
+	private String C3D_MigrationLog = "MigrationLog";
+	private String STR_C3DVIEWABLE = "C3DViewable";
+	private String STR_VIEWABLE = "Viewable";
+	//private String STR_SP_RELATIONSHIP_SP = " relationship ";
+	//private String STR_SP_TO_SP = " to "; 
+	//[2]:START
+	private static String STR_DUMP = "dump";
+	private static String STR_PIPE = "|";
+	private static String STR_STAR = "*";	
+	private static String STR_TYPE_DOP = "Derived Output";
+	//[2]:END
+	public ${CLASSNAME}()
+	{
+		//logger.logDebug("Default Constructior....."); 
+	}
+
+	public ${CLASSNAME}(Context context)
+	{
+		try
+		{
+			mxContext = context;
+			iefENOContext = new ENOVIFContext();
+			iefENOContext.setContext(context);
+			//initiate logger and use it further.
+			//Changed method name so as to avoid TooMany Methods error.
+			getLogger();
+			iefENOContext.setLogger(logger);
+			logger.logDebug("[${CLASSNAME}:${CLASSNAME}] Initialization complete...");
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+	}
+	
+	private void replaceRelationship()	//throws Exception
+	{
+		try
+		{
+			logger.logDebug("*******  replaceRelationship START: ************");
+			String result = null;			
+			MQLCommand mqlc   = new MQLCommand();
+			//[2]:START
+			//String mqlCmd = "temp query bus  " + STR_C3DVIEWABLE + " * * where (relationship[" +STR_VIEWABLE +"]) select to.from.id dump |";
+			//logger.logDebug("replaceRelationship mqlCmd :" + mqlCmd);
+			//boolean bRet      = mqlc.executeCommand(mxContext,(String)mqlCmd);
+			
+			String mqlCmdStr = "temp query bus $1 $2 $3 where $4 select $5 $6 $7";
+			String[] argsList = {STR_C3DVIEWABLE, STR_STAR, STR_STAR, "(relationship[" +STR_VIEWABLE +"])", "to.from.id", STR_DUMP, STR_PIPE};			
+			boolean bRet      = mqlc.executeCommand(mxContext,mqlCmdStr, argsList);
+			//[2]:END
+			result = mqlc.getResult();
+			logger.logDebug("replaceRelationship mqlResult: "+result);
+
+			if(bRet)
+			{
+				if(null != result && result.length() > 0)
+				{
+					StringList values = StringUtil.split(result, "\n");
+					logger.logDebug("replaceRelationship:  values: "+values);  
+					logger.logDebug("replaceRelationship: Total values: "+values.size());  
+					for (int i=0 ; i < values.size(); i++)
+					{
+						String c3dValue = (String) values.get(i);
+						c3dValue = c3dValue.trim();
+						if(null!=c3dValue && !c3dValue.isEmpty())
+						{
+							logger.logDebug("replaceRelationship c3dValue: "+c3dValue);
+							StringList flagResult = StringUtil.split(c3dValue,"|");
+							String type = (String)flagResult.get(0);
+							String name = (String)flagResult.get(1);
+							String rev = (String)flagResult.get(2);
+							logger.logDebug("replaceRelationship Type: "+type+" Name: "+name+ " Revision: "+rev);
+							String cadID = (String)flagResult.get(3); 
+							logger.logDebug("replaceRelationship cadID: "+cadID);
+							//[2]:START
+							//String disConn = "disconnect bus " +cadID+ STR_SP_RELATIONSHIP_SP+ STR_VIEWABLE + STR_SP_TO_SP +type+" " +name +" " +rev;
+							//logger.logDebug("replaceRelationship disConn: "+disConn);
+							//mqlc.executeCommand(mxContext, (String)disConn);
+							mqlCmdStr = "disconnect bus $1 relationship $2 to $3 $4 $5";
+							argsList = new String[]{cadID, STR_VIEWABLE, type, name, rev};							
+							bRet      = mqlc.executeCommand(mxContext,mqlCmdStr, argsList);
+							logger.logDebug("replaceRelationship disconnect Viewable rel result: " + bRet);
+							//String conn = "connect bus " +cadID+ STR_SP_RELATIONSHIP_SP+ STR_C3DVIEWABLE + STR_SP_TO_SP +type+" " +name +" " +rev;
+							//logger.logDebug("replaceRelationship conn: "+conn);
+							//mqlc.executeCommand(mxContext, (String) conn);
+							mqlCmdStr = "connect bus $1 relationship $2 to $3 $4 $5";
+							argsList = new String[]{cadID, STR_C3DVIEWABLE, type, name, rev};
+							bRet = mqlc.executeCommand(mxContext,mqlCmdStr, argsList);
+							logger.logDebug("replaceRelationship connect with C3DViewable rel result: " + bRet);
+							//[2]:END
+						}
+					}
+				}
+				else
+				{
+					logger.logDebug("replaceRelationship MQLResult is Empty.. No any C3DViewable object is connected by Viewable relationship....");
+				}
+			}
+			else
+			{
+				result = mqlc.getError();
+				logger.logDebug("replaceRelationship Inside else: ");
+			}
+			logger.logDebug("*******  replaceRelationship END: ************\n\n");
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+
+	}
+	private void removeMinorMarkup() /*throws Exception*/
+	{
+		try
+		{
+			logger.logDebug("*******  removeMinorMarkup START: ************");
+			String result = null;
+			boolean bRet = true;
+			String markupType= "C3DAutoVueMarkups";
+			MQLCommand mqlc   = new MQLCommand();
+			//[2]:START
+			//String mqlCmd = "temp query bus " + markupType + " * 0 select id dump |";			
+			//mqlc.executeCommand(mxContext, (String) mqlCmd);
+			//logger.logDebug("removeMinorMarkup: mqlCmd: "+mqlCmd);	
+			String mqlCmdStr = "temp query bus $1 $2 $3 select $4 $5 $6";
+			String[] argsList = {markupType, STR_STAR,"0", "id", STR_DUMP, STR_PIPE};
+			bRet = mqlc.executeCommand(mxContext, mqlCmdStr, argsList);
+			logger.logDebug("Query Markups minor objects result: " + bRet);
+			//[2]:END			
+									
+			if (bRet)
+			{
+				result = mqlc.getResult();
+				logger.logDebug("removeMinorMarkup: mqlResult: "+result);
+
+				if(result != null && result.length() > 0)
+				{
+					StringList values = StringUtil.split(result, "\n");
+					for (int i=0 ; i < values.size(); i++)
+					{
+						String markupValue = (String) values.get(i);
+						int index           = markupValue.lastIndexOf('|');
+						String markupID = markupValue.substring(index+1);
+
+						if(null != markupID && !markupID.isEmpty() && markupID.length() >0)
+						{
+							logger.logDebug("removeMinorMarkup: markupID: "+markupID);
+							DomainObject busObj = new DomainObject(markupID);
+							busObj.deleteObject(mxContext);
+							logger.logDebug("Deleted!!");
+						}
+					}//for
+				}//result check					
+				else
+				{
+					logger.logDebug("removeMinorMarkup: MQLResult is Empty... 0th Revision Markups are not present!!");
+				}
+			}//if(bret)
+			else
+			{
+				// get error msg
+				result = mqlc.getError();
+				result = "false|" + result;
+				logger.logDebug("*******  removeMinorMarkup: MQL Error: " + result);					
+			}
+			logger.logDebug("*******  removeMinorMarkup END: ************\n\n");
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+	}
+	
+	private void DOPFlagHandling()/*throws Exception*/
+	{
+		try
+		{
+/*
+//Get Derived OP objects.
+MQL<61>temp query bus "Derived Output" * * select id dump |;
+	Derived Output|22Aug_INVPart01_RM.ipt|---.0|28160.14331.23904.10770		
+//Expand bus to get DD
+MQL<57>expand bus 28160.14331.1452.52591 terse relationship "Derived Output" dump |;
+		1|Derived Output|from|28160.14331.1452.49598
+//Expand DD to get C3DViewables??
+	//Below command will return ids it will be difficult to know which is C3DViewable and which not.
+MQL<63>expand bus 28160.14331.1452.49598 terse relationship "Viewable" dump |;
+		1|Viewable|to|28160.14331.1452.56129
+		1|Viewable|to|28160.14331.1452.56130
+//Below command will return all C3DViewable type of objects connected to DD...	
+MQL<68>expand bus 28160.14331.1452.49598 terse relationship "Viewable" type "C3DViewable" dump |;
+		1|Viewable|to|28160.14331.1452.56129
+		1|Viewable|to|28160.14331.1452.56130	
+//Once we have C3DViewable List, check if there are any other Viewable Type attached to DD.
+//Get the list of Files present in DOP and see if "C3D name without time" matches with any file name.
+//If yes move such C3DViewable to DOP (Disconnect from DD and Connect to DOP).
+//Get the list of Viewable objects and their filenames.
+//Check if filename of Viewable object matches with "C3D name without time"
+//If yes move such C3DViewable those Viewable(Disconnect from DD and Connect to DOP).
+*/
+
+			logger.logDebug("*******  DOPFlagHandling2 START: ************");
+			//Get Derived OP objects.
+			//MQL<61>temp query bus "Derived Output" * * select id dump |;
+			//Derived Output|22Aug_INVPart01_RM.ipt|---.0|28160.14331.23904.10770
+			
+			
+			MQLCommand mqlc   = new MQLCommand();
+			boolean bMqlCmdRet = false;
+			//[2]:START
+			//String sMQLCmd = "temp query bus 'Derived Output' * * select id dump |";
+			//logger.logDebug("[DOPFlagHandling] sMQLCmd:"+ sMQLCmd);			
+			//bMqlCmdRet = mqlc.executeCommand(mxContext, (String) sMQLCmd);
+			String mqlCmdStr = "temp query bus $1 $2 $3 select $4 $5 $6";
+			String[] argsList = {STR_TYPE_DOP, STR_STAR, STR_STAR, "id", STR_DUMP, STR_PIPE};
+			bMqlCmdRet = mqlc.executeCommand(mxContext, mqlCmdStr, argsList);
+			//[2]:END
+			logger.logDebug("[DOPFlagHandling] bMqlCmdRet: "+ bMqlCmdRet);
+			
+			if(bMqlCmdRet)
+			{			
+				String sMqlResult = mqlc.getResult();
+				sMqlResult = sMqlResult.trim();
+				logger.logDebug("DOPFlagHandling result: " + sMqlResult);
+				if(null != sMqlResult && !sMqlResult.isEmpty())
+				{
+					//split on /n
+					StringList tempResultList = StringUtil.split(sMqlResult, "\n");
+					for (int i=0 ; i < tempResultList.size(); i++)
+					{
+						String tempResult = (String) tempResultList.get(i);
+						tempResult = tempResult.trim();
+						if(null!=tempResult && !tempResult.isEmpty())
+						{
+							StringList tempResultList2 = StringUtil.split(tempResult,"|");	
+							String dopBusId = (String)tempResultList2.get(3);
+							dopBusId = dopBusId.trim();
+							logger.logDebug("[DOPFlagHandling] dopBusId: "+ dopBusId);
+							processDOPObjectForC3DViewableMovement(dopBusId);
+						}
+					}					
+				}
+				else
+				{
+					logger.logDebug("[DOPFlagHandling]MQL command returned null or empty string.");
+				}
+					
+			}
+			else
+			{
+				logger.logDebug("[DOPFlagHandling]MQL command returned false, probably no DOP objects present.");
+			}			
+			logger.logDebug("*******  DOPFlagHandling2 END: ************\n\n");
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+	}
+	
+	private void processDOPObjectForC3DViewableMovement(String dopBusId)
+	{
+		try
+		{		
+			logger.logDebug("[processDOPObjectForC3DViewableMovement] Entering.");	
+			if(dopBusId == null || dopBusId.isEmpty())
+			{
+				logger.logDebug("[processDOPObjectForC3DViewableMovement] Error!!! dopBusId is null, exiting");
+				return;
+			}			
+			MQLCommand mqlc   = new MQLCommand();			
+			//Check if DOP contains files. If there are not files then there is no point to process it.
+			//[2]:START
+			//String tempMqlCmd = "print bus "+ dopBusId +" select format.file.name dump |";			
+			//mqlc.executeCommand(mxContext, (String) tempMqlCmd);
+			
+			String mqlCmdStr = "print bus $1 select $2 $3 $4";
+			String[] argsList = {dopBusId, "format.file.name", STR_DUMP, STR_PIPE};
+			boolean bMqlCmdRet = mqlc.executeCommand(mxContext, mqlCmdStr, argsList);
+			logger.logDebug("[processDOPObjectForC3DViewableMovement] print bus bMqlCmdRet: "+ bMqlCmdRet);	
+			//[2]:END
+			String dopAllFiles = mqlc.getResult(); //1|Derived Output|to|Derived Output|27JuneDOPT.ipt|A.0
+			dopAllFiles = dopAllFiles.trim();
+			logger.logDebug("[processDOPObjectForC3DViewableMovement]: dopAllFiles :"+ dopAllFiles);
+			if(dopAllFiles == null || dopAllFiles.isEmpty())
+				return;
+			StringList dopAllFilesList = StringUtil.split(dopAllFiles,"|");	
+			//Get the DD from DOP.
+			//MQL<57>expand bus 28160.14331.1452.52591 terse relationship "Derived Output" dump |;
+			//1|Derived Output|from|28160.14331.1452.49598
+			
+			//[2]:START
+			//tempMqlCmd = "expand bus "+ dopBusId +" terse relationship 'Derived Output' dump |";
+			//mqlc.executeCommand(mxContext, (String) tempMqlCmd);			
+			mqlCmdStr = "expand bus $1 terse relationship $2 $3 $4"; //TRICKY
+			argsList = new String[]{dopBusId, STR_TYPE_DOP, STR_DUMP, STR_PIPE};
+			bMqlCmdRet = mqlc.executeCommand(mxContext, mqlCmdStr, argsList);
+			logger.logDebug("[processDOPObjectForC3DViewableMovement] expand bus bMqlCmdRet: "+ bMqlCmdRet);
+			//[2]:END
+			String fromBusIdStr = mqlc.getResult();			
+			fromBusIdStr = fromBusIdStr.trim();
+			logger.logDebug("[processDOPObjectForC3DViewableMovement]: After trim fromBusIdStr of DOP relationship: "+ fromBusIdStr);
+			if(fromBusIdStr == null || fromBusIdStr.isEmpty())
+			{
+				logger.logDebug("[processDOPObjectForC3DViewableMovement]: Error, no from side object of DOP relationship.");
+				return;
+			}
+			//Trim on "\n" first as there can be 2 connections with DOP relationship to this DOP object
+			//One from the minor and other from major.
+			StringList fromBusIdStrList = StringUtil.split(fromBusIdStr,"\n");			
+			for(int i = 0; i < fromBusIdStrList.size(); i++)
+			{
+				String singleFromBusIdStr = (String)fromBusIdStrList.get(i);
+				singleFromBusIdStr = singleFromBusIdStr.trim();
+				StringList fromBusIdList = StringUtil.split(singleFromBusIdStr,"|");
+				String strFromBusId = (String)fromBusIdList.get(3);
+				strFromBusId = strFromBusId.trim();
+				logger.logDebug("[processDOPObjectForC3DViewableMovement]: After trim fromBusId of DOP: "+ strFromBusId);
+				String sIsVerObj = ENOVIFUtil.isVersionObject(iefENOContext, strFromBusId);		
+				if(sIsVerObj.equalsIgnoreCase("True"))
+				{
+					logger.logDebug("[processDOPObjectForC3DViewableMovement]: From Side object of DOP rel is a version object: " + strFromBusId);
+					helperProcessDOPObjectForC3DViewableMovement(dopBusId, strFromBusId, dopAllFilesList);					
+					break;
+				}
+			}			
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+		logger.logDebug("[processDOPObjectForC3DViewableMovement] Entering.");	
+	}
+	
+	private void helperProcessDOPObjectForC3DViewableMovement(String dopBusId, String strFromBusId, StringList dopAllFilesList)
+	{
+		logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement] Entering.");
+		try
+		{
+			//String tempMqlCmd = null;
+			MQLCommand mqlc   = new MQLCommand();
+			//[2]:START
+			//tempMqlCmd = "expand bus "+ strFromBusId +" relationship Viewable type C3DViewable select bus id dump |";
+			//mqlc.executeCommand(mxContext, (String) tempMqlCmd);
+
+			String mqlCmdStr = "expand bus $1 relationship $2 type $3 select $4 $5 $6 $7"; //TRICKY
+			String[] argsList = {strFromBusId, STR_VIEWABLE, "C3DViewable", "bus", "id", STR_DUMP, STR_PIPE};
+			boolean bMqlCmdRet = mqlc.executeCommand(mxContext, mqlCmdStr, argsList);
+			logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement] expand bus bMqlCmdRet: "+ bMqlCmdRet);
+			//[2]:END
+			
+			String c3dViewablesStr = mqlc.getResult(); //1|Derived Output|to|Derived Output|27JuneDOPT.ipt|A.0
+			c3dViewablesStr = c3dViewablesStr.trim();
+			logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement]: c3dViewablesStr: "+ c3dViewablesStr);
+			if(c3dViewablesStr == null || c3dViewablesStr.isEmpty())
+				return;
+				
+			//@@Get the Viewable objects list@@
+			//MQL<122>expand bus 28160.14331.1452.49598 relationship "*" select bus id where '(to.type!="C3DViewable")' dump |;
+			//1|VersionOf|to|INV Component|22Aug_INVPart01_RM|---|28160.14331.23904.3797
+			//1|Derived Output|to|Derived Output|22Aug_INVPart01_RM.ipt|---.1|28160.14331.1452.52591
+			//1|Viewable|to|CgrViewable|22Aug_INVPart01_RM.ipt|---.1|28160.14331.1452.56129
+			//1|Latest Version|from|INV Component|22Aug_INVPart01_RM|---|28160.14331.23904.3797
+			//1|Active Version|from|INV Component|22Aug_INVPart01_RM|---|28160.14331.23904.3797
+			
+			//[2]:START
+			//tempMqlCmd = "expand bus "+ strFromBusId +" relationship Viewable select bus id format.file.name where '(relationship[Viewable].to.type!=C3DViewable)' dump |";
+			//mqlc.executeCommand(mxContext, (String) tempMqlCmd);
+
+			mqlCmdStr = "expand bus $1 relationship $2 select $3 $4 $5 where $6 $7 $8"; //TRICKY
+			argsList = new String[]{strFromBusId, STR_VIEWABLE, "bus", "id", "format.file.name", "(relationship[Viewable].to.type!=C3DViewable)", STR_DUMP, STR_PIPE};
+			bMqlCmdRet = mqlc.executeCommand(mxContext, mqlCmdStr, argsList);
+			logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement] expand bus bMqlCmdRet: "+ bMqlCmdRet);
+			//[2]:END			
+			String otherViewablesStr = mqlc.getResult();
+			otherViewablesStr = otherViewablesStr.trim();
+			logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement]: otherViewablesStr: "+ otherViewablesStr);
+			StringList otherViewableList = null;
+			if(otherViewablesStr != null && !otherViewablesStr.isEmpty())
+			{
+				otherViewableList = StringUtil.split(otherViewablesStr,"\n");
+			}
+			//Process each C3DViewable for movement.
+			StringList c3DViewableList = StringUtil.split(c3dViewablesStr,"\n");
+			logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement]: c3DViewableList.size: "+ c3DViewableList.size());
+			for(int j = 0; j < c3DViewableList.size(); j++)
+			{
+				StringList c3dViewableStrSplit = StringUtil.split((String)c3DViewableList.get(j),"|");
+				if(c3dViewableStrSplit == null || c3dViewableStrSplit.size()<=0)
+				{
+					logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement]: c3dViewableStrSplit is null or empty. j = " + j);
+					continue;
+				}
+				logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement]: c3dViewableStrSplit.size: "+ c3dViewableStrSplit.size());
+				String c3dViewableName = (String)c3dViewableStrSplit.get(4);
+				c3dViewableName = c3dViewableName.trim();
+				String c3dViewableId = (String)c3dViewableStrSplit.get(6);
+				c3dViewableId = c3dViewableId.trim();
+				String c3dViewableNameWoTime= c3dViewableName.substring(0, (c3dViewableName.length()- 13));
+				logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement]: c3dViewableId: "+ c3dViewableId);
+				logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement]: c3dViewableName: "+ c3dViewableName);
+				logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement]: c3dViewableNameWoTime: "+ c3dViewableNameWoTime);
+				//Check if DOP file names string contains C3DViewable objects name, if yes then move such C3DViewable to DOP.
+				if(dopAllFilesList.contains(c3dViewableNameWoTime))
+				{	
+					//Disconnect C3DViewable from DD and connect it to DOP.
+					disconnectAndReconnectBusObject(strFromBusId, dopBusId, STR_VIEWABLE, STR_C3DVIEWABLE, c3dViewableId);
+				}
+				else
+				{	
+					//Iterate Viewable list and see if File name from viewable matches to C3DViewable object name.
+					for(int k = 0; k < otherViewableList.size(); k++)
+					{
+						String otherViewableDetailsStr = (String)otherViewableList.get(k);
+						otherViewableDetailsStr = otherViewableDetailsStr.trim();
+						StringList otherViewableInfoList = StringUtil.split(otherViewableDetailsStr,"|");
+						
+						String otherViewableFileStr = (String)otherViewableInfoList.get(7);
+						otherViewableFileStr = otherViewableFileStr.trim();
+						if(otherViewableFileStr != null && !otherViewableFileStr.isEmpty())
+						{
+							StringList otherViewableFileList = StringUtil.split(otherViewableFileStr,"|");
+							//if(((String)otherViewableList.get(k)).contains(c3dViewableNameWoTime))
+							if(otherViewableFileList != null && otherViewableFileList.contains(c3dViewableNameWoTime))
+							{							
+								String otherViewableId = (String)otherViewableInfoList.get(6);
+								otherViewableId = otherViewableId.trim();
+								logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement] otherViewableId: "+ otherViewableId);
+								//Disconnect C3DViewable from DD and move to Viewable(CGR/Thumbnail)
+								disconnectAndReconnectBusObject(strFromBusId, otherViewableId, STR_VIEWABLE, STR_C3DVIEWABLE, c3dViewableId);
+							}
+						}
+					}
+				}				
+			}
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+		logger.logDebug("[helperProcessDOPObjectForC3DViewableMovement] Exiting.");
+	}
+	
+	private void disconnectAndReconnectBusObject(String currFromBusId, String newFromBusId, String currRelName, String newRelName, String toBusId)
+	{
+		logger.logDebug("[disconnectAndReconnectBusObject] Entering.");
+		try
+		{
+			logger.logDebug("[disconnectAndReconnectBusObject] Entering.");
+			MQLCommand mqlc   = new MQLCommand();
+			//[2]:START
+			//String tempMqlCmd = "disconnect bus " + currFromBusId + STR_SP_RELATIONSHIP_SP+ currRelName + STR_SP_TO_SP + toBusId;
+			//logger.logDebug("[disconnectAndReconnectBusObject] disconnect cmd: "+ tempMqlCmd);
+			//boolean bReturnSts = mqlc.executeCommand(mxContext, (String) tempMqlCmd);
+			String mqlCmdStr = "disconnect bus $1 relationship $2 to $3";
+			String[] argsList = {currFromBusId, currRelName, toBusId};
+			boolean bReturnSts = mqlc.executeCommand(mxContext, mqlCmdStr, argsList);
+			//[2]:END
+			logger.logDebug("[disconnectAndReconnectBusObject] MQL Disconnect result: "+ bReturnSts);
+			
+			//[2]:START
+			//Connect C3DViewable to DOP with C3DViewable relatinship.
+			//tempMqlCmd = "connect bus " + newFromBusId + STR_SP_RELATIONSHIP_SP + newRelName + STR_SP_TO_SP + toBusId;
+			//logger.logDebug("[disconnectAndReconnectBusObject]: connect cmd "+ tempMqlCmd);
+			//bReturnSts = mqlc.executeCommand(mxContext, (String) tempMqlCmd);
+			mqlCmdStr = "connect bus $1 relationship $2 to $3";
+			argsList = new String[] {newFromBusId, newRelName, toBusId};
+			bReturnSts = mqlc.executeCommand(mxContext, mqlCmdStr, argsList);
+			//[2]:END
+			logger.logDebug("[disconnectAndReconnectBusObject] MQL connect result: "+ bReturnSts);
+			logger.logDebug("[disconnectAndReconnectBusObject] Exiting.");
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+		logger.logDebug("[disconnectAndReconnectBusObject] Exiting.");
+	}
+	
+	private void insertDummyC3DViewable()/*throws Exception*/
+	{
+		try
+		{
+			//1. Get all From side object which are of not C3DViewable types and C3DAutoVueMarkups are attached to it.
+				//MQL<290>temp query bus C3DAutoVueMarkups * 1 where '(relationship[Markup].from.type==C3DViewable)' select to.from.id dump |;
+				//C3DAutoVueMarkups|M-22Aug_INVPart01_RM.ipt-1408700461741|1|28160.14331.47496.61722
+				//C3DAutoVueMarkups|M-22Aug_INVPart01_RM.ipt-1408700584375|1|28160.14331.52800.17968
+				//C3DAutoVueMarkups|M-22Aug_INVPart01_RM.ipt.dwf-1408700656801|1|28160.14331.58944.34265
+				//C3DAutoVueMarkups|M-22Aug_INVPart01_RM.ipt.jpg-1408700486606|1|28160.14331.62960.48173			
+			//2. Get File Names for such object.
+			//3. Get all Markups attached to such object.			
+			//4. Check if there is C3DViewable object already present?
+			//5. If yes, change all Markups From side object to be the C3DViewable object.
+			//6. If no, create C3DViewable object and attach it to the From side object(THMB/CGR) with C3DViewable relationship.
+			//7. Change all Markup's From side object to be the newly created C3DViewable object.
+			logger.logDebug("*******  insertDummyC3DViewable START: ************");			
+			
+			String markupType= "C3DAutoVueMarkups";
+			String rel_Markup = "Markup";
+			//String prodVault = "eService Production";
+			//String c3dPolicy = "C3DViewable";		
+			//boolean flag		= false;
+			boolean bMqlCmdStatus = false;
+			MQLCommand mqlc   = new MQLCommand();
+			//[2]:START
+			//String sMqlCmd = "temp query bus " + markupType + " * 1 where '(relationship[" +rel_Markup + "].from.type!=" + STR_C3DVIEWABLE +")' select to.from.id dump |";
+			//logger.logDebug("[insertDummyC3DViewable]: mqlCmd: "+ sMqlCmd);			
+			//bMqlCmdStatus = mqlc.executeCommand(mxContext, (String)sMqlCmd);
+			String mqlCmdStr = "temp query bus $1 $2 $3 where $4 select $5 $6 $7";
+			String[] argsList = {markupType,STR_STAR, "1", "(relationship[" + rel_Markup + "].from.type!=" + STR_C3DVIEWABLE +")", "to.from.id", STR_DUMP, STR_PIPE};
+			bMqlCmdStatus = mqlc.executeCommand(mxContext, mqlCmdStr, argsList);
+			//[2]:END
+			logger.logDebug("[insertDummyC3DViewable] Get All From side objects to which C3DAutoVueMarkups are connected directly, MQL command status: " + bMqlCmdStatus );
+			String allFromSideObjResult = mqlc.getResult();
+			allFromSideObjResult = allFromSideObjResult.trim();
+			logger.logDebug("[insertDummyC3DViewable]: mqlResult: " + allFromSideObjResult);
+
+			//C3DAutoVueMarkups|M-testPart2.ipt.cgr-1400499492019|1|CgrViewable|65360.7010.47664.47645
+			if(null != allFromSideObjResult && !allFromSideObjResult.isEmpty())
+			{	
+				//split on \n
+				StringList allFromSideObjResultList = StringUtil.split(allFromSideObjResult,"\n");			
+				logger.logDebug("insertDummyC3DViewable: Total from side objects: allFromSideObjResultList: "+ allFromSideObjResultList.size());
+				if(allFromSideObjResultList == null || allFromSideObjResultList.size()<=0)
+				{
+					logger.logDebug("[insertDummyC3DViewable]:From side object stringlist is null or empty.");
+					return;
+				}
+				
+				for (int i=0 ; i < allFromSideObjResultList.size(); i++)
+				{
+					String fromSideViewableObjDetails = (String)allFromSideObjResultList.get(i);
+					fromSideViewableObjDetails = fromSideViewableObjDetails.trim();
+					logger.logDebug("[insertDummyC3DViewable]:  fromSideViewableObjDetails["+ i + "]: "+ fromSideViewableObjDetails); 
+					createC3DViewableAndMoveMarkups(fromSideViewableObjDetails);				
+				}//for loop
+			} //result
+			else
+			{
+				logger.logDebug("insertDummyC3DViewable: MQLResult is Empty... No markups which are connected to Viewable other than C3DViewable.. ");
+			}			
+			logger.logDebug("*******  insertDummyC3DViewable END: ************\n\n");
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+	}	
+	
+	private void createC3DViewableAndMoveMarkups(String fromSideObjDetails)
+	{
+		logger.logDebug("[createC3DViewableAndMoveMarkups] Entering.");
+		try
+		{
+			if(null!=fromSideObjDetails && !fromSideObjDetails.isEmpty())
+			{
+				String rel_Markup = "Markup";
+				String markupType= "C3DAutoVueMarkups";
+				
+				boolean bMqlCmdStatus = false;
+				//String sMqlCmd = null;
+				MQLCommand mqlcmd   = new MQLCommand();
+				
+				StringList fromSideObjDetailsList = StringUtil.split(fromSideObjDetails,"|");
+				String fromObjID = (String)fromSideObjDetailsList.get(3);		
+				fromObjID = fromObjID.trim();
+				logger.logDebug("[createC3DViewableAndMoveMarkups]: fromObjID: "+ fromObjID);
+				//2. Get File Names for such object.
+				//Check if this object contains any files or not.
+				//if there is no file then there is no point in creating C3DViewable and attaching exiting Markups to it.
+				//Because C3DViewable object name contains from side objects file name.
+				
+				//MQL<291>print bus 28160.14331.47496.61722 select format.file.name dump |;
+				//22Aug_INVPart01_RM.cgr|
+				//[2]:START
+				//sMqlCmd = "print bus "+ fromObjID + " select format.file.name dump |";
+				//bMqlCmdStatus = mqlcmd.executeCommand(mxContext, (String)sMqlCmd);
+				String mqlCmdStr = "print bus $1 select $2 $3 $4";
+				String[] argsList = {fromObjID, "format.file.name", STR_DUMP, STR_PIPE};
+				bMqlCmdStatus = mqlcmd.executeCommand(mxContext, mqlCmdStr, argsList);		
+				//[2]:END
+				logger.logDebug("[createC3DViewableAndMoveMarkups] Get From side object files, MQL command status: " + bMqlCmdStatus );
+				String fromObjFileResult = mqlcmd.getResult();
+				fromObjFileResult = fromObjFileResult.trim();
+				
+				StringList fromObjFileList = StringUtil.split(fromObjFileResult,"|");
+				if(fromObjFileList == null || fromObjFileList.size()<=0)
+				{
+					logger.logDebug("[createC3DViewableAndMoveMarkups]: File list is empty!!! for fromObjID, returning from function: "+ fromObjID);
+					return;
+				}			
+				String sfromObjFileName = (String)fromObjFileList.get(0);
+				sfromObjFileName = sfromObjFileName.trim();
+				logger.logDebug("[createC3DViewableAndMoveMarkups] From side object file: " + sfromObjFileName );
+				
+				//TODO later:
+				//Currently assuming that from side object will have one file in it.
+				//In future need to take care multiple files present in from side object.
+				//Then we will have to create multiple C3DViewable objects as per filename and attach markups to 
+				//appropriate C3DViewable as per their names.
+				//Check if C3DViewable Object exists else create it.
+				//Check which all markups have the filename present in their name. attach such markups to this created C3DViewable object.
+				
+				//Check if C3DViewable object exists already.
+				//boolean bC3DViewableCreated = false;
+				String c3dID = ENOVIFUtil.getViewables(iefENOContext, fromObjID, sfromObjFileName);
+				logger.logDebug("[createC3DViewableAndMoveMarkups] after getViewables  c3dID: "+c3dID);
+
+				if((c3dID == null || c3dID.isEmpty()))
+				{				
+					logger.logDebug("[createC3DViewableAndMoveMarkups] C3DViewable object is not present. Need to create it.");				
+					c3dID = ENOVIFUtil.createViewableObject(iefENOContext, fromObjID, sfromObjFileName);
+					//bC3DViewableCreated = true;						
+				}
+				//If C3DViewable is created successfully...
+				if(c3dID != null && !c3dID.isEmpty())
+				{
+					//Markup Relationship IDs.
+					//MQL<295>print bus 28160.14331.20576.23509 select from[Markup].id dump |;
+					//28160.14331.16064.55006|28160.14331.17872.47923
+					//[2]:START
+					//sMqlCmd = "print bus "+ fromObjID +  " select from[" + rel_Markup+ "].id dump |";
+					//bMqlCmdStatus = mqlcmd.executeCommand(mxContext, (String)sMqlCmd);
+					mqlCmdStr = "print bus $1 select $2 $3 $4";
+					argsList = new String[]{fromObjID, "from[" + rel_Markup+ "].id", STR_DUMP, STR_PIPE};
+					bMqlCmdStatus = mqlcmd.executeCommand(mxContext, mqlCmdStr, argsList);				
+					//[2]:END
+					logger.logDebug("[createC3DViewableAndMoveMarkups] Get All Markup Rel IDs, MQL command status: " + bMqlCmdStatus );
+					String markupRelIdResult = mqlcmd.getResult();
+					markupRelIdResult = markupRelIdResult.trim();
+					logger.logDebug("[createC3DViewableAndMoveMarkups]: Markups Relationship IDs string: " + markupRelIdResult);
+					
+					StringList markupRelIdList = StringUtil.split(markupRelIdResult,"|");
+					
+					if(markupRelIdList != null)
+					{
+						for(int j=0; j<markupRelIdList.size(); j++)
+						{	
+							String sMarkupRelId = (String)markupRelIdList.get(j);
+							logger.logDebug("[createC3DViewableAndMoveMarkups] Markup Rel ID: " + sMarkupRelId);
+							//print connection 28160.14331.16064.55006 select to.type dump |;
+							//C3DAutoVueMarkups
+							//[2]:START
+							//sMqlCmd = "print connection "+ sMarkupRelId +" select to.type dump";
+							//bMqlCmdStatus = mqlcmd.executeCommand(mxContext, (String) sMqlCmd);
+							mqlCmdStr = "print connection $1 select $2 $3";
+							argsList = new String[]{sMarkupRelId, "to.type", STR_DUMP};
+							bMqlCmdStatus = mqlcmd.executeCommand(mxContext, mqlCmdStr, argsList);
+							//[2]:END
+							String relToType = mqlcmd.getResult();
+							relToType = relToType.trim();
+							//If To side object of Markup Rel is C3DAutoVueMarkups then only process...
+							if( relToType != null && relToType.equalsIgnoreCase(markupType))
+							{
+								logger.logDebug("[createC3DViewableAndMoveMarkups] Markup connection:changing from side object to C3DViewable.");
+								//Move all connection from From side object of Markups rels to C3DViewable
+								//[2]:START
+								//sMqlCmd = "modify connection "+ sMarkupRelId +" from " + c3dID;
+								//bMqlCmdStatus = mqlcmd.executeCommand(mxContext, (String) sMqlCmd);								
+								mqlCmdStr = "modify connection $1 from $2";
+								argsList = new String[]{sMarkupRelId, c3dID};
+								bMqlCmdStatus = mqlcmd.executeCommand(mxContext, mqlCmdStr, argsList);
+								//[2]:END
+								logger.logDebug("[createC3DViewableAndMoveMarkups] Attach C3DViewable as From Side object to Markup Rel, MQL command status: " + bMqlCmdStatus );
+							}
+						}
+					}
+				}
+			}
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+		logger.logDebug("[createC3DViewableAndMoveMarkups] Exiting.");
+	}
+
+	//Private function: to initiate logger.
+	private void getLogger()
+	{
+		try
+		{
+			String userDir = System.getProperty("user.home");
+			String osName 			 = System.getProperty("os.name");
+			if(osName.indexOf("Windows") > -1)
+				userDir = System.getenv("USERPROFILE");
+			
+			String logDirectory = userDir + java.io.File.separatorChar + C3D_MigrationDir;
+			String logFileName  = C3D_MigrationLog + (new Date()).getTime() + ".log";       
+			
+			File logDir = new File(logDirectory);
+			if(!logDir.exists())
+				logDir.mkdirs();
+				
+			java.io.File logFile 						= new java.io.File(logDirectory, logFileName);
+			logOutputStream                             = new FileOutputStream(logFile);
+			OutputStreamWriter logOutputStreamWriter    = new OutputStreamWriter(logOutputStream);
+
+			logger = new C3DLogger("${CLASSNAME}");
+
+			logger.setLoggerOutputStreamWriter(logOutputStreamWriter);
+			logger.setLogFile(logFile);
+			logger.setMessageLevel(2);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();			
+		}
+	}
+	
+	//Close Log Stream
+	public void closeLogStream()
+	{
+		try
+		{
+			if(logOutputStream != null)
+			{
+				logger.logDebug("[${CLASSNAME}:closeLogStream] Closing down log stream.");
+				logOutputStream.flush();
+				logOutputStream.close();
+			}
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+	}
+
+	//MAIN function.
+	public static void main(Context _context, String[] args) /*throws Exception*/
+	{
+		${CLASSNAME} baseObject = null;
+		try
+		{		
+			baseObject = new ${CLASSNAME}(_context);
+
+			//Step 1: Remove minor markup object.
+			baseObject.removeMinorMarkup();
+
+			//Step 2: Derived OP Handling. Its MUST that DEC side migration scripts for handling
+			//moving of derived output files from DD to "Derived Output" object are successfully RUN.
+			baseObject.DOPFlagHandling();
+
+			//Step 3: Change Viewable Relationship to C3DViewable relationships
+			//wherever To side of "Viewable" relationship is "C3DViewable" type of object. 
+			baseObject.replaceRelationship();
+
+			//Step 4: Insert Dummy C3DViewable type of object between Viewable(Thumbnail/CGRViewable) 
+			//& C3DAutoVueMarkups type of objects.
+			baseObject.insertDummyC3DViewable();
+		}
+		catch(Exception excp)
+		{
+			excp.printStackTrace();
+		}
+		finally
+		{
+			if(baseObject != null)
+				baseObject.closeLogStream();
+		}
+	}
+
+}
+//End of File.
+

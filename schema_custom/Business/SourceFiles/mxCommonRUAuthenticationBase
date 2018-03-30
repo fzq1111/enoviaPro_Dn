@@ -1,0 +1,61 @@
+//
+// Copyright (c) 1997-2006 MatrixOne Inc.
+// All Rights Reserved
+// This program contains proprietary and trade secret information of
+// MatrixOne, Inc.  Copyright notice is precautionary only and does
+// not evidence any actual or intended publication of such program.
+//
+// Revision 1.1  2006/03/06 16:08:00 	kdyer
+// Initial revision
+//
+//
+
+
+import matrix.db.Context;
+import java.util.Map;
+
+/**
+ * Miscellaneous info for the about box
+ */
+public class ${CLASSNAME}
+{
+    /**
+     * Constructor.
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since EC 10.5.0.0
+     */
+
+  public ${CLASSNAME}(Context context, String[] args)
+  {
+  }
+    /**
+     * This method checks the user is a aunthenticated user or not.
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds the following input arguments:
+     *       0 - a String which holds the username
+     * @return String object containing authentication type and username
+     * @throws Exception if the operation fails
+     * @since EC 10.5.0.0
+     */
+
+  public String authenticate(Context context, String[] args) throws Exception
+  {
+    Map map = context.getCredentials();
+    if (map == null)
+      throw new Exception("no credentials");
+
+    String user = (String)map.get("HttpServletRequest.remoteUser");
+    String type = (String)map.get("HttpServletRequest.authType");
+    if (user == null)
+      throw new Exception("missing authorization header");
+
+    if (type == null)
+      type = "FORM";
+
+    return "{" + type + "}" + user;
+  }
+}

@@ -1,0 +1,103 @@
+/*
+ *  emxTeamStructureTree.java
+ *
+ * Copyright (c) 1992-2015 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ */
+import matrix.db.*;
+import matrix.util.StringList;
+
+import java.lang.*;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.PropertyUtil;
+/**
+ * @version AEF Rossini - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxTeamStructureTreeBase}
+{
+
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF Rossini
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+    
+    public static MapList getCompanyDeptPersonList(Context context, String[] args) throws
+    Exception
+{
+    HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    HashMap paramMap   = (HashMap)programMap.get("paramMap");
+    HashMap requestMap = (HashMap)programMap.get("requestMap");
+    String objectId    = (String)paramMap.get("objectId");
+    
+    DomainObject domObj = DomainObject.newInstance(context,objectId);
+
+    StringList strSel  = new StringList();
+    strSel.add(DomainConstants.SELECT_TYPE);
+
+    Map objMap     = domObj.getInfo(context, strSel);
+    
+    String objType = null;
+    MapList result = new MapList();
+    if(objMap!=null)
+    {
+        objType = (String)objMap.get(DomainConstants.SELECT_TYPE);
+    }
+
+    StringList sSelects = new StringList();
+	//String RELATIONSHIP_LINKED_FOLDERS = PropertyUtil.getSchemaProperty(context, "relationship_LinkedFolders");
+    String MENU_DEPARTMENT = PropertyUtil.getSchemaProperty(context,"menu_typeDepartment");
+    
+        try
+        {
+            sSelects.add(DomainObject.SELECT_ID)  ;
+            sSelects.add(DomainObject.SELECT_NAME);
+			StringList selectRelStmts  = new StringList();
+			selectRelStmts.add(DomainObject.SELECT_RELATIONSHIP_ID);
+            result= (MapList)domObj.getRelatedObjects(context,
+                                                    "Company Department",
+                                                    "Department",
+                                                    sSelects,
+                                                    selectRelStmts,
+                                                    false,
+                                                    true,
+                                                    (short)1,
+                                                    null,
+                                                    null);
+        } catch ( FrameworkException e){
+            throw new FrameworkException(e);
+        }
+    
+    
+    /* Added to display the proper menu for workspace vault in advance search
+     * In general advance search will look for type_MENUNAME. But in our case it will be TMCtype_MENUNAME
+     * For that we need to pass treeMenu with the required menu to be displayed.
+     */
+    for(int i=0; i<result.size(); i++)
+    {
+        Hashtable tempTable = (Hashtable) result.get(i);
+        tempTable.put("treeMenu",MENU_DEPARTMENT);
+    }
+    return result;
+}
+}
+

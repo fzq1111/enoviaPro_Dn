@@ -1,0 +1,9 @@
+name	Registry Name	description	tablespace	indexspace	hidden	icon
+TVC Administration	TVC Administration	Holds administrative object required by TVC			FALSE
+vplm	vplm				FALSE
+vplm_archive					FALSE
+SIXW		Holds 6W entities created by the ENOVIA system			FALSE
+eService Administration	eService Administration	this is where the business objects that support the application are stored			FALSE
+eService Sample	eService Sample	this is where the business objects that demo and test the application are stored			FALSE
+eService Production	eService Production	this is where customers will create the objects.			FALSE
+

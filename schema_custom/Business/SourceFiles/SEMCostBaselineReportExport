@@ -1,0 +1,724 @@
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.util.CellRangeAddress;
+
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.MapList;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.State;
+import matrix.util.StringList;
+import java.util.HashMap;
+import java.util.Map;
+import javax.xml.namespace.QName;
+import java.util.List;
+
+import org.apache.axis2.AxisFault;
+import org.apache.axis2.addressing.EndpointReference;
+import org.apache.axis2.client.Options;
+import org.apache.axis2.rpc.client.RPCServiceClient;
+import org.apache.log4j.Logger;
+
+import java.io.StringReader;
+import matrix.db.BusinessObject;
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.jdom.Attribute;
+import com.matrixone.jdom.Document;
+import com.matrixone.jdom.Element;
+import com.matrixone.jdom.input.SAXBuilder;
+import com.matrixone.jdom.output.XMLOutputter;
+
+public class ${CLASSNAME} 
+{
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+    public ${CLASSNAME}(Context context, String[] args)throws Exception
+    {
+    }
+    
+    public Element getMatchElement(Element rootElement, String Name, String Code) throws Exception
+	{
+		Element matchedElement = null;
+		List<Element> childElementList=rootElement.getChildren();
+		for(int i = 0; i < childElementList.size(); i++)
+		{
+			Element  childElement= childElementList.get(i);
+			if(childElement.getAttributeValue("name").equals(Name)&&childElement.getAttributeValue("SEM_DepCode").equals(Code)){
+				matchedElement=childElement;
+				break;
+			}	
+		}
+		return matchedElement;
+	}
+    
+    public MapList getCostBaselineComparisonReport(Context context, String[] args) {
+		MapList mapList = new MapList();
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			StringList SEMCostBaselineList = (StringList) programMap
+					.get("CostBaselineList");
+			ContextUtil.pushContext(context);
+			String SEMCostBaseline1 = (String)SEMCostBaselineList.get(0);
+			String SEMCostBaseline2 = (String)SEMCostBaselineList.get(1);
+			DomainObject SEMCostBaselineObj1 = DomainObject.newInstance(context,
+					SEMCostBaseline1);
+			DomainObject SEMCostBaselineObj2= DomainObject.newInstance(context,
+					SEMCostBaseline2);
+			String strContent1 = SEMCostBaselineObj1.getAttributeValue(context,"SEM Content");
+			SAXBuilder saxbuilder1= new SAXBuilder();
+			Document doc1= saxbuilder1.build(new StringReader(strContent1));
+			Element rootNode1 = doc1.getRootElement();
+			String strContent2= SEMCostBaselineObj2.getAttributeValue(context,"SEM Content");
+			SAXBuilder saxbuilder2= new SAXBuilder();
+			Document doc2= saxbuilder2.build(new StringReader(strContent2));
+			Element rootNode2 = doc2.getRootElement();
+			String project1Name =rootNode1.getAttributeValue("name");
+			String project2Name =rootNode2.getAttributeValue("name");
+
+			String titles[] = new String[] { "\u90E8\u95E8",
+					"\u90E8\u95E8\u4EE3\u7801", "\u7EC4\u522B",
+					"\u7EC4\u522B\u4EE3\u7801", project1Name+"\uFF081\uFF09", "", "",
+					project2Name+"\uFF082\uFF09", "", "",
+					"\u6295\u8D44\u5DEE\u989D\uFF081\uFF09-\uFF082\uFF09",
+					"\u8BF4\u660E" };
+			Map titleMap = new HashMap();
+			for (int i = 0; i < titles.length; i++) {
+				titleMap.put(i + "", titles[i]);
+			}
+			mapList.add(titleMap);
+			String titles1[] = new String[] { "", "", "", "", "\u9879\u6B21",
+					"\u6295\u8D44\u9879", "\u6295\u8D44\u91D1\u989D",
+					"\u9879\u6B21", "\u6295\u8D44\u9879",
+					"\u6295\u8D44\u91D1\u989D", "", "" };
+			Map title1Map = new HashMap();
+			for (int i = 0; i < titles1.length; i++) {
+				title1Map.put(i + "", titles1[i]);
+			}
+			mapList.add(title1Map);
+
+			StringList departmentList=new StringList();
+			StringList groupList=new StringList();
+			double hjSFCost1 = 0, hjSFCost2 = 0,hjCZ=0;
+			List<Element> childElementList11=rootNode1.getChildren();
+			List<Element> childElementList21=rootNode2.getChildren();
+			
+			for(int i = 0; i < childElementList11.size(); i ++)
+			{
+				Element childElement11 = childElementList11.get(i);
+				String department1Name=childElement11.getAttributeValue("name");
+				String department1Code=childElement11.getAttributeValue("SEM_DepCode");
+				Element childElement21=getMatchElement(rootNode2,department1Name,department1Code);
+				if(childElement21!=null){
+					List<Element> childElementList12=childElement11.getChildren();
+					for(int j=0;j < childElementList12.size();j++)
+					{
+						Element childElement12 = childElementList12.get(j);
+						String group1Name=childElement12.getAttributeValue("name");
+						String group1Code=childElement12.getAttributeValue("SEM_DepCode");
+						Element childElement22=getMatchElement(childElement21,group1Name,group1Code);
+						double xjSFCost1 = 0, xjSFCost2 = 0,xjCZ=0;
+						if(childElement22!=null){
+							departmentList.add(department1Name+department1Code);
+							groupList.add(group1Name+group1Code);
+							
+							List<Element> childElementList13=childElement12.getChildren();
+							List<Element> childElementList23=childElement22.getChildren();
+							if(childElementList13.size()>childElementList23.size()){
+								StringList nameList=new StringList();
+								for(int k=0;k < childElementList13.size();k++)
+								{
+									double SFCost1=0, SFCost2=0;
+									String[] datas = new String[12];
+									datas[0] = department1Name;
+									datas[1] = department1Code;
+									datas[2] = group1Name;
+									datas[3] = group1Code;
+									Element childElement13= childElementList13.get(k);
+									String costName1=childElement13.getAttributeValue("name");
+									nameList.add(costName1);
+									datas[5]=costName1;
+									String SEMFrozenCost1=childElement13.getAttributeValue("SEM_Frozen_Cost");
+									SFCost1 =Double.parseDouble(SEMFrozenCost1)/10000;
+									long l1= Math.round(SFCost1*100); 
+									SFCost1=l1/100.0;
+									xjSFCost1+=SFCost1;
+									datas[6]=SFCost1+"";
+									datas[4]=childElement13.getAttributeValue("SEM_Sequence");
+									for(int y=0;y < childElementList23.size();y++)
+									{
+										Element childElement23= childElementList23.get(y);
+										if(childElement23.getAttributeValue("name").equals(costName1)){
+											datas[8]=costName1;
+											String SEMFrozenCost2=childElement23.getAttributeValue("SEM_Frozen_Cost");
+											SFCost2 = Double.parseDouble(SEMFrozenCost2)/10000;
+											long l2= Math.round(SFCost2*100); 
+											SFCost2=l2/100.0;
+											xjSFCost2+=SFCost2;
+											datas[9]=SFCost2+"";
+											datas[7]=childElement23.getAttributeValue("SEM_Sequence");
+											break;
+										}
+									}
+									double cz=SFCost1-SFCost2;
+									long lc= Math.round(cz*100); 
+									cz=lc/100.0;
+									datas[10]=cz+"";
+									xjCZ+=cz;
+									Map rowMap = new HashMap();
+									for (int row = 0; row < 12; row++) {
+										rowMap.put(row + "", datas[row]);
+									}
+									mapList.add(rowMap);
+								}
+								for(int w=0;w< childElementList23.size();w++){
+									double SFCost1=0, SFCost2=0;
+									Element childElement23= childElementList23.get(w);
+									String cost2Name=childElement23.getAttributeValue("name");
+									if(!nameList.contains(cost2Name)){
+										String[] datas = new String[12];
+										datas[0] = department1Name;
+										datas[1] = department1Code;
+										datas[2] = group1Name;
+										datas[3] = group1Code;
+										datas[8]=cost2Name;
+										String SEMFrozenCost2=childElement23.getAttributeValue("SEM_Frozen_Cost");
+										SFCost2 = Double.parseDouble(SEMFrozenCost2)/10000;
+										long l2= Math.round(SFCost2*100); 
+										SFCost2=l2/100.0;
+										xjSFCost2+=SFCost2;
+										datas[9]=SFCost2+"";
+										datas[7]=childElement23.getAttributeValue("SEM_Sequence");
+										
+										double cz=SFCost1-SFCost2;
+										long lc= Math.round(cz*100); 
+										cz=lc/100.0;
+										datas[10]=cz+"";
+										xjCZ+=cz;
+										Map rowMap = new HashMap();
+										for (int row = 0; row < 12; row++) {
+											rowMap.put(row + "", datas[row]);
+										}
+										mapList.add(rowMap);
+									}
+								}
+							}else{
+								StringList nameList=new StringList();
+								for(int k=0;k < childElementList23.size();k++)
+								{
+									double SFCost1=0, SFCost2=0;
+									String[] datas = new String[12];
+									datas[0] = department1Name;
+									datas[1] = department1Code;
+									datas[2] = group1Name;
+									datas[3] = group1Code;
+									Element childElement23= childElementList23.get(k);
+									String costName2=childElement23.getAttributeValue("name");
+									nameList.add(costName2);
+									datas[8]=costName2;
+									String SEMFrozenCost2=childElement23.getAttributeValue("SEM_Frozen_Cost");
+									SFCost2 =Double.parseDouble(SEMFrozenCost2)/10000;
+									long l2= Math.round(SFCost2*100); 
+									SFCost2=l2/100.0;
+									xjSFCost2+=SFCost2;
+									datas[9]=SFCost2+"";
+									datas[7]=childElement23.getAttributeValue("SEM_Sequence");
+									for(int y=0;y < childElementList13.size();y++)
+									{
+										Element childElement13= childElementList13.get(y);
+										if(childElement13.getAttributeValue("name").equals(costName2)){
+											datas[5]=costName2;
+											String SEMFrozenCost1=childElement13.getAttributeValue("SEM_Frozen_Cost");
+											SFCost1= Double.parseDouble(SEMFrozenCost1)/10000;
+											long l1= Math.round(SFCost1*100); 
+											SFCost1=l1/100.0;
+											xjSFCost1+=SFCost1;
+											datas[6]=SFCost1+"";
+											datas[4]=childElement13.getAttributeValue("SEM_Sequence");
+											break;
+										}
+									}
+									double cz=SFCost1-SFCost2;
+									long lc= Math.round(cz*100); 
+									cz=lc/100.0;
+									datas[10]=cz+"";
+									xjCZ+=cz;
+									Map rowMap = new HashMap();
+									for (int row = 0; row < 12; row++) {
+										rowMap.put(row+"", datas[row]);
+									}
+									mapList.add(rowMap);
+								}
+								for(int w=0;w<childElementList13.size();w++){
+									double SFCost1=0, SFCost2=0;
+									Element childElement13=childElementList13.get(w);
+									String cost1Name=childElement13.getAttributeValue("name");
+									if(!nameList.contains(cost1Name)){
+										String[] datas = new String[12];
+										datas[0] = department1Name;
+										datas[1] = department1Code;
+										datas[2] = group1Name;
+										datas[3] = group1Code;
+										datas[5]=cost1Name;
+										String SEMFrozenCost1=childElement13.getAttributeValue("SEM_Frozen_Cost");
+										SFCost1= Double.parseDouble(SEMFrozenCost1)/10000;
+										long l1= Math.round(SFCost1*100); 
+										SFCost1=l1/100.0;
+										xjSFCost1+=SFCost1;
+										datas[6]=SFCost1+"";
+										datas[4]=childElement13.getAttributeValue("SEM_Sequence");
+										
+										double cz=SFCost1-SFCost2;
+										long lc= Math.round(cz*100); 
+										cz=lc/100.0;
+										datas[10]=cz+"";
+										xjCZ+=cz;
+										Map rowMap = new HashMap();
+										for (int row = 0; row < 12; row++) {
+											rowMap.put(row + "", datas[row]);
+										}
+										mapList.add(rowMap);
+									}
+								}
+								
+							}
+						}else{
+							List<Element> childElementList13=childElement12.getChildren();
+							for(int k=0;k < childElementList13.size();k++)
+							{
+								double SFCost1=0, SFCost2=0;
+								String[] datas = new String[12];
+								datas[0] = department1Name;
+								datas[1] = department1Code;
+								datas[2] = group1Name;
+								datas[3] = group1Code;
+								Element childElement13= childElementList13.get(k);
+								String costName1=childElement13.getAttributeValue("name");
+								datas[5]=costName1;
+								String SEMFrozenCost1=childElement13.getAttributeValue("SEM_Frozen_Cost");
+								SFCost1 =Double.parseDouble(SEMFrozenCost1)/10000;
+								long l1= Math.round(SFCost1*100); 
+								SFCost1=l1/100.0;
+								xjSFCost1+=SFCost1;
+								datas[6]=SFCost1+"";
+								datas[4]=childElement13.getAttributeValue("SEM_Sequence");
+								double cz=SFCost1-SFCost2;
+								long lc= Math.round(cz*100); 
+								cz=lc/100.0;
+								datas[10]=cz+"";
+								xjCZ+=cz;
+								Map rowMap = new HashMap();
+								for (int row = 0; row < 12; row++) {
+									rowMap.put(row + "", datas[row]);
+								}
+								mapList.add(rowMap);
+							}
+						}
+						
+						long l3= Math.round(xjSFCost1*100); 
+						xjSFCost1=l3/100.0;
+						long l4= Math.round(xjSFCost2*100); 
+						xjSFCost2=l4/100.0;
+						long l5= Math.round(xjCZ*100); 
+						xjCZ=l5/100.0;
+						hjSFCost1 += xjSFCost1;
+						hjSFCost2 += xjSFCost2;
+						hjCZ+=xjCZ;
+						String[] xjdatas = new String[12];
+						for (int num = 0; num < 12; num++) {
+							if (num == 5) {
+								xjdatas[num++] = "\u5C0F\u8BA1";
+								xjdatas[num] = xjSFCost1 + "";
+							} else if (num == 8) {
+								xjdatas[num++] = "\u5C0F\u8BA1";
+								xjdatas[num++] = xjSFCost2 + "";
+								xjdatas[num]=xjCZ+ "";
+							} else {
+								xjdatas[num] = "";
+							}
+						}
+						Map xjMap = new HashMap();
+						for (int row = 0; row < 12; row++) {
+							xjMap.put(row + "", xjdatas[row]);
+						}
+						mapList.add(xjMap);
+					}
+				}else{
+					List<Element> childElementList12=childElement11.getChildren();
+					for(int j=0;j < childElementList12.size();j++)
+					{
+						Element childElement12 = childElementList12.get(j);
+						String group1Name=childElement12.getAttributeValue("name");
+						String group1Code=childElement12.getAttributeValue("SEM_DepCode");
+						double xjSFCost1 = 0, xjSFCost2 = 0,xjCZ=0;
+						List<Element> childElementList13=childElement12.getChildren();
+						for(int k=0;k < childElementList13.size();k++)
+						{
+							double SFCost1=0, SFCost2=0;
+							String[] datas = new String[12];
+							datas[0] = department1Name;
+							datas[1] = department1Code;
+							datas[2] = group1Name;
+							datas[3] = group1Code;
+							Element childElement13= childElementList13.get(k);
+							String costName1=childElement13.getAttributeValue("name");
+							datas[5]=costName1;
+							String SEMFrozenCost1=childElement13.getAttributeValue("SEM_Frozen_Cost");
+							SFCost1 =Double.parseDouble(SEMFrozenCost1)/10000;
+							long l1= Math.round(SFCost1*100); 
+							SFCost1=l1/100.0;
+							xjSFCost1+=SFCost1;
+							datas[6]=SFCost1+"";
+							datas[4]=childElement13.getAttributeValue("SEM_Sequence");
+							double cz=SFCost1-SFCost2;
+							long lc= Math.round(cz*100); 
+							cz=lc/100.0;
+							datas[10]=cz+"";
+							xjCZ+=cz;
+							Map rowMap = new HashMap();
+							for (int row = 0; row < 12; row++) {
+								rowMap.put(row + "", datas[row]);
+							}
+							mapList.add(rowMap);
+						}
+						long l3= Math.round(xjSFCost1*100); 
+						xjSFCost1=l3/100.0;
+						long l4= Math.round(xjSFCost2*100); 
+						xjSFCost2=l4/100.0;
+						long l5= Math.round(xjCZ*100); 
+						xjCZ=l5/100.0;
+						hjSFCost1 += xjSFCost1;
+						hjSFCost2 += xjSFCost2;
+						hjCZ+=xjCZ;
+						String[] xjdatas = new String[12];
+						for (int num = 0; num < 12; num++) {
+							if (num == 5) {
+								xjdatas[num++] = "\u5C0F\u8BA1";
+								xjdatas[num] = xjSFCost1 + "";
+							} else if (num == 8) {
+								xjdatas[num++] = "\u5C0F\u8BA1";
+								xjdatas[num++] = xjSFCost2 + "";
+								xjdatas[num]=xjCZ+ "";
+							} else {
+								xjdatas[num] = "";
+							}
+						}
+						Map xjMap = new HashMap();
+						for (int row = 0; row < 12; row++) {
+							xjMap.put(row + "", xjdatas[row]);
+						}
+						mapList.add(xjMap);
+					}	
+				}
+			}
+			//2 difference
+			for(int i = 0; i < childElementList21.size(); i ++)
+			{
+				Element childElement21 = childElementList21.get(i);
+				String department2Name=childElement21.getAttributeValue("name");
+				String department2Code=childElement21.getAttributeValue("SEM_DepCode");
+				if(departmentList.contains(department2Name+department2Code)){
+					List<Element> childElementList22=childElement21.getChildren();
+					for(int j=0;j < childElementList22.size();j++)
+					{
+						Element childElement22 = childElementList22.get(j);
+						String group2Name=childElement22.getAttributeValue("name");
+						String group2Code=childElement22.getAttributeValue("SEM_DepCode");
+						if(!groupList.contains(group2Name+group2Code)){
+							double xjSFCost1 = 0, xjSFCost2 = 0,xjCZ=0;
+							List<Element> childElementList23=childElement22.getChildren();
+							for(int k=0;k < childElementList23.size();k++)
+							{
+								double SFCost1=0, SFCost2=0;
+								String[] datas = new String[12];
+								datas[0] = department2Name;
+								datas[1] = department2Code;
+								datas[2] = group2Name;
+								datas[3] = group2Code;
+								Element childElement23= childElementList23.get(k);
+								String costName2=childElement23.getAttributeValue("name");
+								datas[8]=costName2;
+								String SEMFrozenCost2=childElement23.getAttributeValue("SEM_Frozen_Cost");
+								SFCost2=Double.parseDouble(SEMFrozenCost2)/10000;
+								long l2= Math.round(SFCost2*100); 
+								SFCost2=l2/100.0;
+								xjSFCost2+=SFCost2;
+								datas[9]=SFCost2+"";
+								datas[7]=childElement23.getAttributeValue("SEM_Sequence");
+								double cz=SFCost1-SFCost2;
+								long lc= Math.round(cz*100); 
+								cz=lc/100.0;
+								datas[10]=cz+"";
+								xjCZ+=cz;
+								Map rowMap = new HashMap();
+								for (int row = 0; row < 12; row++) {
+									rowMap.put(row + "", datas[row]);
+								}
+								mapList.add(rowMap);
+							}
+							long l3= Math.round(xjSFCost1*100); 
+							xjSFCost1=l3/100.0;
+							long l4= Math.round(xjSFCost2*100); 
+							xjSFCost2=l4/100.0;
+							long l5= Math.round(xjCZ*100); 
+							xjCZ=l5/100.0;
+							hjSFCost1 += xjSFCost1;
+							hjSFCost2 += xjSFCost2;
+							hjCZ+=xjCZ;
+							String[] xjdatas = new String[12];
+							for (int num = 0; num < 12; num++) {
+								if (num == 5) {
+									xjdatas[num++] = "\u5C0F\u8BA1";
+									xjdatas[num] = xjSFCost1 + "";
+								} else if (num == 8) {
+									xjdatas[num++] = "\u5C0F\u8BA1";
+									xjdatas[num++] = xjSFCost2 + "";
+									xjdatas[num]=xjCZ+ "";
+								} else {
+									xjdatas[num] = "";
+								}
+							}
+							Map xjMap = new HashMap();
+							for (int row = 0; row < 12; row++) {
+								xjMap.put(row + "", xjdatas[row]);
+							}
+							mapList.add(xjMap);	
+						}
+					}
+				}else{
+					List<Element> childElementList22=childElement21.getChildren();
+					for(int j=0;j < childElementList22.size();j++)
+					{
+						Element childElement22 = childElementList22.get(j);
+						String group2Name=childElement22.getAttributeValue("name");
+						String group2Code=childElement22.getAttributeValue("SEM_DepCode");
+						double xjSFCost1 = 0, xjSFCost2 = 0,xjCZ=0;
+						List<Element> childElementList23=childElement22.getChildren();
+						for(int k=0;k < childElementList23.size();k++)
+						{
+							double SFCost1=0, SFCost2=0;
+							String[] datas = new String[12];
+							datas[0] = department2Name;
+							datas[1] = department2Code;
+							datas[2] = group2Name;
+							datas[3] = group2Code;
+							Element childElement23= childElementList23.get(k);
+							String costName2=childElement23.getAttributeValue("name");
+							datas[8]=costName2;
+							String SEMFrozenCost2=childElement23.getAttributeValue("SEM_Frozen_Cost");
+							SFCost2=Double.parseDouble(SEMFrozenCost2)/10000;
+							long l2= Math.round(SFCost2*100); 
+							SFCost2=l2/100.0;
+							xjSFCost2+=SFCost2;
+							datas[9]=SFCost2+"";
+							datas[7]=childElement23.getAttributeValue("SEM_Sequence");
+							double cz=SFCost1-SFCost2;
+							long lc= Math.round(cz*100); 
+							cz=lc/100.0;
+							datas[10]=cz+"";
+							xjCZ+=cz;
+							Map rowMap = new HashMap();
+							for (int row = 0; row < 12; row++) {
+								rowMap.put(row + "", datas[row]);
+							}
+							mapList.add(rowMap);
+						}
+						long l3= Math.round(xjSFCost1*100); 
+						xjSFCost1=l3/100.0;
+						long l4= Math.round(xjSFCost2*100); 
+						xjSFCost2=l4/100.0;
+						long l5= Math.round(xjCZ*100); 
+						xjCZ=l5/100.0;
+						hjSFCost1 += xjSFCost1;
+						hjSFCost2 += xjSFCost2;
+						hjCZ+=xjCZ;
+						String[] xjdatas = new String[12];
+						for (int num = 0; num < 12; num++) {
+							if (num == 5) {
+								xjdatas[num++] = "\u5C0F\u8BA1";
+								xjdatas[num] = xjSFCost1 + "";
+							} else if (num == 8) {
+								xjdatas[num++] = "\u5C0F\u8BA1";
+								xjdatas[num++] = xjSFCost2 + "";
+								xjdatas[num]=xjCZ+ "";
+							} else {
+								xjdatas[num] = "";
+							}
+						}
+						Map xjMap = new HashMap();
+						for (int row = 0; row < 12; row++) {
+							xjMap.put(row + "", xjdatas[row]);
+						}
+						mapList.add(xjMap);
+					}
+				}
+			}
+			long l6= Math.round(hjSFCost1*100); 
+			hjSFCost1=l6/100.0;
+			long l7= Math.round(hjSFCost2*100); 
+			hjSFCost2=l7/100.0;
+			long l8= Math.round(hjCZ*100); 
+			hjCZ=l8/100.0;
+			String[] hjdatas = new String[12];
+			for (int num = 0; num < 12; num++) {
+				if (num == 5) {
+					hjdatas[num++] = "\u5408\u8BA1";
+					hjdatas[num] = hjSFCost1 + "";
+				} else if (num == 8) {
+					hjdatas[num++] = "\u5408\u8BA1";
+					hjdatas[num++] = hjSFCost2 + "";
+					hjdatas[num] =hjCZ+ "";
+				} else {
+					hjdatas[num] = "";
+				}
+			}
+			Map hjMap = new HashMap();
+			for (int row = 0; row < 12; row++) {
+				hjMap.put(row + "", hjdatas[row]);
+			}
+			mapList.add(hjMap);
+		}catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return mapList;
+    }
+     //get Map key 
+  	public String[] getKeys(MapList mapList) {
+  		Map map = (Map) mapList.get(0);
+  		int n = map.size();
+  		String[] res = new String[n];
+  		for (int i = 0; i < n; i++) {
+  			res[i] = i + "";
+  		}
+  		return res;
+  	}
+    public void exportExcel(Context context, String[] args) {
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList = (MapList) programMap.get("dataList");
+			if (dataList == null || dataList.size() == 0) {
+				return;
+			}
+			String sheetName = "\u6295\u8D44\u57FA\u7EBF\u5BF9\u6BD4\u62A5\u8868";
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			String head = "\u6295\u8D44\u57FA\u7EBF\u5BF9\u6BD4\u62A5\u8868\uFF08\u5355\u4F4D\uFF1A\u4E07\u5143\uFF09";
+			String[] keys = getKeys(dataList);
+			fillSheetInfo(context, head, 0, keys, dataList, workbook, sheet);
+
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}// end method
+	public void fillSheetInfo(Context context, String head, int beginPosion,
+			String[] keys, MapList dataList, HSSFWorkbook workbook,
+			HSSFSheet sheet) throws Exception {
+		try {
+			int curRowIndex = beginPosion;
+			int curDataIndex = 0;
+			int maxRowCount = dataList.size();
+			int maxcolumnCount = ((Map) dataList.get(0)).size();
+			int maxSheetRow = 60000;
+			HSSFCell cell_dep;
+			HSSFRow row;
+
+			HSSFFont font = workbook.createFont();
+			font.setFontName("\u9ED1\u4F53");
+			font.setFontHeightInPoints((short) 16);// Set the font size
+
+			HSSFFont font1 = workbook.createFont();
+			font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+			font1.setFontHeightInPoints((short) 14);
+
+			HSSFCellStyle headStyle = workbook.createCellStyle();
+			headStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			headStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			headStyle.setFont(font);
+
+			HSSFCellStyle sheetStyle = workbook.createCellStyle();
+			sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			sheetStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+
+			HSSFFont columnHeadFont = workbook.createFont();
+			columnHeadFont.setColor(HSSFColor.BLUE.index);
+			columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+					.createCellStyle();
+			columnHeadStyle.setFont(font1);
+			columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA
+					.getIndex());
+			columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			// Set the table header
+			sheet.addMergedRegion(new CellRangeAddress(curRowIndex,
+					curRowIndex + 1, 0, 6));
+			row = sheet.createRow(curRowIndex);
+			HSSFCell begincell = row.createCell(0);
+			begincell.setCellValue(head);
+			begincell.setCellStyle(headStyle);
+			curRowIndex = curRowIndex + 2;//
+
+			for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+				row = sheet.createRow(curRowIndex);
+				if (i == 0) {
+					row.setHeight((short) 600);
+				}
+				Map map = (Map) dataList.get(curDataIndex);
+				for (int j = 0; j < map.size(); j++) {
+					if (i == 0) {
+						HSSFCell cell = row.createCell(j);
+						cell.setCellValue((String) map.get(keys[j]));
+						cell.setCellStyle(columnHeadStyle);
+					} else {
+						cell_dep = row.createCell(j);
+						cell_dep.setCellType(HSSFCell.CELL_TYPE_STRING);
+						cell_dep.setCellValue((String) map.get(keys[j]));
+						cell_dep.setCellStyle(sheetStyle);
+					}
+
+				}
+				curRowIndex = curRowIndex + 1;
+			}// for sheet
+
+			// Set the column size to auto-fit
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.autoSizeColumn(i);
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw new FrameworkException(e);
+		}
+	}
+}

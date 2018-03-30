@@ -1,0 +1,777 @@
+//
+// $Id: emxProjectSpace.java.rca 1.6 Wed Oct 22 16:21:26 2008 przemek Experimental przemek $ 
+//
+// emxProjectSpace.java
+//
+// Copyright (c) 2002-2015 Dassault Systemes.
+// All Rights Reserved
+// This program contains proprietary and trade secret information of
+// MatrixOne, Inc.  Copyright notice is precautionary only and does
+// not evidence any actual or intended publication of such program.
+//
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TimeZone;
+import java.util.Vector;
+import java.text.DateFormat;
+
+import matrix.db.AccessConstants;
+import matrix.db.AttributeType;
+import matrix.db.BusinessObject;
+import matrix.db.BusinessObjectWithSelectList;
+import matrix.db.Context;
+import matrix.db.Dimension;
+import matrix.db.JPO;
+import matrix.db.MQLCommand;
+import matrix.db.SetList;
+import matrix.db.State;
+import matrix.db.Unit;
+import matrix.db.UnitItr;
+import matrix.db.UnitList;
+import matrix.util.MatrixException;
+import matrix.util.StringList;
+
+import com.matrixone.apps.common.MemberRelationship;
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.common.SubtaskRelationship;
+import com.matrixone.apps.common.TaskHolder;
+import com.matrixone.apps.common.util.ComponentsUtil;
+import com.matrixone.apps.domain.DomainAccess;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.FrameworkStringResource;
+import com.matrixone.apps.domain.Job;
+import com.matrixone.apps.domain.util.CacheUtil;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.DateUtil;
+import com.matrixone.apps.domain.util.DebugUtil;
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MailUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.StringUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.domain.util.mxType;
+import com.matrixone.apps.framework.ui.UIMenu;
+import com.matrixone.apps.program.Currency;
+import com.matrixone.apps.program.FinancialItem;
+import com.matrixone.apps.program.NotificationUtil;
+import com.matrixone.apps.program.ProgramCentralConstants;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.apps.program.ProjectSpace;
+import com.matrixone.apps.program.ProjectTemplate;
+import com.matrixone.apps.program.Question;
+import com.matrixone.apps.program.ResourcePlanTemplate;
+import com.matrixone.apps.program.ResourceRequest;
+import com.matrixone.apps.program.Risk;
+import com.matrixone.apps.program.Task;
+import com.matrixone.apps.program.mycalendar.MyCalendarUtil;
+import java.lang.reflect.Method;
+
+import org.apache.log4j.Logger;
+
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.domain.util.mxAttr;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+/**
+ * The <code>emxProjectSpace</code> class represents the Project Space JPO
+ * functionality for the AEF type.
+ *
+ * @version AEF 10.0.SP4 - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxProjectSpaceBase}
+{
+	private static Logger m_rootLogger = Logger.getLogger(${CLASS:emxProjectMember}.class);
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF 10.0.SP4
+     * @grade 0
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+
+    /**
+     * Constructs a new emxProjectSpace JPO object.
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param String the business object id
+     * @throws Exception if the operation fails
+     * @since AEF 10.0.SP4
+     */
+    public ${CLASSNAME} (String id)
+        throws Exception
+    {
+        // Call the super constructor
+        super(id);
+    }
+    public Map createNewProject(Context context,String[]args)throws Exception
+  	{
+  		ProjectSpace project =(ProjectSpace)DomainObject.newInstance(context,
+  				ProgramCentralConstants.TYPE_PROJECT_SPACE,DomainConstants.PROGRAM);
+
+  		ProjectSpace newProject =(ProjectSpace)DomainObject.newInstance(context,
+  				ProgramCentralConstants.TYPE_PROJECT_SPACE,DomainConstants.PROGRAM);
+
+  		Map <String,String>returnMap = new HashMap();
+  		try{
+  			ContextUtil.startTransaction(context, true);
+
+  			String SCHEDULE_FROM = PropertyUtil.getSchemaProperty(context,"attribute_ScheduleFrom");
+  			Map <String,String>attributeMap = new HashMap();
+  			Map <String,String>basicProjectInfo = new HashMap();
+  			Map <String,String>relatedProjectInfo = new HashMap();
+
+  			Map programMap 					= (HashMap) JPO.unpackArgs(args);
+			String objectId 				= (String)programMap.get("objectId");
+  			String createProject 			= (String)programMap.get("createProject");
+  			String projectName 				= (String)programMap.get("Name");
+  			String projectAutoName 			= (String)programMap.get("autoNameCheck");
+  			String projectDescrption 		= (String)programMap.get("Description");
+  			String businessUnitId 			= (String)programMap.get("BusinessUnitOID");
+  			String programId 				= (String)programMap.get("ProgramOID");
+  			String businessGoalId 			= (String)programMap.get("BusinessGoalOID");
+  			String baseCurrency 			= (String)programMap.get("BaseCurrency");
+  			String projectVault 			=  project.DEFAULT_VAULTS;
+  			String projectVisibility 		= (String)programMap.get("ProjectVisibility");
+  			String projectPolicy 			= (String)programMap.get("Policy");
+  			String projectScheduleFrom 		= (String)programMap.get("ScheduleFrom");
+  			String projectDate 				= (String)programMap.get("ProjectDate");
+  			String defaultConstraintType 	= (String)programMap.get("DefaultConstraintType");
+  			String projectSpaceType 		= (String)programMap.get("TypeActual");
+  			String selectedProjectId 		= (String)programMap.get("SeachProjectOID");
+  			String connectRelatedProjects 	= (String)programMap.get("connectRelatedProject");
+  			String copyFinancialData 		= (String)programMap.get("financialData");
+  			String copyFolderData 			= (String)programMap.get("folders");
+                        String deliverabletId 			= (String)programMap.get("DeliverableOID");
+                        String calendarId 			= (String)programMap.get("Calendar");
+  			StringList calendarIds = FrameworkUtil.split(calendarId, ProgramCentralConstants.COMMA);
+  			if(projectSpaceType == null){
+  				projectSpaceType="Project Space";
+  			}
+  			if(projectPolicy == null){
+  				projectPolicy="Project Space";
+  			}
+  			Locale locale 					= context.getLocale();
+  			String strTimeZone 				= (String)programMap.get("timeZone");
+			double dClientTimeZoneOffset 	= (new Double(strTimeZone)).doubleValue();
+
+  			if(ProgramCentralUtil.isNotNullString(projectDate)){
+  				projectDate = projectDate.trim();
+  				projectDate = eMatrixDateFormat.getFormattedInputDate(context,projectDate,dClientTimeZoneOffset,locale);
+  			}
+
+  			//For program,Businessgoal and related project
+  			if(ProgramCentralUtil.isNotNullString(objectId)){
+  				StringList selectable = new StringList();
+  				selectable.addElement(ProgramCentralConstants.SELECT_IS_PROJECT_SPACE);
+  				selectable.addElement(ProgramCentralConstants.SELECT_IS_PROGRAM);
+  				selectable.addElement(ProgramCentralConstants.SELECT_IS_BUSINESS_GOAL);
+  				
+  				DomainObject parentObject = DomainObject.newInstance(context,objectId);
+  				Map <String,String>parentObjectInfo = parentObject.getInfo(context, selectable);
+  				String isProjectSpace 				= parentObjectInfo.get(ProgramCentralConstants.SELECT_IS_PROJECT_SPACE);
+  				String isProgram 					= parentObjectInfo.get(ProgramCentralConstants.SELECT_IS_PROGRAM);
+  				String isBusinessGoal 				= parentObjectInfo.get(ProgramCentralConstants.SELECT_IS_BUSINESS_GOAL);
+  				
+  				if("true".equalsIgnoreCase(isProgram)){
+  					programId = objectId;
+  				}else if("true".equalsIgnoreCase(isBusinessGoal)){
+  					businessGoalId = objectId;
+  				}else if("true".equalsIgnoreCase(isProjectSpace)){
+  					relatedProjectInfo.put("AddAsChild", "true");
+  					relatedProjectInfo.put("RelatedProjectId", objectId);
+  				}
+  			}
+
+  			//Project space attribute map values
+  			attributeMap.put(DomainObject.ATTRIBUTE_TASK_ESTIMATED_START_DATE, projectDate);
+  			attributeMap.put(DomainObject.ATTRIBUTE_TASK_ESTIMATED_FINISH_DATE, projectDate);
+  			attributeMap.put(DomainObject.ATTRIBUTE_TASK_ESTIMATED_DURATION, "0.0");
+  			attributeMap.put(DomainObject.ATTRIBUTE_PROJECT_VISIBILITY, projectVisibility);
+  			attributeMap.put(DomainObject.ATTRIBUTE_CURRENCY, baseCurrency);
+  			attributeMap.put(SCHEDULE_FROM, projectScheduleFrom);
+  			attributeMap.put(DomainObject.ATTRIBUTE_DEFAULT_CONSTRAINT_TYPE, defaultConstraintType);
+  			
+  			//Baseline attributes should not have any values while project creation.
+  			attributeMap.put(DomainObject.ATTRIBUTE_BASELINE_INITIAL_START_DATE, ProgramCentralConstants.EMPTY_STRING);
+  			attributeMap.put(DomainObject.ATTRIBUTE_BASELINE_INITIAL_END_DATE, ProgramCentralConstants.EMPTY_STRING);
+  			attributeMap.put(DomainObject.ATTRIBUTE_BASELINE_CURRENT_START_DATE, ProgramCentralConstants.EMPTY_STRING);
+  			attributeMap.put(DomainObject.ATTRIBUTE_BASELINE_CURRENT_END_DATE, ProgramCentralConstants.EMPTY_STRING);
+
+  			if("Clone".equalsIgnoreCase(createProject) || "Template".equalsIgnoreCase(createProject)){
+  				attributeMap.put(DomainObject.ATTRIBUTE_TASK_CONSTRAINT_DATE, projectDate);
+  			}
+
+  			//get auto name 
+  			if(ProgramCentralUtil.isNullString(projectName) && projectAutoName.equalsIgnoreCase("true")){
+  				String symbolicTypeName = PropertyUtil.getAliasForAdmin(context, "Type", projectSpaceType, true);
+  				String symbolicPolicyName = PropertyUtil.getAliasForAdmin(context, "Policy", projectPolicy, true);
+
+  				projectName = FrameworkUtil.autoName(context,
+  						symbolicTypeName,
+  						null,
+  						symbolicPolicyName,
+  						null,
+  						null,
+  						true,
+  						true);
+  			}
+
+  			//builds basic project info map
+  			basicProjectInfo.put("name", projectName);
+  			basicProjectInfo.put("type", projectSpaceType);
+  			basicProjectInfo.put("policy", projectPolicy);
+  			basicProjectInfo.put("vault", projectVault);
+  			basicProjectInfo.put("description", projectDescrption);
+
+  			//Builds related project info map
+  			relatedProjectInfo.put("programId", programId);
+  			relatedProjectInfo.put("businessUnitId", businessUnitId);
+  			relatedProjectInfo.put("businessGoalId", businessGoalId);
+            relatedProjectInfo.put("deliverableId", deliverabletId);
+
+  			boolean isCopyFolderData	= true;
+  			boolean isCopyFinancialData = true;
+
+  			if(ProgramCentralUtil.isNullString(copyFolderData) || "false".equalsIgnoreCase(copyFolderData)){
+  				isCopyFolderData = false;
+  			}
+
+  			if(ProgramCentralUtil.isNullString(copyFinancialData) || "false".equalsIgnoreCase(copyFinancialData)){
+  				isCopyFinancialData = false;
+  			}
+
+  			//Create new project object.
+  			if("Blank".equalsIgnoreCase(createProject) || 
+  					"Import".equalsIgnoreCase(createProject)){
+
+  				newProject = project.createBlankProject(context, 
+  						basicProjectInfo, 
+  						attributeMap, 
+  						relatedProjectInfo);
+
+  			}else if("Clone".equalsIgnoreCase(createProject)){
+  				boolean isConnectRelatedProject = false;
+  				if(ProgramCentralUtil.isNotNullString(connectRelatedProjects) &&
+  						connectRelatedProjects.equalsIgnoreCase("True")){
+  					isConnectRelatedProject = true;
+  				}
+  				// MqlUtil.mqlCommand(context, "trigger off;", true);  //MOD BY GZH
+
+  				//create new project from existing object.
+  				newProject = project.clone(context, 
+  						selectedProjectId, 
+  						basicProjectInfo,
+  						relatedProjectInfo, 
+  						attributeMap,
+  						isConnectRelatedProject,
+  						isCopyFolderData,
+  						isCopyFinancialData);
+  				// MqlUtil.mqlCommand(context, "trigger on;", true);  //MOD BY GZH
+
+  			}else if("Template".equalsIgnoreCase(createProject)){
+  				boolean  isTemplateTaskAutoName = false;
+  				String questionResponseValue 	= (String) CacheUtil.getCacheObject(context, "QuestionsResponse");
+  				String resourceTemplateId 	    = (String)programMap.get("ResourceTemplate");
+
+  				Map <String,String>questionResponseMap = new HashMap<String,String>();
+  				if(ProgramCentralUtil.isNotNullString(questionResponseValue)){
+  					StringList questionResponseValueList = FrameworkUtil.split(questionResponseValue, "|");
+  					for(int i=0;i<questionResponseValueList.size();i++){
+  						String questionRValue = (String)questionResponseValueList.get(i);
+  						StringList questionActualRList = FrameworkUtil.split(questionRValue, "=");
+  						questionResponseMap.put((String)questionActualRList.get(0), (String)questionActualRList.get(1));
+  					}
+  				}
+
+  				if(ProgramCentralUtil.isNotNullString(projectAutoName)&& "true".equalsIgnoreCase(projectAutoName)){
+  					isTemplateTaskAutoName= true;
+  				}
+
+  				//update related info
+  				relatedProjectInfo.put("resourceTemplateId", resourceTemplateId);
+
+  				newProject = project.cloneTemplate(context, 
+  						selectedProjectId, 
+  						basicProjectInfo, 
+  						relatedProjectInfo, 
+  						attributeMap,
+  						questionResponseMap, 
+  						isTemplateTaskAutoName,
+  						isCopyFolderData,
+  						isCopyFinancialData);
+  			}
+  			//Get new project ID
+  			String newProjectId = newProject.getObjectId();
+
+  			returnMap.put("id", newProjectId);
+
+  			newProject.addCalendars(context, calendarIds);
+		
+  			ContextUtil.commitTransaction(context);
+  			//required for Calendars
+  			Task rollup = new Task(newProjectId);
+  			rollup.rollupAndSave(context);
+  		}catch(Exception ex){
+  			ContextUtil.abortTransaction(context);
+  			m_rootLogger.error(ex.getMessage(), ex);
+  		}
+
+  		return returnMap;
+  	}
+
+	public Vector editIssue(Context context, String[] args)
+			throws Exception {
+		Vector vector =  new Vector();
+		HashMap projectMap = (HashMap) JPO.unpackArgs(args);
+		HashMap paramList = (HashMap) projectMap.get("paramList");
+		String fromPage = (String)paramList.get("frompage");
+		MapList objList = (MapList) projectMap.get("objectList");
+		StringList currentLink = new StringList();
+		Iterator objIterator = objList.iterator();
+			while (objIterator.hasNext()) {
+			String contentURL = "";
+			Map objDetailsMap = (Map) objIterator.next();
+			String id = (String) ((Map) objDetailsMap).get("id");
+			if(fromPage!=null){
+				contentURL = "../common/emxForm.jsp?form=SEMIssueEditForm&mode=edit&formHeader=emxFramework.Common.Edit&HelpMarker=emxhelpissuechangetype&submitAction=refreshCaller&findMxLink=false&objectId="
+						+ id
+						+ "&windowMode=slidein&openerFrame=frameDetails&targetLocation=slidein";
+			}else{
+				contentURL = "../common/emxForm.jsp?form=SEMIssueEditForm&mode=edit&formHeader=emxFramework.Common.Edit&HelpMarker=emxhelpissuechangetype&submitAction=refreshCaller&findMxLink=false&objectId="
+						+ id
+						+ "&windowMode=slidein&openerFrame=AssignIssue&targetLocation=slidein";
+			}
+			
+			//contentURL = contentURL.replaceAll("&", "&amp;");
+			// contentURL="../common/emxForm.jsp?form=type_Issue&mode=Edit&formHeader=emxComponents.Heading.Edit&HelpMarker=emxhelpissueedit&submitAction=refreshCaller&emxSuiteDirectory=components&relId=&parentOID=&suiteKey=Components&objectId="+id+"&jsTreeID=&windowMode=slidein&openerFrame=frameTable&targetLocation=slidein";
+			String phaseIcon = "iconActionEdit.gif";
+			StringBuffer sbDisplayPhase = new StringBuffer();
+			sbDisplayPhase.append("<a href =\"").append("javascript:emxTableColumnLinkClick('"+ contentURL + "','600','600',false,'slidein','')");
+			sbDisplayPhase.append("\">");
+			sbDisplayPhase.append("<img src=\"../common/images/" + phaseIcon
+					+ "\" name=\"Edit\" border=\"0\"/>");
+			sbDisplayPhase.append("</a>");
+			vector.add(sbDisplayPhase.toString().replaceAll("&", "&amp;"));
+		}
+		return vector;
+	}
+	
+	public Vector editApproveIssue(Context context, String[] args)
+			throws Exception {
+		Vector vector =  new Vector();
+		HashMap projectMap = (HashMap) JPO.unpackArgs(args);
+		HashMap paramList = (HashMap) projectMap.get("paramList");
+		String fromPage = (String)paramList.get("frompage");
+		MapList objList = (MapList) projectMap.get("objectList");
+		StringList currentLink = new StringList();
+		Iterator objIterator = objList.iterator();
+			while (objIterator.hasNext()) {
+			String contentURL = "";
+			Map objDetailsMap = (Map) objIterator.next();
+			String id = (String) ((Map) objDetailsMap).get("id");
+			if(fromPage!=null){
+				contentURL = "../common/emxForm.jsp?form=SEMIssueEditApproveForm&mode=edit&formHeader=emxFramework.Common.Edit&HelpMarker=emxhelpissuechangetype&submitAction=refreshCaller&findMxLink=false&objectId="
+						+ id
+						+ "&windowMode=slidein&openerFrame=frameDetails&targetLocation=slidein";
+			}else{
+				contentURL = "../common/emxForm.jsp?form=SEMIssueEditApproveForm&mode=edit&formHeader=emxFramework.Common.Edit&HelpMarker=emxhelpissuechangetype&submitAction=refreshCaller&findMxLink=false&objectId="
+						+ id
+						+ "&windowMode=slidein&openerFrame=AssignIssue&targetLocation=slidein";
+			}
+			//contentURL = contentURL.replaceAll("&", "&amp;");
+			// contentURL="../common/emxForm.jsp?form=type_Issue&mode=Edit&formHeader=emxComponents.Heading.Edit&HelpMarker=emxhelpissueedit&submitAction=refreshCaller&emxSuiteDirectory=components&relId=&parentOID=&suiteKey=Components&objectId="+id+"&jsTreeID=&windowMode=slidein&openerFrame=frameTable&targetLocation=slidein";
+			String phaseIcon = "iconActionEdit.gif";
+			StringBuffer sbDisplayPhase = new StringBuffer();
+			sbDisplayPhase.append("<a href =\"").append("javascript:emxTableColumnLinkClick('"+ contentURL + "','600','600',false,'slidein','')");
+			sbDisplayPhase.append("\">");
+			sbDisplayPhase.append("<img src=\"../common/images/" + phaseIcon
+					+ "\" name=\"Edit\" border=\"0\"/>");
+			sbDisplayPhase.append("</a>");
+			vector.add(sbDisplayPhase.toString().replaceAll("&", "&amp;"));
+		}
+		return vector;
+	}
+	
+	public MapList getIssueInMeeting(Context context, String[] args)
+			throws Exception {
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		StringList busList = new StringList("id");
+		String objectId = (String) programMap.get("objectId");
+		DomainObject strObj = new DomainObject(objectId);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList mapList = strObj.getRelatedObjects(context,"Issue","Issue", busList, relList,true,false, (short)1,"","");
+		return mapList;
+	}
+	
+	public MapList getIssueInMeetingCat(Context context, String[] args)
+			throws Exception {
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		StringList busList = new StringList("id");
+		String strObjectId = (String) programMap.get("objectId");
+	    DomainObject prtidObj=DomainObject.newInstance(context,strObjectId);
+	    String sQCObjectidTr = prtidObj.getInfo(context, "to[SEM Meeting ContactOrder].from.id");
+	        
+		String objectIdReplace = sQCObjectidTr;
+		DomainObject strObj = new DomainObject(objectIdReplace);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList mapList = strObj.getRelatedObjects(context,"Issue","Issue", busList, relList,true,false, (short)1,"","");
+		return mapList;
+	}
+	
+	public MapList getSEMContactOrder(Context context, String[] args)
+			throws Exception {
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		StringList busList = new StringList("id");
+		String objectId = (String) programMap.get("objectId");
+		DomainObject strObj = new DomainObject(objectId);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList mapList = strObj.getRelatedObjects(context,"SEM Meeting ContactOrder","SEM Contact Order", busList, relList,false,true, (short)1,"","");
+		return mapList;
+	}
+
+	public MapList getWorkpaceVault(Context context,String[] args)throws Exception
+		{
+			MapList includeIdList = new MapList();
+			try{
+				
+				HashMap hashMap = (HashMap)JPO.unpackArgs(args);
+		 		String projectId = (String)hashMap.get("objectId");
+		 		DomainObject projectObj = new DomainObject(projectId);
+		 		StringList busList = new StringList("id");
+		 		
+		 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		 		includeIdList = projectObj.getRelatedObjects(context, "Data Vaults,Sub Vaults", "Workspace Vault", busList, relList, false, true, (short)1, null, null);
+
+			}catch(Exception e){
+				m_rootLogger.error(e.getMessage(), e);
+			}
+			includeIdList.add(0, includeIdList.size() - 1); 
+			return includeIdList;
+		}
+    public void performTaskEscalation(Context context, String[] args)
+    	      throws Exception
+    	    {
+    	        try
+    	        {
+    	            // Define selectables for each ProjectSpace object.
+    	            StringList projectSelects = new StringList(4);
+    	            projectSelects.add(SELECT_ID);
+    	            projectSelects.add(SELECT_ESCALATION_DATE);
+    	            projectSelects.add(SELECT_RECURRENCE_INTERVAL);
+    	            projectSelects.add(SELECT_SEND_REMINDER);
+
+    	            // Define selectables for each Task object.
+    	            StringList taskSelects = new StringList(7);
+    	            taskSelects.add(SELECT_ID);
+    	            taskSelects.add(SELECT_NAME);
+    	            taskSelects.add(SELECT_OWNER);
+    	            taskSelects.add(SELECT_TASK_ESTIMATED_DURATION);
+    	            taskSelects.add(SELECT_TASK_ESTIMATED_START_DATE);
+    	            taskSelects.add(SELECT_TASK_ESTIMATED_FINISH_DATE);
+    	            taskSelects.add(SELECT_TASK_ACTUAL_FINISH_DATE);
+    	            // Save current time to compare against below.
+    	            Date todayDate = new Date();
+    	            long currentTime = todayDate.getTime();
+
+    	            //use MatrixDateFormat's pattern
+    	            SimpleDateFormat mxDateFrmt =
+    	                new SimpleDateFormat(eMatrixDateFormat.getEMatrixDateFormat(),
+    	                    Locale.US);
+    	            String dateStr = mxDateFrmt.format(todayDate);
+    	            String noNotificationValue = EnoviaResourceBundle.getProperty(context,"emxProgramCentral.ProjectDoNotSendReminder");
+    	            //whereClause for all ProjectSpace objects that are not complete
+    	            //and do not have "Send Reminder" set to "Do not send reminder"
+    	            String whereClause =
+    	                "(attribute[" + ATTRIBUTE_TASK_ACTUAL_FINISH_DATE +
+    	                "]  ==  null) && (attribute[" + ATTRIBUTE_SEND_REMINDER +
+    	                "] != '" + noNotificationValue + "')";
+
+    	            DebugUtil.debug("Where clause for ProjectSpace project: ",
+    	                whereClause);
+
+    	            StringList assigneeSels = new StringList(1);
+    	            assigneeSels.add(SELECT_NAME);
+
+    	            // Find all ProjectSpace items in the database.
+    	            MapList projectspaceObjsList =
+    	                findObjects(context, TYPE_PROJECT_SPACE, QUERY_WILDCARD,
+    	                    whereClause, projectSelects);
+    	            DebugUtil.debug("ProjectSpace count:  " +
+    	                projectspaceObjsList.size());
+
+    	            Iterator itr = projectspaceObjsList.iterator();
+    	            while (itr.hasNext())
+    	            {
+    	                Map projectMap = (Map) itr.next();
+    	                // Get ProjectSpace business object id
+    	                String projectId = (String) projectMap.get(SELECT_ID);
+
+    	                // define object for general querying and updating
+    	                ProjectSpace object =
+    	                    (ProjectSpace) DomainObject.newInstance(context,
+    	                        DomainConstants.TYPE_PROJECT_SPACE,
+    	                        DomainConstants.PROGRAM);
+
+    	                //set objectId to this ProjectSpace object
+    	                object.setId(projectId);
+
+    	                String escalationDateStr =
+    	                    (String) projectMap.get(SELECT_ESCALATION_DATE);
+    	                String recurIntervalStr =
+    	                    (String) projectMap.get(SELECT_RECURRENCE_INTERVAL);
+    	                String sendReminderStr =
+    	                    (String) projectMap.get(SELECT_SEND_REMINDER);
+
+    	                //per requirements and system's alert settings,  the system
+    	                //should go through this check once a day.
+    	                //determine whether the performTaskEscalation method already got
+    	                //called today. If so, no need to perform it again.
+    	                long escalationTime = 0;
+    	                if ((escalationDateStr != null) &&
+    	                      !"".equals(escalationDateStr))
+    	                {
+    	                    Date escalationDate =
+    	                        eMatrixDateFormat.getJavaDate(escalationDateStr);
+    	                    escalationTime = escalationDate.getTime();
+    	                    if (((currentTime - escalationTime) / 86400000) == 0)
+    	                    {
+    	                        //DebugUtil.debug(
+    	                        //"This performTaskEscalation method already got called today!!!");
+    	                        continue;
+    	                    }
+    	                }
+    	                //get all tasks for this project
+    	                MapList tasksForProject =
+    	                    object.getTasks(context, 0, taskSelects, null, false);
+
+    	                Iterator itr2 = tasksForProject.iterator();
+    	                while (itr2.hasNext())
+    	                {
+    	                    Map taskMap = (Map) itr2.next();    
+    	                    String daysDiff = sendReminderStr;
+    	                    String actualFinishDateStr =
+    	                        (String) taskMap.get(SELECT_TASK_ACTUAL_FINISH_DATE);
+
+    	                    //Do not go further if the task is complete
+    	                    if ((actualFinishDateStr != null) &&
+    	                          !"".equals(actualFinishDateStr))
+    	                    {
+    	                        //DebugUtil.debug("DO NOT NEED TO SEND NOTIFICATION - TASK IS COMPLETE!!!");
+    	                        continue;
+    	                    }
+
+    	                    //compute the time to notify
+    	                    Date dueDate =
+    	                        eMatrixDateFormat.getJavaDate((String) taskMap.get(
+    	                                SELECT_TASK_ESTIMATED_FINISH_DATE));
+    	                    long notifyTime = dueDate.getTime();
+    	                    notifyTime += (Integer.parseInt(daysDiff) * 86400000);
+
+    	                    long timeDiff = currentTime - notifyTime;
+    	                    // Time falls into the warning/late period
+    	                    if (timeDiff >= 0)
+    	                    {
+    	                        long days = timeDiff / 86400000;// convert timeDiff into days
+    	                        // check to see a reminder needs to be sent again
+    	                        if ((days > 0) && ("0".equals(recurIntervalStr)) &&
+    	                              (escalationDateStr != null) &&
+    	                              (!"".equals(escalationDateStr)) &&
+    	                              (escalationTime > notifyTime))
+    	                        {
+    	                            //DebugUtil.debug("Do not need to send notification again!");
+    	                            continue;
+    	                        }
+    	                        else
+    	                        {
+    	                            long modValue = 0;
+
+    	                            // find days after notifying date
+    	                            if (!"0".equals(recurIntervalStr))
+    	                            {
+    	                                modValue =
+    	                                    days % Long.parseLong(recurIntervalStr);
+    	                            }
+    	                            //no notification sent if days after notifying date
+    	                            //is not divisible by Recurnence Interval value
+    	                            if (modValue != 0)
+    	                            {
+    	                                //DebugUtil.debug("task :  " + (String)taskMap.get(SELECT_NAME) +
+    	                                //                " is not in the notifying period again.");
+    	                                continue;
+    	                            }
+    	                        }
+    	                    }
+    	                    else
+    	                    {
+    	                        //DebugUtil.debug("task: " + (String)taskMap.get(SELECT_NAME) +
+    	                        continue;
+    	                    }
+    	                    //modify  fzq 2016-12-29 send Email 
+    	                    String params[]=new String[3];
+    	                    String taskId=(String)taskMap.get(SELECT_ID);
+    	                    DomainObject taskObj=new DomainObject(taskId);
+    	                    State state=taskObj.getCurrentState(context); 
+    	                    String stateName=state.getName();
+    	                    if(stateName.equals("Assign")||stateName.equals("Active")){
+    	                    	    params[0]=taskId;
+    	                    	    params[2]=projectId;
+    	                            if(Integer.parseInt(daysDiff)>=0){
+    	                           	     params[1]="SEMObjectProjectTaskOverdueEvent";
+    	                            }else{
+    	                            	 if(currentTime>dueDate.getTime()){
+    	                            		 params[1]="SEMObjectProjectTaskOverdueEvent"; 
+    	                            	 }else{
+    	                            		 params[1]="SEMObjectProjectTaskExpiresEvent";  
+    	                            	 }
+    	                            }
+    	    	                    try
+    	    	                    {
+    	    	                    	 JPO.invoke(context, "emxNotificationUtil", null, "objectNotification",params); 
+    	    	                    }
+    	    	                    catch (Exception er)
+    	    	                    {
+    	    	                    	m_rootLogger.error(er.getMessage(), er);
+    	    	                    }
+    	                    }
+    	                   
+    	                }
+
+    	                //end task while
+    	                boolean isContextPushed = false;
+
+    	                //Need to be a super user to set the Escalation Date.
+    	                try
+    	                {
+    	                    ContextUtil.pushContext(context);
+    	                    isContextPushed = true;
+
+    	                    //set the escalation date on the project
+    	                    object.setAttributeValue(context,
+    	                        ATTRIBUTE_ESCALATION_DATE, dateStr);
+    	                }
+    	                catch (Exception ex)
+    	                {
+    	                	m_rootLogger.error(ex.getMessage(), ex);
+    	                    throw (new FrameworkException(ex));
+    	                }
+    	                finally
+    	                {
+    	                    if (isContextPushed)
+    	                    {
+    	                        ContextUtil.popContext(context);
+    	                    }
+    	                }
+    	            }
+
+    	            //end project while
+    	        }
+    	        catch (Exception e)
+    	        {
+    	        	m_rootLogger.error(e.getMessage(), e);
+    	            throw new FrameworkException(e);
+    	        }
+    	    }
+	
+    
+    public StringList getIncludeProjectOID(Context context,String[] args)throws Exception
+    {
+    	StringList returnList = new StringList();
+    	try{
+	    	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+            String  projectId = (String) programMap.get("projectId");
+            returnList.add(projectId);
+    	}catch(Exception e){
+    		m_rootLogger.error(e.getMessage(), e);
+    	}   
+    	return returnList;
+    }
+     
+    /**
+     * modify by fzq  2017-4-24
+  	 * Updated project information
+  	 * @param context - The eMatrix <code>Context</code> object. 
+  	 * @param args holds information about object.
+  	 * @throws Exception if operation fails.
+  	 */
+  	@com.matrixone.apps.framework.ui.PostProcessCallable  
+  	public void createAndConnectProject(Context context,String[]args)throws Exception
+  	{
+  		//TODO
+  		 // Define selectables for each Task object.
+        StringList taskSelects = new StringList(7);
+        taskSelects.add(SELECT_ID);
+        taskSelects.add(SELECT_NAME);
+        taskSelects.add(SELECT_OWNER);
+        taskSelects.add(SELECT_TASK_ESTIMATED_DURATION);
+        taskSelects.add(SELECT_TASK_ESTIMATED_START_DATE);
+        taskSelects.add(SELECT_TASK_ESTIMATED_FINISH_DATE);
+        taskSelects.add(SELECT_TASK_ACTUAL_FINISH_DATE);
+        taskSelects.add("attribute[SEM Edit Status]");
+        taskSelects.add("attribute[SEM Is Locked]");
+  		try{
+  		  HashMap hashMap= (HashMap)JPO.unpackArgs(args);
+  		  HashMap paramMap=(HashMap)hashMap.get("paramMap");
+  		  HashMap requestMap=(HashMap)hashMap.get("requestMap");
+		  String objectId=(String)paramMap.get("objectId");
+		  String createProject=(String)requestMap.get("createProject");
+		  ContextUtil.pushContext(context);
+		  if(createProject.equals("Clone")){
+		  ProjectSpace projectObj= (ProjectSpace)DomainObject.newInstance(context,DomainConstants.TYPE_PROJECT_SPACE,
+                      DomainConstants.PROGRAM);
+          //set objectId to this ProjectSpace object
+		  projectObj.setId(objectId);
+		 // ProjectSpace projectObj=(ProjectSpace)DomainObject.newInstance(context,objectId);
+		  MapList tasksForProject =projectObj.getTasks(context, 0, taskSelects, null, false);
+		  Iterator itr= tasksForProject.iterator();
+          while (itr.hasNext())
+          {
+              Map taskMap = (Map)itr.next();    
+		      String taskId=(String)taskMap.get("id");
+		      DomainObject strObj=DomainObject.newInstance(context,taskId);
+		      strObj.setAttributeValue(context,"SEM Is Locked","NO");
+			  strObj.setAttributeValue(context,"SEM Lock StartTime","");
+			  strObj.setAttributeValue(context,"SEM Lock FinishTime","");
+		      strObj.setAttributeValue(context,"SEM Edit Status","P1");
+          }
+		  }
+		  
+  		}catch(Exception e){
+  			e.printStackTrace();
+    		m_rootLogger.error(e.getMessage(), e);
+    	} finally{
+    		ContextUtil.popContext(context);
+    	}
+		
+  	}
+
+
+
+}
+
+
+
+
+

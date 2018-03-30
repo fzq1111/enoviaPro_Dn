@@ -1,0 +1,15 @@
+import matrix.db.Context;
+
+
+@SuppressWarnings("serial")
+public class ${CLASSNAME} extends
+		${CLASS:emxCommonRDOMigrationBase} {
+
+	public ${CLASSNAME}(Context context, String[] args)
+			throws Exception {
+		super(context, args);
+		// TODO Auto-generated constructor stub
+	}
+
+}
+

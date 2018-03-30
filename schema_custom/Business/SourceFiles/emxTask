@@ -1,0 +1,1683 @@
+/* emxTask.java
+
+   Copyright (c) 1992-2015 Dassault Systemes.
+   All Rights Reserved.
+   This program contains proprietary and trade secret information of MatrixOne,
+   Inc.  Copyright notice is precautionary only
+   and does not evidence any actual or intended publication of such program
+
+   static const char RCSID[] = $Id: emxTask.java.rca 1.6 Wed Oct 22 16:21:23 2008 przemek Experimental przemek $
+*/
+
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Vector;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.TimeZone;
+
+import org.apache.log4j.Logger;
+
+
+
+import com.matrixone.apps.domain.DomainAccess;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.apps.program.ProgramCentralConstants;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.apps.program.Task;
+
+import com.matrixone.apps.common.Person;
+import matrix.db.*;
+import matrix.util.MatrixException;
+import matrix.util.SelectList;
+import matrix.util.StringList;
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+
+/**
+ * The <code>emxTask</code> class represents the Task JPO
+ * functionality for the AEF type.
+ *
+ * @version AEF 10.0.SP4 - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxTaskBase}
+{
+	private static Logger m_rootLogger = Logger.getLogger(${CLASS:emxTaskBase}.class);
+	
+	//add by ryan 2017-04-14
+	private static final String SELECT_TASK_ASSIGNEE_ID = "to[" + DomainObject.RELATIONSHIP_ASSIGNED_TASKS + "].from.id";
+	//add end
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF 10.0.SP4
+     * @grade 0
+     */
+	
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+    public static SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss aaa");
+   public MapList getTaskReview(Context context, String[] args)
+			throws Exception {
+    	MapList result=new MapList();
+		try{
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		StringList relList1 = new StringList(DomainRelationship.SELECT_ID);
+		relList1.add("attribute[SEM Reviewed]");
+		String currentUser=context.getUser();
+        String where="current=='Review'";
+		MapList mapList=DomainObject.findObjects(context,"Task,Milestone,Gate,Phase", "*", where, busList);
+		Iterator items=mapList.iterator();
+		while(items.hasNext()){
+			Map map=(Map)items.next();
+			String id=(String)map.get("id");
+			DomainObject taskObj=new DomainObject(id);
+			MapList personList=taskObj.getRelatedObjects(context, "SEM Task Reviewer","Person", busList, relList1,false,true, (short)1, null, null);
+			if(personList.size()==0){
+				String owner=taskObj.getOwner(context).toString();
+				if(owner.equals(currentUser)){
+					result.add(map);
+				}
+			}else{
+				for(int i=0;i<personList.size();i++){
+					Map personMap=(Map)personList.get(i);
+					String personId1=(String)personMap.get("id");
+					String SEMReviewed=(String)personMap.get("attribute[SEM Reviewed]");
+					DomainObject personObj1= new DomainObject(personId1);
+					String strPersonName=personObj1.getName(context);
+					if(strPersonName.equals(currentUser)&&SEMReviewed.equals("NO")){
+						result.add(map);
+						break;
+					}
+				}
+			}
+		}}catch(Exception e){
+			e.printStackTrace();
+		}
+		return result;
+	}
+	public MapList getPlanDecomposition(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String  personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+		String where = "current=='Create' && attribute[SEM Edit Status]=='P2'";
+		DomainObject personObj = new DomainObject(personId);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList maplist1=personObj.getRelatedObjects(context,"Assigned Tasks","*", busList, relList, false, true, (short)1, where, "");
+		
+		return maplist1;
+	}
+	public MapList getScheduleComfirmed(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String currentUser=context.getUser();
+		String where = "current=='Create' && attribute[SEM Edit Status]=='P3'&& owner=='" + currentUser + "'";
+		MapList mapList = DomainObject.findObjects(context,"Task Management", "*", where, busList);
+		return mapList;
+	}
+	
+	public Vector getSEMAssignee(Context context,String[] args)throws Exception
+	{
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		MapList objectList = (MapList)paramMap.get("objectList");
+		Iterator it = objectList.iterator();
+		Vector vc = new Vector();
+		while(it.hasNext())
+		{
+			Map taskMap = (Map)it.next();
+			String taskId = (String)taskMap.get("id");
+			DomainObject taskObj = new DomainObject(taskId);
+			String strType = taskObj.getType(context);
+			String tableId =  (String)taskMap.get("id[level]");
+			if(strType.equals("Project Space"))
+			{
+				vc.add("");
+				continue;
+			}
+			StringList personIdList = taskObj.getInfoList(context,"to[Assigned Tasks].from.id");
+			StringBuffer sb = new StringBuffer();
+			
+			if(personIdList.size()>0)
+			{
+				String personName = "";
+				for(int i = 0 ; i < personIdList.size(); i++)
+				{
+					String personId = (String)personIdList.get(i);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					Person person = new Person(personId);
+
+					personName +=person.getDisplayName(context,strPersonName)+",";
+				}
+				personName = personName.substring(0,personName.length()-1);
+				
+				sb.append("<input id='SEMAssignee' name='SEMAssignee' value='"+personName+"' readOnly='true'>");
+				
+			}else{
+				sb.append("<input id='SEMAssignee' name='SEMAssignee' readOnly='true'>");
+				
+			}
+			String searchPersonURL = "../common/emxFullSearch.jsp?field=TYPES=type_Person:POLICY=policy_Person:CURRENT=state_Active" +
+					"&includeOIDprogram=emxProgramCentralUtil:getIncludeProjectMemberOID&selection=single&showInitialResults=true&tableId="+tableId+
+					"&table=PMCCommonPersonSearchTable&form=PMCCommonPersonSearchForm&submitURL=../common/SEMTaskManage.jsp?mode=AssignedTask&taskId="+taskId;
+			//String searchPersonURL ="";
+		   // String removeURL = "../common/SEMTaskManage.jsp?mode=removePerson&taskId="+taskId;
+
+			sb.append("</input>");
+			sb.append("<input type='button' value='...' onClick=\"javascript:showChooser('" + searchPersonURL + "')\" ></input>");
+			sb.append("<input type='button' value='\u6E05\u9664' onClick=\"javascript:clearPerson('" + taskId+"','"+tableId+"')\"/>");
+			String show = sb.toString();
+			show = show.replaceAll("&", "&amp;");
+			
+			vc.add(show);
+			
+		}
+		return vc;
+	}
+	
+
+
+	public Vector getSEMSatisfiedItems(Context context,String[] args)throws Exception
+	{
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		MapList objectList = (MapList)paramMap.get("objectList");
+		Iterator it = objectList.iterator();
+		Vector vc = new Vector();
+		while(it.hasNext())
+		{
+			Map taskMap = (Map)it.next();
+			String taskId = (String)taskMap.get("id");
+			DomainObject taskObj = new DomainObject(taskId);
+			String strType = taskObj.getType(context);
+			String tableId =  (String)taskMap.get("id[level]");
+			if(strType.equals("Project Space"))
+			{
+				vc.add("");
+				continue;
+			}
+			StringList personIdList = taskObj.getInfoList(context,"from[SEM Task Reviewer].to.id");
+			StringBuffer sb = new StringBuffer();
+			
+			if(personIdList.size()>0)
+			{
+				String personName = "";
+				for(int i = 0 ; i < personIdList.size(); i++)
+				{
+					String personId = (String)personIdList.get(i);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					Person person = new Person(personId);
+
+					personName +=person.getDisplayName(context,strPersonName)+",";
+				}
+				personName = personName.substring(0,personName.length()-1);
+				
+				sb.append("<input id='SEMSatisfiedItems' name='SEMSatisfiedItems' value='"+personName+"' readOnly='true'>");
+				
+			}else{
+				sb.append("<input id='SEMSatisfiedItems' name='SEMSatisfiedItems' readOnly='true'>");
+				
+			}
+			String searchPersonURL = "../common/emxFullSearch.jsp?field=TYPES=type_Person:POLICY=policy_Person:CURRENT=state_Active" +
+					"&includeOIDprogram=emxProgramCentralUtil:getIncludeProjectMemberOID&selection=multiple&showInitialResults=true&tableId="+tableId+
+					"&table=PMCCommonPersonSearchTable&form=PMCCommonPersonSearchForm&submitURL=../common/SEMTaskManage.jsp?mode=TaskReviewer&taskId="+taskId;
+			sb.append("</input>");
+			sb.append("<input type='button' value='...' onClick=\"javascript:showChooser('" + searchPersonURL + "')\" ></input>");
+			sb.append("<input type='button' value='\u6E05\u9664' onClick=\"javascript:clearTaskReviewer('" + taskId+"','"+tableId+"')\"/>");
+			String show = sb.toString();
+			show = show.replaceAll("&", "&amp;");			
+			vc.add(show);
+			
+		}
+		return vc;
+	}	
+	
+	StringList busList = new StringList("id");
+    StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	public MapList getSEMRelatedTask(Context context,String[] args)throws Exception
+	{
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		String objectId = (String)paramMap.get("objectId");
+		DomainObject strTaskObj = new DomainObject(objectId);		
+		MapList mapList = strTaskObj.getRelatedObjects(context,"SEM Related Task","Task Management",busList,relList,false,true,(short)1,"","");
+		return mapList;
+	}
+	
+	public StringList includeProjectSpace(Context context,String[] args)throws Exception
+	{
+		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+		String objectId = (String)paramMap.get("objectId");
+		DomainObject strTaskObj = new DomainObject(objectId);		
+		MapList mapList = strTaskObj.getRelatedObjects(context,"Subtask","*",busList,relList,true,false,(short)0,"","");
+		StringList projectList = new StringList();
+		if(mapList.size()>0){
+			Iterator it = mapList.iterator();
+			while(it.hasNext())
+			{
+				Map taskMap = (Map)it.next();
+				String projectId = (String)taskMap.get("id");
+				DomainObject projectObj = new DomainObject(projectId);
+				String strType = projectObj.getType(context);
+				if(strType.equals("Project Space"))
+				{
+					projectList.add(projectId);
+				}else{
+					continue;
+				}
+			}
+		}
+		return projectList;
+	}
+	
+	public MapList getSubObjects(Context context,String[] args)throws Exception
+	{
+		MapList includeIdList = new MapList();
+		try{
+			
+			HashMap hashMap = (HashMap)JPO.unpackArgs(args);
+	 		String projectId = (String)hashMap.get("objectId");
+	 		DomainObject projectObj = new DomainObject(projectId);
+	 		StringList busList = new StringList("id");
+	 		busList.add("name");
+	 		busList.add("type");
+	 		busList.add("current");
+	 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	 		includeIdList = projectObj.getRelatedObjects(context, "Subtask", "Task Management", busList, relList, false, true, (short)1, null, null);
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		includeIdList.add(0, includeIdList.size() - 1); 
+		return includeIdList;
+	}
+	public MapList getAssignAndActiveIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String currentUser=context.getUser();
+		String where=" (current=='Active'||current=='Assign')&&owner=='" + currentUser + "'";
+		MapList mapList = DomainObject.findObjects(context,
+				"Issue", "*", where, busList);
+		return mapList;
+	}
+	public MapList getAllIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String currentUser=context.getUser();
+		String where="owner=='" + currentUser + "'";
+		MapList mapList = DomainObject.findObjects(context,
+				"Issue", "*", where, busList);
+		return mapList;
+	}
+	
+
+	public MapList getCreateIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String currentUser=context.getUser();
+		String where=" current=='Create'&&owner=='" + currentUser + "'";
+		MapList mapList = DomainObject.findObjects(context,
+				"Issue", "*", where, busList);
+		return mapList;
+	}
+	public MapList getClosedIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String currentUser=context.getUser();
+		String where=" current=='Closed'&&owner=='" + currentUser + "'";
+		MapList mapList = DomainObject.findObjects(context,
+				"Issue", "*", where, busList);
+		return mapList;
+	}
+	public MapList getAssignAndActiveRelatedIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String  personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+		String where=" current=='Active'||current=='Assign'";
+		DomainObject personObj = new DomainObject(personId);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList maplist1=personObj.getRelatedObjects(context,"Assigned Issue","*", busList, relList, false, true, (short)1, where, "");
+		return maplist1;
+	}
+	public MapList getReviewRelatedIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String  personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+		String where=" current=='Review'";
+		DomainObject personObj = new DomainObject(personId);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList maplist1=personObj.getRelatedObjects(context,"Assigned Issue","*", busList, relList, false, true, (short)1, where, "");
+		return maplist1;
+	}
+	public MapList getClosedRelatedIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String  personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+		String where=" current=='Closed'";
+		DomainObject personObj = new DomainObject(personId);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList maplist1=personObj.getRelatedObjects(context,"Assigned Issue","*", busList, relList, false, true, (short)1, where, "");
+		return maplist1;
+	}
+	public MapList getReviewIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String currentUser=context.getUser();
+		String where=" current=='Review'&&owner=='" + currentUser + "'";
+		MapList mapList = DomainObject.findObjects(context,
+				"Issue", "*", where, busList);
+		return mapList;
+	}
+
+	public int triggerCheckReviewPromoteStates(Context context, String[] args)
+			throws Exception {
+		String objectId = args[0];
+		DomainObject strObj = new DomainObject(objectId);
+		String attrValue = strObj.getAttributeValue(context, "SEM Deliverable");
+		MapList maplist1 = strObj.getRelatedObjects(context,
+				"Task Deliverable", "*", busList, relList, false, true,
+				(short) 1, "", "");
+
+		if (maplist1.size() == 0 && !"".equals(attrValue)) {
+			try {
+
+				String sErrMsg = null;
+				sErrMsg = "\u4EA4\u4ED8\u4EF6\u4E0D\u80FD\u4E3A\u7A7A";
+				${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				throw new Exception(e.getMessage());
+			}
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+	public int triggerCheckIssueCreatePromote(Context context, String[] args)
+			throws Exception {
+		String objectId = args[0];
+
+		DomainObject strObj = new DomainObject(objectId);
+		String attrValue = strObj.getAttributeValue(context,
+				"Wait On Date");
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList mapList = strObj.getRelatedObjects(context,"Assigned Issue","Person", busList, relList,true,false, (short)1,"","");
+		if(mapList.size()>0){
+			if ("".equals(attrValue)) {
+				try {
+					String sErrMsg = null;
+					sErrMsg = "\u56de\u590d\u671f\u9650\u4e0d\u80fd\u4e3a\u7a7a";
+					${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+				} catch (Exception e) {
+					m_rootLogger.error(e.getMessage(), e);
+					throw new Exception(e.getMessage());
+
+				}
+				return 1;
+			} else {
+				return 0;
+			}
+		} else{
+			try {
+				String sErrMsg = null;
+				sErrMsg = "\u5bf9\u7b56\u4eba\u4e0d\u80fd\u4e3a\u7a7a";
+				${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				throw new Exception(e.getMessage());
+			}
+			return 1;
+		}
+		
+	}
+
+	public int triggerCheckIssueActivePromote(Context context, String[] args)
+			throws Exception {
+		String objectId = args[0];
+
+		DomainObject strObj = new DomainObject(objectId);
+		String attrValue = strObj.getAttributeValue(context,
+				"Resolution Recommendation");
+		String attrValue1 = strObj
+				.getAttributeValue(context, "Resolution Date");
+
+		if ("".equals(attrValue) || "".equals(attrValue1)) {
+			try {
+				String sErrMsg = null;
+				sErrMsg = "\u5BF9\u7B56\u6539\u5584\u8BF4\u660E\u6216\u5BF9\u7B56\u65E5\u671F\u4E0D\u80FD\u4E3A\u7A7A";
+				${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				throw new Exception(e.getMessage());
+			}
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+	public int triggerCheckIssueReviewPromote(Context context, String[] args)
+			throws Exception {
+		String objectId = args[0];
+		DomainObject strObj = new DomainObject(objectId);
+		String attrValue = strObj.getAttributeValue(context,
+				"SEM Issue SolutionProgress");
+		String attrValue1 = strObj.getAttributeValue(context,
+				"ResolutionStatement");
+		if ("".equals(attrValue) || "".equals(attrValue1)) {
+			try {
+				String sErrMsg = null;
+				sErrMsg = "\u5BF9\u7B56\u8FDB\u5EA6\u6216\u5BF9\u7B56\u5224\u5B9A\u7ED3\u679C\u4E0D\u80FD\u4E3A\u7A7A";
+				${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+			} catch (Exception e) {
+				m_rootLogger.error(e.getMessage(), e);
+				throw new Exception(e.getMessage());
+			}
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+	public MapList getSEMKeyTask(Context context, String[] args)
+			throws Exception {
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		String objectId = (String) programMap.get("objectId");
+		DomainObject strObj = new DomainObject(objectId);
+		StringList busList = new StringList("id");
+		busList.add("type");
+		busList.add("attribute[SEM Is Keytask]");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList mapList = strObj.getRelatedObjects(context,"Subtask","*", busList, relList,false,true, (short)0,"","");
+		MapList resultList=new MapList();
+		for(int i=0;i<mapList.size();i++)
+		{
+			Map keyTaskMap=(Map)mapList.get(i);
+			keyTaskMap.remove("level");
+			String typeName=(String)keyTaskMap.get("type");
+			String semIsKeytask=(String)keyTaskMap.get("attribute[SEM Is Keytask]");
+			if(typeName.equals("Milestone")||semIsKeytask.equals("YES"))
+			{
+				resultList.add(keyTaskMap);
+			}
+		}
+		return resultList;
+	}
+		public MapList getAllMyTask(Context context, String[] args)
+			throws Exception {
+
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String currentUser=context.getUser();
+		String where = "owner=='"+currentUser+"'||to[Assigned Tasks].from.name=='"+currentUser+"'";
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList maplist1 = DomainObject.findObjects(context,"Task", "*", where, busList);
+		return maplist1;
+	}	
+	public MapList getOwnButNotAssignTask(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String currentUser=context.getUser();
+		String where = "current=='Create' && owner=='" + currentUser + "'";
+		MapList mapList = DomainObject.findObjects(context,"Task", "*", where, busList);
+		return mapList;
+	}
+	public MapList getOutOfDateTask(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("attribute[Task Estimated Finish Date]");
+		MapList maplist1 = new MapList();
+		MapList maplist2 = new MapList();
+		Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+		Calendar cCurrent = Calendar.getInstance();
+		int iYearCurrent = cCurrent.get(Calendar.YEAR);
+		int iMonthCurrent = cCurrent.get(Calendar.MONTH);
+		int iWeekCurrent = cCurrent.get(Calendar.WEEK_OF_YEAR);
+		long lCurrent = cCurrent.getTimeInMillis();
+		long lDiff = 2592000000L;
+		try {
+			String personId = com.matrixone.apps.domain.util.PersonUtil
+					.getPersonObjectID(context);
+			String where = "current=='Assign'||current=='Review'||current=='Active'";
+			DomainObject personObj = new DomainObject(personId);
+			StringList relList = new StringList(DomainRelationship.SELECT_ID);
+			maplist1 = personObj.getRelatedObjects(context, "Assigned Tasks",
+					"*", busList, relList, false, true, (short) 1, where, "");
+			for (int i = 0; i < maplist1.size(); i++) 
+			{
+				Map taskMap = (Map) maplist1.get(i);
+				Calendar cTarget = Calendar.getInstance();
+				Calendar cStartFrom = Calendar.getInstance();
+				String sTargetDate = (String) taskMap
+						.get("attribute[Task Estimated Finish Date]");
+				if (sTargetDate != null && !"".equals(sTargetDate))
+				{
+
+					cTarget.setTime(sdf.parse(sTargetDate));
+					
+
+						if(cTarget.before(cStartFrom))
+						{
+							maplist2.add(taskMap);
+						} else 
+						{
+							continue;
+						}
+					}
+				}
+			
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return maplist2;
+	}
+	public MapList getVerySoonTask(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("attribute[Task Estimated Finish Date]");
+		MapList maplist1 = new MapList();
+		MapList maplist2 = new MapList();
+		Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+		Calendar cCurrent = Calendar.getInstance();
+		int iYearCurrent = cCurrent.get(Calendar.YEAR);
+		int iMonthCurrent = cCurrent.get(Calendar.MONTH);
+		int iWeekCurrent = cCurrent.get(Calendar.WEEK_OF_YEAR);
+		long lCurrent = cCurrent.getTimeInMillis();
+		long lDiff = 2592000000L;
+		try {
+			String personId = com.matrixone.apps.domain.util.PersonUtil
+					.getPersonObjectID(context);
+			String where = "current=='Assign'||current=='Review'||current=='Active'";
+			DomainObject personObj = new DomainObject(personId);
+			StringList relList = new StringList(DomainRelationship.SELECT_ID);
+			maplist1 = personObj.getRelatedObjects(context, "Assigned Tasks",
+					"*", busList, relList, false, true, (short) 1, "", "");
+			for (int i = 0; i < maplist1.size(); i++) {
+				Map taskMap = (Map) maplist1.get(i);
+				String sTargetDate = (String) taskMap
+						.get("attribute[Task Estimated Finish Date]");
+				if (sTargetDate != null && !"".equals(sTargetDate)) {
+					Calendar cTarget = Calendar.getInstance();
+					cTarget.setTime(sdf.parse(sTargetDate));
+					Calendar minTime = Calendar.getInstance();
+					Calendar maxTime = Calendar.getInstance();
+					 maxTime.add(Calendar.MONTH,6);
+					if(cTarget.after(minTime)){
+							if(cTarget.before(maxTime))
+					{
+						maplist2.add(taskMap);
+					} else {
+						continue;
+					}
+					}
+				}
+			}
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return maplist2;
+	}
+	public MapList getThisMonthTask(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("attribute[Task Estimated Finish Date]");
+		MapList maplist1 = new MapList();
+		MapList maplist2 = new MapList();
+		Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+		Calendar cCurrent = Calendar.getInstance();
+		int iYearCurrent = cCurrent.get(Calendar.YEAR);
+		int iMonthCurrent = cCurrent.get(Calendar.MONTH);
+		int iWeekCurrent = cCurrent.get(Calendar.WEEK_OF_YEAR);
+		long lCurrent = cCurrent.getTimeInMillis();
+		long lDiff = 2592000000L;
+		try {
+			String personId = com.matrixone.apps.domain.util.PersonUtil
+					.getPersonObjectID(context);
+			String where = "current=='Assign'||current=='Review'||current=='Active'";
+			DomainObject personObj = new DomainObject(personId);
+			StringList relList = new StringList(DomainRelationship.SELECT_ID);
+			maplist1 = personObj.getRelatedObjects(context, "Assigned Tasks",
+					"*", busList, relList, false, true, (short) 1, where, "");
+			for (int i = 0; i < maplist1.size(); i++) {
+				Map taskMap = (Map) maplist1.get(i);
+				String sTargetDate = (String) taskMap
+						.get("attribute[Task Estimated Finish Date]");
+				if (sTargetDate != null && !"".equals(sTargetDate)) {
+					Calendar cTarget = Calendar.getInstance();
+					cTarget.setTime(sdf.parse(sTargetDate));
+					int iYearTarget = cTarget.get(Calendar.YEAR);
+					int iMonthTarget = cTarget.get(Calendar.MONTH);
+					if (iYearCurrent == iYearTarget) {
+						if (iMonthCurrent ==iMonthTarget ) {
+							maplist2.add(taskMap);
+						} else {
+							continue;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return maplist2;
+	}
+
+	public MapList getThisWeekTask(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("attribute[Task Estimated Finish Date]");
+		MapList maplist1 = new MapList();
+		MapList maplist2 = new MapList();
+		Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+		Calendar cCurrent = Calendar.getInstance();
+		int iYearCurrent = cCurrent.get(Calendar.YEAR);
+		int iMonthCurrent = cCurrent.get(Calendar.MONTH);
+		int iWeekCurrent = cCurrent.get(Calendar.WEEK_OF_YEAR);
+		long lCurrent = cCurrent.getTimeInMillis();
+		long lDiff = 2592000000L;
+		try {
+			String personId = com.matrixone.apps.domain.util.PersonUtil
+					.getPersonObjectID(context);
+			String where = "current=='Assign'||current=='Review'||current=='Active'";
+			DomainObject personObj = new DomainObject(personId);
+			StringList relList = new StringList(DomainRelationship.SELECT_ID);
+			maplist1 = personObj.getRelatedObjects(context, "Assigned Tasks",
+					"*", busList, relList, false, true, (short) 1, where, "");
+			for (int i = 0; i < maplist1.size(); i++) {
+				Map taskMap = (Map) maplist1.get(i);
+				String sTargetDate = (String) taskMap
+						.get("attribute[Task Estimated Finish Date]");
+				if (sTargetDate != null && !"".equals(sTargetDate)) {
+					Calendar cTarget = Calendar.getInstance();
+					cTarget.setTime(sdf.parse(sTargetDate));
+
+					int iYearTarget = cTarget.get(Calendar.YEAR);
+					int iWeekTarget = cTarget.get(Calendar.WEEK_OF_YEAR);
+					if (iYearCurrent == iYearTarget) {
+						if (iWeekCurrent == iWeekTarget) {
+							maplist2.add(taskMap);
+						} else {
+							continue;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return maplist2;
+	}
+	public MapList getPendingTask(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String  personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+		String where = "current=='Assign'||current=='Review'||current=='Active'";
+		DomainObject personObj = new DomainObject(personId);
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		MapList maplist1=personObj.getRelatedObjects(context,"Assigned Tasks","*", busList, relList, false, true, (short)1, where, "");
+		return maplist1;
+	}
+	
+	
+	
+	/**
+	 * Create new task.
+	 * @param context - The ENOVIA <code>Context</code> object.
+	 * @param args - The args hold information about object.
+	 * @return New object.
+	 * @throws Exception If operation fails.
+	 */
+	@com.matrixone.apps.framework.ui.CreateProcessCallable
+	public Map createNewTask(Context context,String[]args)throws Exception
+	{
+		Task task =  (Task)DomainObject.newInstance(context,DomainConstants.TYPE_TASK, DomainConstants.PROGRAM);
+		Task newTask = (Task) DomainObject.newInstance(context,DomainConstants.TYPE_TASK, DomainConstants.PROGRAM);
+
+		Map returnMap=new HashMap();
+		try{
+			Map programMap = JPO.unpackArgs(args);
+
+			String selectedTaskId           = (String) programMap.get("objectId");
+			String parentId			        = (String) programMap.get("parentId");
+			String addTask 					= (String)programMap.get("addTask");
+			String autonameCheck 			= (String) programMap.get("autoNameCheck");
+			String taskName 				= (String) programMap.get("Name");
+			String taskType 				= (String) programMap.get("TypeActual");
+			String selectedPolicy 			= (String) programMap.get("Policy");
+			String ownerId 					= (String) programMap.get("OwnerOID");
+			String description 				= (String) programMap.get("Description");
+			String assigneeIds 				= (String) programMap.get("AssigneeOID");
+			String taskRequirement 			= (String) programMap.get("TaskRequirement");
+			String projectRole 				= (String) programMap.get("ProjectRole");
+			String calendarId 				= (String) programMap.get("Calendar");
+			String taskConstraintDate 		= (String) programMap.get("TaskConstraintDate");
+			String taskConstraintType 		= (String) programMap.get("Task Constraint Type");
+			String durationKeyword 			= (String) programMap.get("DurationKeywords");
+			String duration = (String) programMap.get("Duration");
+			String durationUnit = (String) programMap.get("units_Duration");
+			String deliverableId            = (String) programMap.get("DeliverableOID");
+
+			if("true".equalsIgnoreCase(autonameCheck)){
+				String symbolicTypeName 	= PropertyUtil.getAliasForAdmin(context, "Type", taskType, true);
+				String symbolicPolicyName 	= PropertyUtil.getAliasForAdmin(context, "Policy", selectedPolicy, true);
+
+				taskName =  FrameworkUtil.autoName(context,
+						symbolicTypeName,
+						null,
+						symbolicPolicyName,
+						null,
+						null,
+						true,
+						true);
+			}
+
+			if(ProgramCentralUtil.isNullString(selectedPolicy)){
+				selectedPolicy = task.getDefaultPolicy(context);
+			}
+
+			if(ProgramCentralUtil.isNullString(parentId)){
+				parentId = selectedTaskId;
+			}
+
+			Map <String,String>basicTaskInfoMap = new HashMap();
+			Map <String,String>taskAttributeMap = new HashMap();
+			Map <String,String>relatedInfoMap = new HashMap();
+
+			//Basic info
+			basicTaskInfoMap.put("name", taskName);
+			basicTaskInfoMap.put("type", taskType);
+			basicTaskInfoMap.put("policy", selectedPolicy);
+			basicTaskInfoMap.put("description", description);
+			basicTaskInfoMap.put("ParentId", parentId);
+			basicTaskInfoMap.put("selectedObjectId", selectedTaskId);
+			basicTaskInfoMap.put("AddTask", addTask);
+
+			//Attribute info
+			if(taskConstraintDate!=null && taskConstraintDate.length()>0){
+				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+				java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+				taskConstraintDate = formatter.format(format.parse(taskConstraintDate));
+			}
+			taskAttributeMap.put("Project Role", projectRole);
+			taskAttributeMap.put("TaskConstraintDate", taskConstraintDate);
+			taskAttributeMap.put("TaskConstraintType", taskConstraintType);
+			taskAttributeMap.put("DurationKeywords",durationKeyword);
+			taskAttributeMap.put("Duration", duration);
+			taskAttributeMap.put("DurationUnit", durationUnit);
+			taskAttributeMap.put("TaskRequirement", taskRequirement);
+
+			//Related info
+			relatedInfoMap.put("Owner", ownerId);
+			relatedInfoMap.put("Assignee", assigneeIds);
+			relatedInfoMap.put("Calendar", calendarId);
+			relatedInfoMap.put("deliverableId", deliverableId);
+
+			//Create new task
+			newTask = task.createTask(context, 
+					basicTaskInfoMap, 
+					taskAttributeMap, 
+					relatedInfoMap);
+
+			String newTaskId = newTask.getObjectId();
+			returnMap.put("id", newTaskId);
+
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+
+		return  returnMap;
+	}
+
+	
+	
+	
+	/**
+	 * In the Structure Browser, For getting the Task SubTypes Ranges
+	 * @param context the ENOVIA <code>Context</code> object
+	 * @param args
+	 * @return HashMap of Task Type Values
+	 * @throws MatrixException
+	 */
+
+	public HashMap getTaskTypes(Context context, String[] args) throws MatrixException {
+
+		String policy = ProgramCentralConstants.EMPTY_STRING;
+		try {
+			Map programMap = (HashMap) JPO.unpackArgs(args);
+			Map requestMap = (Map) programMap.get("requestMap");
+			policy = (String) requestMap.get("PolicyName");
+
+
+		} catch (Exception e) {
+			m_rootLogger.error(e.getMessage(), e);
+		}
+
+		HashMap mapTaskTypeNames = new HashMap();
+		String strMQLQuery = "print type $1 select derivative dump $2";
+		String strResultSubType = MqlUtil.mqlCommand(context, strMQLQuery,DomainConstants.TYPE_TASK_MANAGEMENT, "|");
+		StringList slTaskSubTypes = ProgramCentralUtil.getTaskSubTypesList(context);
+		StringList slTaskSubTypesIntNames = new StringList();
+		if(ProgramCentralConstants.POLICY_PROJECT_REVIEW.equalsIgnoreCase(policy))
+		{
+			StringList reviewTypeList = new StringList(2);
+			reviewTypeList.addAll(ProgramCentralUtil.getSubTypesList(context, ProgramCentralConstants.TYPE_GATE));
+			reviewTypeList.addAll(ProgramCentralUtil.getSubTypesList(context, ProgramCentralConstants.TYPE_MILESTONE));
+			slTaskSubTypes.retainAll(reviewTypeList);
+		}
+		StringList showList = new StringList();
+		for(int i = 0; i<slTaskSubTypes.size(); i++)
+		{
+			String subTypeValue = (String)slTaskSubTypes.get(i);
+			if("SEM Part Task".equals(subTypeValue) || "Change Task".equals(subTypeValue) || "SEM Task Item".equals(subTypeValue)){
+				continue;
+			}else{
+				showList.add(subTypeValue);
+			}
+		}
+		slTaskSubTypes = showList;
+		int count = 0;
+
+		for (Iterator iterator = slTaskSubTypes.iterator(); iterator.hasNext();) {
+			String str = (String) iterator.next();
+			String i18nTaskTypeName = i18nNow.getTypeI18NString(slTaskSubTypes.get(count).toString(),context.getSession().getLanguage());
+			slTaskSubTypesIntNames.add(i18nTaskTypeName);
+			count++;
+		}
+
+		mapTaskTypeNames.put("field_choices", slTaskSubTypes);
+		mapTaskTypeNames.put("field_display_choices", slTaskSubTypesIntNames);
+		return mapTaskTypeNames;
+	}
+	
+	public void updateTaskReviewer(Context context,String[] args)throws Exception
+	{
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		HashMap paramMap = (HashMap) programMap.get("paramMap");
+		HashMap requestMap = (HashMap) programMap.get("requestMap");
+		String objectId = (String) paramMap.get("objectId");// get the task Id
+		String newValue = (String) paramMap.get("New Value");//Get the dependency entered by the user.Eg:Project1:1:FS+5, 2:SF-5, 4:SS
+		DomainObject strTaskObj = new DomainObject(objectId);
+		if(newValue.length()>0){
+	  	    String personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context,newValue);
+			if(personId.length()>0)
+			{
+				DomainObject strPersonObj = new DomainObject(personId);
+				DomainRelationship del = strTaskObj.connectTo(context,"SEM Task Reviewer",strPersonObj); 
+			}
+		}
+	}
+		public MapList getTaskReviewSubTask(Context context, String[] args)
+			throws Exception {
+		HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+ 		String objectId     = (String) programMap.get("objectId");
+ 		StringList busList = new StringList("id");
+ 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+ 		DomainObject strObj = new DomainObject(objectId);
+		MapList maplist1=strObj.getRelatedObjects(context,"Subtask","*", busList, relList, false, true, (short)1, "", "");
+		return maplist1;
+	}
+	public MapList getTaskplandecompositionSubTask(Context context, String[] args)
+			throws Exception {
+		HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+ 		String objectId     = (String) programMap.get("objectId");
+ 		StringList busList = new StringList("id");
+ 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+ 		DomainObject strObj = new DomainObject(objectId);
+		MapList maplist1=strObj.getRelatedObjects(context,"Subtask","*", busList, relList, false, true, (short)1, "", ""); 
+		for(int i=0;i<maplist1.size();i++){
+       	 Map map = (Map)maplist1.get(i);     	
+       		 map.put("disableSelection" , "true");       	 
+        }
+		return maplist1;
+	}
+	public MapList getTaskScheduleComfirmedSubTask(Context context, String[] args)
+			throws Exception {
+		HashMap programMap  = (HashMap) JPO.unpackArgs(args);
+ 		String objectId     = (String) programMap.get("objectId");
+ 		StringList busList = new StringList("id");
+ 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+ 		DomainObject strObj = new DomainObject(objectId);
+		MapList maplist1=strObj.getRelatedObjects(context,"Subtask","*", busList, relList, false, true, (short)1, "", "");
+		return maplist1;
+	}
+	
+	//add home pannel by fzq
+	public String[] getReviewTaskDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[1];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+		MapList mapList=getTaskReview(context,args);
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?program=emxTask:getTaskReview&table=SEMMyTaskSummaryAll&showPageHeader=true&header=emxFramework.Common.ToBeReviewerTasks&toolbar=TaskReviewCompleteAndRollbackToolbar&sortColumnName=EstFinishDate&sortDirection=ascending&Export=true&HelpMarker=emxhelpassignmentsummary&editLink=false&selection=multiple&freezePane=WBSTaskName\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(mapList.size() == 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("red");  }
+	    sbCounter.append("'><span class='counterText red'>").append(mapList.size()).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context, "Framework", "emxFramework.Common.ToBeReviewerTasks", sLanguage)).append("</td>");         
+	       
+	    aResults[0]=sbCounter.toString();
+	    return aResults;
+	}
+	public String[] getPlanTaskDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[1];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+		MapList mapList=getPlanDecomposition(context,args);
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?program=emxTask:getPlanDecomposition&table=SEMMyTaskSummary1&toolbar=SEMEditStatusSubmitP2ToP3Toolbar&showPageHeader=true&header=emxFramework.Common.ToBeDecomposedTasks&sortColumnName=EstFinishDate&sortDirection=ascending&Export=true&HelpMarker=emxhelpassignmentsummary&selection=multiple&freezePane=WBSTaskName&postProcessJPO=emxWeeklyTimeSheet:postProcessRefresh\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(mapList.size() == 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("yellow");  }
+	    sbCounter.append("'><span class='counterText ");
+	    if(mapList.size() == 0){ sbCounter.append("grayBright");   }
+        else                        { sbCounter.append("yellow");       }
+	    sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context, "Framework", "emxFramework.Common.ToBeDecomposedTasks", sLanguage)).append("</td>");         
+	       
+	    aResults[0]=sbCounter.toString();
+	    return aResults;
+	}
+	public String[] getPlanComfirmedDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[1];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+		MapList mapList=getScheduleComfirmed(context,args);
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?program=emxTask:getScheduleComfirmed&table=SEMMyTaskSummary1&showPageHeader=true&header=emxFramework.Common.ToBeConfirmTasks&toolbar=PMCConfirmAndRollBackToolbar&sortColumnName=EstFinishDate&sortDirection=ascending&Export=true&HelpMarker=emxhelpassignmentsummary&editLink=false&selection=multiple&freezePane=WBSTaskName&postProcessJPO=emxWeeklyTimeSheet:postProcessRefresh\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(mapList.size() == 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("orange");  }
+	    sbCounter.append("'><span class='counterText ");
+	    if(mapList.size() == 0){ sbCounter.append("grayBright");   }
+        else                        { sbCounter.append("orange");       }
+	    sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context, "Framework", "emxFramework.Common.ToBeConfirmTasks", sLanguage)).append("</td>");         
+	       
+	    aResults[0]=sbCounter.toString();
+	    return aResults;
+	}
+	
+	public MapList getProposedIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList("id");
+		busList.add("name");
+		busList.add("type");
+		String currentUser=context.getUser();
+		String where="owner=='" + currentUser + "'&&current!='Closed'";
+		MapList mapList = DomainObject.findObjects(context,
+				"Issue", "*", where, busList);
+		return mapList;
+	}
+	public String[] getProposedIssueDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[1];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+		MapList mapList=getProposedIssue(context,args);
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?frompage=deskpage&program=emxTask:getAssignAndActiveIssue,emxTask:getAllIssue,emxTask:getCreateIssue,emxTask:getClosedIssue&programLabel=emxFramework.Common.AssignAndActive,emxFramework.Common.AllIssue,emxFramework.Common.Create,emxFramework.Common.Closed&programLabel=emxFramework.Common.AllIssue,emxFramework.Common.AssignAndActive,emxFramework.Common.Create,emxFramework.Common.Closed&showPageHeader=true&header=emxFramework.Common.MyProposedUnclosedIssues&table=SEMIssueInfo1&toolbar=SEMIssueToolbar&selection=multiple&Header=emxFramework.Common.MyProposedUnclosedIssue&suiteKey=Framework\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(mapList.size() == 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("orange");  }
+	    sbCounter.append("'><span class='counterText ");
+	    if(mapList.size() == 0){ sbCounter.append("grayBright");   }
+        else                        { sbCounter.append("orange");       }
+	    sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context, "Framework", "emxFramework.Common.MyProposedUnclosedIssues", sLanguage)).append("</td>");         
+	       
+	    aResults[0]=sbCounter.toString();
+	    return aResults;
+	}
+	public String[] getCountermeasureIssueDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[1];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+		MapList mapList=getAssignAndActiveRelatedIssue(context,args);
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?frompage=deskpage&program=emxTask:getAssignAndActiveRelatedIssue,emxTask:getReviewRelatedIssue,emxTask:getClosedRelatedIssue&programLabel=emxFramework.Common.AssignAndActive,emxFramework.Common.Review,emxFramework.Common.Closed&showPageHeader=true&header=emxFramework.Common.MyCountermeasureIssues&table=SEMIssueInfo&toolbar=AssignIssueToolbar&sortColumnName=EstFinishDate&sortDirection=ascending&Export=false&HelpMarker=emxhelpassignmentsummary&editLink=false&selection=multiple&postProcessJPO=emxWeeklyTimeSheet:postProcessRefresh&editable=true&suiteKey=Framework\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(mapList.size() == 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("purple");  }
+	    sbCounter.append("'><span class='counterText ");
+	    if(mapList.size() == 0){ sbCounter.append("grayBright");   }
+        else                        { sbCounter.append("purple");       }
+	    sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context, "Framework", "emxFramework.Common.MyCountermeasureIssues", sLanguage)).append("</td>");         
+	       
+	    aResults[0]=sbCounter.toString();
+	    return aResults;
+	}
+	public String[] getJudgedIssueDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[1];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+		MapList mapList=getReviewIssue(context,args);
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?frompage=deskpage&program=emxTask:getReviewIssue&programLabel=emxFramework.Common.Review&table=SEMIssueInfo2&toolbar=ReviewIssueToolbar&sortColumnName=EstFinishDate&sortDirection=ascending&Export=false&HelpMarker=emxhelpassignmentsummary&editLink=false&selection=multiple&showPageHeader=true&header=emxFramework.Common.MyJudgedIssues&postProcessJPO=emxWeeklyTimeSheet:postProcessRefresh&suiteKey=Framework\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(mapList.size() == 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("red");  }
+	    sbCounter.append("'><span class='counterText ");
+	    if(mapList.size() == 0){ sbCounter.append("grayBright");   }
+        else                        { sbCounter.append("red");       }
+	    sbCounter.append("'>").append(mapList.size()).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context, "Framework", "emxFramework.Common.MyJudgedIssues", sLanguage)).append("</td>");         	       
+	    aResults[0]=sbCounter.toString();
+	    return aResults;
+	}
+	public String[] getProjectTaskDashboardData(Context context,String[] args)throws Exception
+	{
+		String[] aResults       = new String[1];  
+        HashMap paramMap        = (HashMap) JPO.unpackArgs(args);    
+        String sOID             = (String)paramMap.get("objectId");
+        String sLanguage        = (String)paramMap.get("languageStr");  
+		MapList mapList=(MapList)getAssignedWBSTask(context,args);
+		StringBuilder sbCounter = new StringBuilder();        
+	    sbCounter.append("<td onclick='openURLInDetails(\"../common/emxIndentedTable.jsp?program=emxTask:getAssignedWBSTask,emxTask:getAllWBSTask,emxTask:getCompletedWBSTask&programLabel=emxProgramCentral.Common.AssignedTasks,emxProgramCentral.Common.All,emxProgramCentral.Common.CompletedTasks&table=SEMMyTaskSummary&toolbar=PMCActualEffortToolbar&header=emxProgramCentral.Common.Assignments&sortColumnName=EstFinishDate&sortDirection=ascending&Export=false&HelpMarker=emxhelpassignmentsummary&editLink=false&selection=multiple&freezePane=WBSTaskName&StringResourceFileId=emxProgramCentralStringResource&postProcessJPO=emxWeeklyTimeSheet:postProcessRefresh&suiteKey=ProgramCentral\")'");
+	    sbCounter.append(" class='counterCell ");
+	    if(mapList.size() == 0)  { sbCounter.append("grayBright"); }
+	    else                            { sbCounter.append("greenBright");  }
+	    sbCounter.append("'><span class='counterText greenBright'>").append(mapList.size()).append("</span><br/>");
+	    sbCounter.append(EnoviaResourceBundle.getProperty(context, "Framework", "emxFramework.Common.ToBeCompletedTasks", sLanguage)).append("</td>");         
+	       
+	    aResults[0]=sbCounter.toString();
+	    return aResults;
+	}//
+	
+	public int triggerCheckTaskReviewPromote(Context context, String[] args)
+			throws Exception {
+		String objectId = args[0];
+		StringList busList = new StringList("id");
+		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+		DomainObject strObj = new DomainObject(objectId);
+		MapList DeliverList = strObj.getRelatedObjects(context,"Task Deliverable","SEM Meeting Document,SEM Project Document", busList, relList, false, true, (short)1, "", "");
+		boolean bl= true;
+		if(DeliverList!=null&&DeliverList.size()>0)
+		{
+			for(int i=0;i<DeliverList.size();i++)
+			{
+				Map Delivermap=(Map)DeliverList.get(i);
+				
+				String  DeliverId=(String)Delivermap.get("id");
+				DomainObject DeliverObj=new DomainObject(DeliverId);
+				State StateObj=DeliverObj.getCurrentState(context);
+				if(!StateObj.getName().equals("Released"))
+				{
+					 bl= false;
+					 break;
+				}
+			}
+		}
+		if(bl)
+		{
+			return 0;
+		}else
+		{	try {
+				String sErrMsg = null;
+				sErrMsg = "\u8BF7\u5148\u53D1\u5E03\u4EA4\u4ED8\u4EF6";
+				${CLASS:emxContextUtilBase}.mqlNotice(context, sErrMsg);
+			} catch (Exception e) {
+				throw new Exception(e.getMessage());
+			}
+			return 1;
+		}
+
+	}
+	
+	//add by ryan 2017-03-09
+	public int SEMcheckUser(Context context, String[] args) throws Exception 
+	{
+		try
+		{
+			String strObjectId = args[0];
+			Task task = new Task(strObjectId);
+			Map projectInfoMap = task.getProject(context, new StringList("id"));
+			String strLoginUserName = context.getUser();
+			String strProjId = (String)projectInfoMap.get("id");
+			MapList accessInfoList = DomainAccess.getAccessSummaryList(context, strProjId);
+			for(int i = 0; i < accessInfoList.size(); i ++)
+			{
+				Map map = (Map)accessInfoList.get(i);
+				String strName = (String)map.get("name");
+				if(strName.indexOf(strLoginUserName + "_") > -1)
+				{
+					String strAccess = (String)map.get("access");
+					if(strAccess.equals("Project Lead"))
+					{
+						return 0;
+					}
+				}
+			}
+			
+			if(!"User Agent".equalsIgnoreCase(strLoginUserName))
+			{
+				throw new Exception("\u5F53\u524D\u7528\u6237" + strLoginUserName + "\u4E0D\u53EF\u76F4\u63A5\u63D0\u5347\u72B6\u6001");
+			}
+		}catch(Exception ex)
+		{
+			m_rootLogger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+		return 0;
+	}
+	
+	public StringList isTaskEditable(Context context, String[] args) throws MatrixException
+	{
+		try
+		{
+			StringList slResult = new StringList();
+			Map programMap = (HashMap) JPO.unpackArgs(args);
+			MapList taskInfoList = (MapList) programMap.get("objectList");
+			StringList slTaskIds = new StringList(taskInfoList.size());
+			for (Iterator itrTableRows = taskInfoList.iterator(); itrTableRows.hasNext();)
+			{
+				Map taskInfo = (Map) itrTableRows.next();
+				String taskId = (String) taskInfo.get(SELECT_ID);
+				DomainObject task = DomainObject.newInstance(context, taskId);
+				StringList busSelects = new StringList("owner");
+				busSelects.add("current");
+				busSelects.add("attribute[SEM Edit Status]");
+
+				Map taskMap = task.getInfo(context, busSelects);
+				String strOwner = (String)taskMap.get("owner");
+				String strCurrState = (String)taskMap.get("current");
+				String strSEMEditStatus = (String)taskMap.get("attribute[SEM Edit Status]");
+				if(!strCurrState.equals("Create"))
+				{
+					slResult.add(false);
+					continue;
+				}
+				
+				if(!strOwner.equals(context.getUser()))
+				{
+					slResult.add(false);
+				}
+				else
+				{
+					slResult.add(true);
+				}
+			}
+			return slResult;
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+			throw new MatrixException(e);
+		}
+	}
+	
+	public boolean isTaskAssigne (Context context, String[] args) throws MatrixException{
+		try
+		{
+			boolean flag = false;
+			
+			String  personId = com.matrixone.apps.domain.util.PersonUtil.getPersonObjectID(context);
+		       DomainObject personObj = new DomainObject(personId);
+		       StringList strPerson = new StringList();
+		       strPerson.add("name");
+		       Map personSelectMap = personObj.getInfo(context, strPerson);		      
+		       String strName = (String)personSelectMap.get("name");
+		       
+			   Map programMap = (HashMap) JPO.unpackArgs(args);			
+				String taskId = (String) programMap.get("objectId");
+				DomainObject task = DomainObject.newInstance(context, taskId);
+				StringList busSelects = new StringList();
+				busSelects.add("owner");
+				Map taskMap = task.getInfo(context, busSelects);
+				String strOwner = (String)taskMap.get("owner");				
+				 
+				if(!strOwner.equals(strName))
+				{
+					flag=false;
+				}
+				else
+				{
+					flag=true;
+				}
+			return flag;
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+			throw new MatrixException(e);
+		}
+	}
+	
+	public StringList isTaskPromoteEnable(Context context, String[] args) throws MatrixException
+	{
+		try
+		{
+			StringList slResult = new StringList();
+			Map programMap = (HashMap) JPO.unpackArgs(args);
+			MapList taskInfoList = (MapList) programMap.get("objectList");
+			StringList slTaskIds = new StringList(taskInfoList.size());
+			for (Iterator itrTableRows = taskInfoList.iterator(); itrTableRows.hasNext();)
+			{
+				Map taskInfo = (Map) itrTableRows.next();
+				String taskId = (String) taskInfo.get(SELECT_ID);
+				DomainObject task = DomainObject.newInstance(context, taskId);
+				StringList busSelects = new StringList("owner");
+				busSelects.add("current");
+				busSelects.add("attribute[SEM Edit Status]");
+				busSelects.add("to[Assigned Tasks].from.name");
+
+				Map taskMap = task.getInfo(context, busSelects);
+				String strOwner = (String)taskMap.get("owner");
+				String strCurrState = (String)taskMap.get("current");
+				String strSEMEditStatus = (String)taskMap.get("attribute[SEM Edit Status]");
+				String strTaskAssignee = (String)taskMap.get("to[Assigned Tasks].from.name");
+				if(UIUtil.isNullOrEmpty(strTaskAssignee))
+				{
+					strTaskAssignee = strOwner;
+				}
+				if(!(strCurrState.equals("Assign") || strCurrState.equals("Active")))
+				{
+					slResult.add(false);
+					continue;
+				}
+				
+				if(!strTaskAssignee.equals(context.getUser()))
+				{
+					slResult.add(false);
+				}
+				else
+				{
+					slResult.add(true);
+				}
+			}
+			return slResult;
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+			throw new MatrixException(e);
+		}
+	}
+	
+	public void createOwnershipForTaskAssigneeTrigger(Context context, String args[])throws Exception
+	{
+		String personId = args[0];
+		String personName = args[1];
+		String taskId = args[2];
+        //add by fzq 2016-11-29
+		String type=new DomainObject(taskId).getType(context);
+		if(type.equals("SEM Part Task")){
+			return;
+		}//
+		if(ProgramCentralUtil.isNotNullString(personName) && !DomainAccess.hasObjectOwnership(context, taskId, null, personName+"_PRJ", DomainAccess.COMMENT_MULTIPLE_OWNERSHIP))
+		{
+			DomainAccess.createObjectOwnership(context, taskId, personId, "Task Assignee", DomainAccess.COMMENT_MULTIPLE_OWNERSHIP);//modify by ryan 2017-03-09
+		}
+		
+	}
+	
+	public boolean enableSubTaskEdit(Context context, String args[])throws Exception
+	{
+		try
+		{
+			HashMap inputMap = (HashMap)JPO.unpackArgs(args);
+			String strObjectId = (String)inputMap.get("objectId");
+			String strProjId = "";
+			DomainObject dobj = DomainObject.newInstance(context, strObjectId);
+			if(!dobj.isKindOf(context, "Task Management")) //modify by ryan 2017-04-13
+			{
+				return true;
+			}
+			
+			Task task = new Task(strObjectId);
+			Map projectInfoMap = task.getProject(context, new StringList("id"));
+			String strLoginUserName = context.getUser();
+			strProjId = (String)projectInfoMap.get("id");
+			
+			MapList accessInfoList = DomainAccess.getAccessSummaryList(context, strProjId);
+			for(int i = 0; i < accessInfoList.size(); i ++)
+			{
+				Map map = (Map)accessInfoList.get(i);
+				String strName = (String)map.get("name");
+				if(strName.indexOf(strLoginUserName + "_") > -1)
+				{
+					String strAccess = (String)map.get("access");
+					if(strAccess.equals("Project Lead"))
+					{
+						return true;
+					}
+				}
+			}
+			
+			StringList busSelects = new StringList("owner");
+			busSelects.add("current");
+			busSelects.add("attribute[SEM Edit Status]");
+
+			Map taskMap = task.getInfo(context, busSelects);
+			String strOwner = (String)taskMap.get("owner");
+			String strCurrState = (String)taskMap.get("current");
+			String strSEMEditStatus = (String)taskMap.get("attribute[SEM Edit Status]");
+			if(!strCurrState.equals("Create"))
+			{
+				return false;
+			}
+			
+			if(!strOwner.equals(context.getUser()))
+			{
+				if(strSEMEditStatus.equals("P2"))
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			
+			if(strSEMEditStatus.equals("P1") || strSEMEditStatus.equals("P2"))
+			{
+				return true;
+			}
+			
+			return false;
+		}catch(Exception ex)
+		{
+			m_rootLogger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+	}
+	
+	public boolean enableCopySchedule(Context context, String args[])throws Exception
+	{
+		if(!hasAccessForWBSView(context, args))
+		{
+			return false;
+		}
+		return enableSubTaskEdit(context, args);
+	}
+	
+	public int triggerModifyPercentCompleteAction(Context context, String[] args) throws Exception {
+		StringList busSelects = new StringList();
+		busSelects.add(SELECT_PERCENT_COMPLETE);
+		busSelects.add(SELECT_CURRENT);
+		busSelects.add(SELECT_STATES);
+		busSelects.add(SELECT_PARENT_ID);
+		busSelects.add(SELECT_TYPE);
+		busSelects.add(SELECT_POLICY);
+		busSelects.add(ProgramCentralConstants.SELECT_NEEDS_REVIEW);
+		busSelects.add("from[Subtask]");
+
+		try {
+			// get values from args.
+			String objectId = args[0];
+			if(UIUtil.isNotNullAndNotEmpty(objectId)) {
+				setId(objectId);            
+
+				Map taskMap = getInfo(context, busSelects);
+				String type = (String) taskMap.get(SELECT_TYPE);
+				String state = (String) taskMap.get(SELECT_CURRENT);
+				StringList taskStateList = (StringList) taskMap.get(SELECT_STATES);
+				String parentId = (String) taskMap.get(SELECT_PARENT_ID);
+				String newPercent = (String) taskMap.get(SELECT_PERCENT_COMPLETE);
+				double newPercentValue = Double.parseDouble(newPercent);
+				String taskPolicy = (String) taskMap.get(SELECT_POLICY);
+				String taskReviewCheck = (String)taskMap.get(ProgramCentralConstants.SELECT_NEEDS_REVIEW);
+				String isSummaryTask = (String)taskMap.get("from[Subtask]");
+				//get the position of the task's current state wrt
+				//to its state list
+				int taskCurrentPosition = taskStateList.indexOf(state);
+				//get the position of "Active" and "Complete" in the state list
+				int taskActiveStatePosition = taskStateList.indexOf(STATE_PROJECT_TASK_ACTIVE);
+				int taskCompleteStatePosition = taskStateList.indexOf(STATE_PROJECT_TASK_COMPLETE);
+
+				if ((taskActiveStatePosition == -1 && !ProgramCentralConstants.POLICY_PROJECT_REVIEW.equals(taskPolicy))
+						|| taskCompleteStatePosition == -1)   //Added::nr2:PRG:R210:14-06-2010:For Stage Gate Highlight
+				{
+					//object may not be of type task or project
+					if(!ProgramCentralConstants.POLICY_PROJECT_SPACE_HOLD_CANCEL.equals(taskPolicy))
+						return 0;
+				}
+
+				//1. if newpercent is 0% and the task is above active state demote it
+				//    to active state. Do nothing if it is below active state
+				//2. if newpercent is between 1-99% irrespective of the current state
+				//    set the state to Active
+				//3. if newPercent is 100% and the task is already in Complete or
+				//    beyond do nothing
+				//4. if newPercent is 100% and the task is below Complete state setState
+				//    to review or complete based on taskReviewCheck.
+				//5. if taskReviewCheck = True...Set state to Review.
+				//   taskReviewCheck = False...Set state to Compleate.
+
+				//Since there is no Active state in Project Review Policy, taskActiveStatePosition will be -1 and control
+				//will never go in conditions where <anything> > taskActiveStatePosition
+				//Hence we make this 2 (as for Project Task Policy), to enable comparison to take place.
+
+				if(taskActiveStatePosition == -1 && ProgramCentralConstants.POLICY_PROJECT_SPACE_HOLD_CANCEL.equals(taskPolicy)) {
+					taskActiveStatePosition = 2;
+					taskCompleteStatePosition = 4;
+				}
+				
+				//add by ryan 2017-03-14
+				ContextUtil.pushContext(context);
+				try
+				{
+				//add end
+					if((newPercentValue == 0) && taskCurrentPosition > taskActiveStatePosition) {
+						//Refer #1
+						if(ProgramCentralConstants.POLICY_PROJECT_REVIEW.equals(taskPolicy)){
+							setState(context, ProgramCentralConstants.STATE_PROJECT_REVIEW_CREATE);
+						} else { 
+							//This condition is added if ProjectSpace is governed by Project Space Hold Cancel Policy
+							int activeStatePosition = taskStateList.indexOf(STATE_PROJECT_TASK_ACTIVE);
+							if(activeStatePosition != -1)
+								setState(context, STATE_PROJECT_TASK_ACTIVE);
+						}
+					} else if(newPercentValue > 0 && newPercentValue < 100) {
+						//Refer #2
+						if (taskActiveStatePosition > taskCurrentPosition) {
+							//Do not set states if this is "Part Quality Plan" object
+							if(!TYPE_PART_QUALITY_PLAN.equals(type)) {
+								//This is added so that Gate will not be Moved to assign state.
+								if(! ProgramCentralConstants.POLICY_PROJECT_REVIEW.equals(taskPolicy) && !ProgramCentralConstants.POLICY_PROJECT_SPACE_HOLD_CANCEL.equals(taskPolicy)){
+									setState(context, STATE_PROJECT_TASK_ASSIGN);
+									setId(objectId);
+									setState(context, STATE_PROJECT_TASK_ACTIVE);
+								}
+							}
+							//Coming in this condition if Gate/Milestone (with policy Project Review)
+							//is in Create state and %Complete is set between 1-99%.
+							if(ProgramCentralConstants.POLICY_PROJECT_REVIEW.equals(taskPolicy)){
+								setState(context, ProgramCentralConstants.STATE_PROJECT_REVIEW_REVIEW);
+							} else if(ProgramCentralConstants.POLICY_PROJECT_SPACE_HOLD_CANCEL.equals(taskPolicy)) {
+								HashMap programMap = new HashMap();
+								programMap.put(SELECT_ID, parentId);
+								programMap.put(SELECT_CURRENT, STATE_PROJECT_SPACE_REVIEW);
+								String[] arrJPOArgs = JPO.packArgs(programMap);
+								JPO.invoke(context, "emxProgramCentralUtilBase", null, "setPreviousState",arrJPOArgs,String.class);
+							}
+						} else if (taskActiveStatePosition < taskCurrentPosition) {
+							//control will come in this if condition when Gate/Milestone is in Review/Complete state.
+							//We do not want to move the Gate to Create state (As there is only this state below current state)
+							//of the Gate.Also Gate should not be demoted from Complete state.
+							if(!ProgramCentralConstants.POLICY_PROJECT_REVIEW.equals(taskPolicy) && !ProgramCentralConstants.POLICY_PROJECT_SPACE_HOLD_CANCEL.equals(taskPolicy)){ //End:nr2:PRG:R210:14-06-2010:For Stage Gate Highlight
+								setState(context, STATE_PROJECT_TASK_ACTIVE);
+							}
+						}
+					} else if((newPercentValue == 100) && taskCurrentPosition < taskCompleteStatePosition) {
+						//At this Position we do not want any further comparison to be made for Project Review Policy
+						//So we will set taskActiveStatePosition as -1, which we had set to 2 earlier.
+						/*              if(ProgramCentralConstants.POLICY_PROJECT_REVIEW.equals(taskPolicy)){
+	                    taskActiveStatePosition = -1;
+	                }
+						 */
+						//Refer #3 and #4
+						//had to break up the promotion to 3 stages
+						if (taskActiveStatePosition > taskCurrentPosition) {
+							if(ProgramCentralConstants.POLICY_PROJECT_REVIEW.equals(taskPolicy)){
+								setState(context, ProgramCentralConstants.STATE_PROJECT_REVIEW_REVIEW);
+								setId(objectId);
+							} else if(ProgramCentralConstants.POLICY_PROJECT_SPACE_HOLD_CANCEL.equals(taskPolicy)) {
+								HashMap programMap = new HashMap();
+								programMap.put(SELECT_ID, parentId);
+								programMap.put(SELECT_CURRENT, STATE_PROJECT_SPACE_ACTIVE);
+								String[] arrJPOArgs = JPO.packArgs(programMap);
+								JPO.invoke(context, "emxProgramCentralUtilBase", null, "setPreviousState",arrJPOArgs,String.class);
+								setId(objectId);
+							} else {
+								setState(context, STATE_PROJECT_TASK_ACTIVE);
+								setId(objectId);
+							}
+						}
+	
+						//set to Complete if this is "Part Quality Plan" object
+						//because PQP has different number of states than Project and Task
+						if(!TYPE_PART_QUALITY_PLAN.equals(type)) {
+							if(ProgramCentralConstants.POLICY_PROJECT_REVIEW.equals(taskPolicy)){
+								setState(context, ProgramCentralConstants.STATE_PROJECT_REVIEW_REVIEW);
+								setId(objectId);
+							} else if(ProgramCentralConstants.POLICY_PROJECT_SPACE_HOLD_CANCEL.equals(taskPolicy)) {
+								HashMap programMap = new HashMap();
+								programMap.put(SELECT_ID, parentId);
+								programMap.put(SELECT_CURRENT, STATE_PROJECT_SPACE_REVIEW);
+								String[] arrJPOArgs = JPO.packArgs(programMap);
+								JPO.invoke(context, "emxProgramCentralUtilBase", null, "setPreviousState",arrJPOArgs,String.class);
+								setId(objectId);
+							}
+	
+							else {
+							//Refer #5
+								setState(context, STATE_PROJECT_TASK_REVIEW);
+	                    	String toState = PropertyUtil.getRPEValue(context, "State", true);
+							
+	                    	if(ProgramCentralConstants.POLICY_PROJECT_TASK.equals(taskPolicy) 
+	                    			&& "false".equalsIgnoreCase(isSummaryTask) 
+	                    			&& "NO".equalsIgnoreCase(taskReviewCheck)
+										&& !(STATE_PROJECT_TASK_REVIEW.equalsIgnoreCase(toState))) {
+									
+									setId(objectId);
+									setState(context, STATE_PROJECT_TASK_COMPLETE);
+								}
+							}
+						}
+					}
+				//add by ryan 2017-03-14
+				}finally
+				{
+					ContextUtil.popContext(context);
+				}
+				//add end
+			}
+			return 0;
+		}
+		catch (Exception exp) {
+			m_rootLogger.error(exp.getMessage(), exp);
+			throw exp;
+		}
+	}
+	//end add by ryan
+	
+	//add by ryan 2017-04-13
+	/**
+	 * This method checks whether the Document Create command should be disable or not if the person is not the owner and Assignee.
+	 * @param context
+	 * @param args
+	 * @return
+	 * @throws Exception if the operation fails
+	 */
+
+	public boolean hasAccessForDeliverable(Context context, String args[]) throws Exception	
+	{
+		try
+		{
+			Map programMap = (Map) JPO.unpackArgs(args);
+			String strProjectID = (String)programMap.get("objectId");
+			DomainObject dmoObject = DomainObject.newInstance(context,strProjectID);
+			if(dmoObject.isKindOf(context, "Issue"))
+			{
+				return true;
+			}
+			
+			String hasModifySelect = "to[" + RELATIONSHIP_PROJECT_ACCESS_KEY + "].from.from[" + RELATIONSHIP_PROJECT_ACCESS_LIST + "].to.current.access[modify]";
+			SelectList objectSelects = new SelectList(2);
+	
+			objectSelects.addElement(SELECT_TASK_ASSIGNEE_ID);
+			objectSelects.addElement(hasModifySelect);
+	
+			Map objectMap = dmoObject.getInfo(context, objectSelects);
+			boolean hasModifyAccess = Boolean.parseBoolean((String)objectMap.get(hasModifySelect));
+			StringList assigneeList = (StringList) objectMap.get(SELECT_TASK_ASSIGNEE_ID);
+			if(assigneeList == null) {
+				if(hasModifyAccess){
+					return true;
+				}
+				return false;
+			}
+			String[] assignedTask = (String[]) assigneeList.toArray(new String[assigneeList.size()]);
+			SelectList nameSelects = new SelectList();
+			nameSelects.addElement(SELECT_NAME);
+			MapList mObjectInfo = DomainObject.getInfo(context ,assignedTask ,nameSelects );
+			Iterator itr = mObjectInfo.iterator();
+			while(itr.hasNext()) {
+				Map strAssigeeId = (Map) itr.next();
+				String strAssigneeName = (String)strAssigeeId.get(SELECT_NAME);
+				if(hasModifyAccess|| strAssigneeName.equalsIgnoreCase(context.getUser())) {
+					return true;
+				}
+			}
+			return false;
+		}catch(Exception ex)
+		{
+			m_rootLogger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+	}
+	//add end
+
+}
+
+

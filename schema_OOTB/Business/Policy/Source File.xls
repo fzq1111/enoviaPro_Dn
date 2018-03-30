@@ -1,0 +1,58 @@
+State	User	Read	Modify	Delete	Checkout	Checkin	Schedule	Lock	Unlock	Execute	Freeze	Thaw	Create	Revise	MajorRevise	Promote	Demote	Grant	Enable	Disable	Override	ChangeName	ChangeType	ChangeOwner	ChangePolicy	Revoke	ChangeVault	FromConnect	ToConnect	FromDisconnect	ToDisconnect	ViewForm	Modifyform	Show	Filter
+Create	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Create	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Create	Employee	Y	-	-	Y	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	-	Y	
+Create	Global User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Create	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Create	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Create	Software Engineer	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Create	Software Engineer Manager	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Create	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Create	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Assign	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Assign	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Assign	Global User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Assign	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Assign	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Assign	Software Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Assign	Software Engineer Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Assign	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Assign	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Develop	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Develop	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Develop	Global User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Develop	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Develop	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Develop	Software Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Develop	Software Engineer Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Develop	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Develop	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Unit Test	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Unit Test	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Unit Test	Global User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Unit Test	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Unit Test	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Unit Test	Software Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Unit Test	Software Engineer Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Unit Test	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Unit Test	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Validate	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Validate	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Validate	Global User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Validate	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Validate	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Validate	Software Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Validate	Software Engineer Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Validate	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Validate	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	Owner	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Complete	Employee	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	Global User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Complete	Product Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	Y	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	-	Y	
+Complete	Shadow Agent	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	Software Engineer	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Complete	Software Engineer Manager	Y	Y	-	Y	-	-	-	-	Y	-	-	-	Y	-	Y	Y	-	-	-	-	-	-	Y	-	-	-	Y	Y	Y	Y	Y	-	Y	context.user ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.name || context.user.assignment ~~ to[Assigned Requirement].businessobject.revision || context.user ~~ to[Employee].businessobject.name || context.user ~~ to[Business Unit Employee].businessobject.name
+Complete	System Conversion Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Complete	System Transition Manager	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+

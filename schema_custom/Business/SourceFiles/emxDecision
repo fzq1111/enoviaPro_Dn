@@ -1,0 +1,115 @@
+/*
+ ** emxDecision.java
+ ** Copyright (c) 2003-2015 Dassault Systemes.
+ ** All Rights Reserved
+ ** This program contains proprietary and trade secret information of
+ ** MatrixOne, Inc.  Copyright notice is precautionary only and does
+ ** not evidence any actual or intended publication of such program.
+ */
+
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+import com.matrixone.apps.framework.ui.UINavigatorUtil;
+import com.matrixone.apps.framework.ui.UIUtil;
+
+
+/**
+ * This JPO class has methods pertaining to Decision type
+ * @version ProductCentral 10.0.0.0 - Copyright (c) 2003, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxDecisionBase}
+{
+
+    /**
+     * Create a new emxDecision object from a given id
+     *
+     * @param context context for this request
+     * @param arg[0] the object id
+     * @exception Exception when unable to find object in the ProductCentral
+     * @since ProductCentral 10.0.0.0
+     * @grade 0
+     */
+	public ${CLASSNAME} (Context context, String[] args) throws Exception
+    {
+        super(context, args);
+    }
+
+    /**
+     * Main entry point
+     *
+     * @param context context for this request
+     * @param args holds no arguments
+     * @return an integer status code (0 = success)
+     * @exception Exception when problems occurred in the ProductCentral
+     * @since ProductCentral 10.0.0.0
+     * @grade 0
+     */
+    public int mxMain (Context context, String[] args) throws Exception {
+        if (!context.isConnected()) {
+            String strContentLabel = EnoviaResourceBundle.getProperty(context, "emxComponentsStringResource", context.getLocale(), "emxComponents.Error.UnsupportedClient");
+            throw  new Exception(strContentLabel);
+        }
+        return  0;
+    }
+	
+    @com.matrixone.apps.framework.ui.ProgramCallable
+    public MapList getRelatedDecisionsCat(Context context, String[] args) throws Exception
+    {
+        MapList relBusObjPageList = new MapList();
+        StringList objectSelects = new StringList(DomainConstants.SELECT_ID);
+//Added:30-Apr-2010:di1:R210:PRG:Meeting Usability
+        /* additional Decision information is required to display it in Meeting Summary table.
+         * i.e. name,type,policy,description,owner and current state
+         * */
+        objectSelects.add(DomainConstants.SELECT_NAME);
+        objectSelects.add(DomainConstants.SELECT_TYPE);
+        objectSelects.add(DomainConstants.SELECT_POLICY);
+        objectSelects.add(DomainConstants.SELECT_DESCRIPTION);
+        objectSelects.add(DomainConstants.SELECT_OWNER);
+        objectSelects.add(DomainConstants.SELECT_CURRENT);
+//Addition End:30-Apr-2010:di1:R210:PRG:Meeting Usability
+
+        StringList relSelects = new StringList(DomainConstants.SELECT_RELATIONSHIP_ID);
+        relSelects.add(DomainConstants.SELECT_RELATIONSHIP_NAME);
+
+        HashMap programMap = (HashMap) JPO.unpackArgs(args);
+        String strObjectId = (String) programMap.get("objectId");
+        DomainObject prtidObj=DomainObject.newInstance(context,strObjectId);
+        String sQCObjectidTr = prtidObj.getInfo(context, "to[SEM Meeting ContactOrder].from.id");
+        //System.out.println(sQCObjectidTr+"****************************************");
+        
+        String strObjectIdReplace = sQCObjectidTr;
+        //Domain Object initialized with the object id.
+        DomainObject doObj = DomainObject.newInstance(context,strObjectIdReplace);
+        //setId(strObjectId);
+
+       
+        short sRecursionLevel = 1;
+        String strType = DomainConstants.TYPE_DECISION;
+        String strRelName = DomainConstants.RELATIONSHIP_DECISION + "," + DomainConstants.RELATIONSHIP_DECISION_APPLIES_TO;
+
+        relBusObjPageList = doObj.getRelatedObjects(context, strRelName, strType, objectSelects, relSelects, true, false,
+                sRecursionLevel, DomainConstants.EMPTY_STRING, DomainConstants.EMPTY_STRING);
+
+        return relBusObjPageList;
+    }
+	
+}
+

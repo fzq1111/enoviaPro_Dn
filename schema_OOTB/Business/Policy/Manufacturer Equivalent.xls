@@ -1,0 +1,162 @@
+State	User	Read	Modify	Delete	Checkout	Checkin	Schedule	Lock	Unlock	Execute	Freeze	Thaw	Create	Revise	MajorRevise	Promote	Demote	Grant	Enable	Disable	Override	ChangeName	ChangeType	ChangeOwner	ChangePolicy	Revoke	ChangeVault	FromConnect	ToConnect	FromDisconnect	ToDisconnect	ViewForm	Modifyform	Show	Filter
+Preliminary	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Preliminary	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Preliminary	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Preliminary	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Preliminary	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Preliminary	Compliance Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Preliminary	Compliance Reviewer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Preliminary	Component Author	Y	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	Y	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentAuthor] == true
+Preliminary	Component Engineer	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentEngineer] == true
+Preliminary	Component User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentUser] == true
+Preliminary	Design Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_DesignEngineer] == true
+Preliminary	ECR Coordinator	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ECRCoordinator] == true
+Preliminary	Global User	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	-	-	-	-	-	-	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	Y	
+Preliminary	Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	Y	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ManufacturingEngineer] == true
+Preliminary	Organization Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_OrganizationManager] == true
+Preliminary	Public Inherited	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Task Deliverable].from.current.access[read,show] == true
+Preliminary	Senior Design Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	Y	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_SeniorDesignEngineer] == true
+Preliminary	Senior Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	Y	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_SeniorManufacturingEngineer] == true
+Preliminary	VPLMAdmin	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Preliminary	VPLMCreator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Preliminary	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Preliminary	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Preliminary	VPLMProjectAdministrator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Preliminary	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Preliminary	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Preliminary	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	-	Y	
+Review	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Review	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Review	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Review	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Review	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Review	Compliance Engineer	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	
+Review	Compliance Reviewer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Review	Component Author	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	Y	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentAuthor] == true
+Review	Component Engineer	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	Y	-	-	-	-	-	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentEngineer] == true
+Review	Component User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentUser] == true
+Review	Design Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_DesignEngineer] == true
+Review	ECR Coordinator	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ECRCoordinator] == true
+Review	Global User	Y	-	-	Y	-	Y	-	-	Y	-	-	-	Y	-	-	Y	-	-	-	-	-	-	Y	-	-	Y	-	-	-	-	Y	-	Y	
+Review	Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	Y	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ManufacturingEngineer] == true
+Review	Organization Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_OrganizationManager] == true
+Review	Public Inherited	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Task Deliverable].from.current.access[read,show] == true
+Review	Senior Design Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_SeniorDesignEngineer] == true
+Review	Senior Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_SeniorManufacturingEngineer] == true
+Review	VPLMAdmin	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Review	VPLMCreator	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	
+Review	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Review	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Review	VPLMProjectAdministrator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Review	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Review	VPLMReleaseManager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Review	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Review	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	-	Y	
+Approved	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Approved	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Approved	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Approved	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Approved	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Approved	Compliance Engineer	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	
+Approved	Compliance Reviewer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Approved	Component Author	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	Y	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentAuthor] == true
+Approved	Component Engineer	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	Y	-	-	-	-	-	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentEngineer] == true
+Approved	Component User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentUser] == true
+Approved	Design Engineer	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_DesignEngineer] == true
+Approved	ECR Coordinator	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ECRCoordinator] == true
+Approved	Global User	Y	-	-	Y	-	Y	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	-	-	Y	-	-	Y	-	-	-	-	Y	-	Y	
+Approved	Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	Y	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ManufacturingEngineer] == true
+Approved	Organization Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_OrganizationManager] == true
+Approved	Public Inherited	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Task Deliverable].from.current.access[read,show] == true
+Approved	Senior Compliance Engineer	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	
+Approved	Senior Design Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_SeniorDesignEngineer] == true
+Approved	Senior Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_SeniorManufacturingEngineer] == true
+Approved	Supplier	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	to[Manufacturer Equivalent].from.current.access[viewform] ~~ True && to[Manufacturing Responsibility].from.attribute[Primary Key] == context.user.property[Company Key].value
+Approved	VPLMAdmin	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Approved	VPLMCreator	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	
+Approved	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Approved	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Approved	VPLMProjectAdministrator	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Approved	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Approved	VPLMReleaseManager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Approved	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Approved	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	-	Y	
+Release	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Release	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Release	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Release	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Release	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Release	Compliance Engineer	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	
+Release	Compliance Reviewer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Release	Component Engineer	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	-	Y	-	Y	-	-	-	-	-	-	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	
+Release	Component User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentUser] == true
+Release	Design Engineer	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Release	Global User	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Release	Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	Y	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Release	Organization Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Release	Product Obsolescence Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Release	Public Inherited	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Task Deliverable].from.current.access[read,show] == true
+Release	Senior Design Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Release	Senior Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Release	Supplier	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	context.user ~~ to[Manufacturing Responsibility].from.from[Employee].to.name || context.user ~~ to[Design Responsibility].from.from[Employee].to.name || context.user ~~ to[Testing Responsibility].from.from[Employee].to.name || context.user ~~ to[Supply Responsibility].from.from[Employee].to.name || context.user ~~ to[Line Item Object].from.to[Supplier Buyer Line Item].from.to[Supplier Line Item].from.from[Supplier Response].to.from[Employee].to.name || to[Manufacturer Equivalent].from.current.access[viewform] ~~ True && to[Manufacturing Responsibility].from.attribute[Primary Key] == context.user.property[Company Key].value
+Release	VPLMAdmin	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Release	VPLMCreator	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	
+Release	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Release	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Release	VPLMProjectLeader	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Release	VPLMReleaseManager	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	
+Release	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Release	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	-	Y	
+Pending Obsolete	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Pending Obsolete	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Pending Obsolete	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Pending Obsolete	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Pending Obsolete	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Pending Obsolete	Compliance Engineer	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	-	
+Pending Obsolete	Compliance Reviewer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Pending Obsolete	Component Engineer	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	-	Y	-	Y	-	-	-	-	-	-	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	
+Pending Obsolete	Component User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentUser] == true
+Pending Obsolete	Design Engineer	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Pending Obsolete	Global User	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Pending Obsolete	Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	Y	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Pending Obsolete	Organization Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Pending Obsolete	Product Obsolescence Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Pending Obsolete	Public Inherited	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Task Deliverable].from.current.access[read,show] == true
+Pending Obsolete	Senior Design Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Pending Obsolete	Senior Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Pending Obsolete	Supplier	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	context.user ~~ to[Manufacturing Responsibility].from.from[Employee].to.name || context.user ~~ to[Design Responsibility].from.from[Employee].to.name || context.user ~~ to[Testing Responsibility].from.from[Employee].to.name || context.user ~~ to[Supply Responsibility].from.from[Employee].to.name || context.user ~~ to[Line Item Object].from.to[Supplier Buyer Line Item].from.to[Supplier Line Item].from.from[Supplier Response].to.from[Employee].to.name
+Pending Obsolete	VPLMAdmin	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Pending Obsolete	VPLMCreator	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	
+Pending Obsolete	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Pending Obsolete	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Pending Obsolete	VPLMProjectLeader	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	
+Pending Obsolete	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Pending Obsolete	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	-	Y	
+Obsolete	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Obsolete	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Obsolete	Access Grantor	Y	Y	Y	Y	Y	-	Y	Y	-	-	-	-	Y	-	-	-	Y	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	-	-	Y	
+Obsolete	Buyer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Obsolete	Buyer Administrator	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Obsolete	Compliance Engineer	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	
+Obsolete	Compliance Reviewer	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	
+Obsolete	Component Engineer	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	-	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	Y	Y	-	
+Obsolete	Component User	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Design Responsibility] !='True' || program[emxOrganization -method hasRDOrole -construct ${OBJECTID} role_ComponentUser] == true
+Obsolete	Design Engineer	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Obsolete	Global User	Y	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Obsolete	Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	Y	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Obsolete	Organization Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Obsolete	Product Obsolescence Manager	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+Obsolete	Public Inherited	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	to[Task Deliverable].from.current.access[read,show] == true
+Obsolete	Senior Design Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Obsolete	Senior Manufacturing Engineer	-	Y	-	-	-	-	-	-	-	-	-	Y	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	
+Obsolete	VPLMAdmin	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
+Obsolete	VPLMCreator	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	
+Obsolete	VPLMLocalCrossOrgContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Obsolete	VPLMLocalCrossPrjContextAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Obsolete	VPLMProjectLeader	-	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y	Y	-	Y	-	-	-	-	-	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	-	
+Obsolete	VPLMSecuredCrossAccess	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	-	-	Y	
+Obsolete	VPLMViewer	Y	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y	-	Y	
+allstate	Owner	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+allstate	Public	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+allstate	VPLMLocalCrossOrgContextAccess	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	
+

@@ -1,0 +1,58 @@
+
+
+mod command DeploymentAttributesCmd href "${COMMON_DIR}/emxIndentedTable.jsp?table=DeploymentAttributesTable&toolbar=DeploymentAttributesToolbar&program=emxPackagesConfigurationProgram:getDeploymentAttributes&freezePane=deploymentAttrName&selection=multiple&header=emxDataSpecialization.label.DeployAttributesList&subHeader=emxDataSpecialization.label.DeployAttributesLstSubH&customize=false&showTabHeader=true&hideLaunchButton=true&displayView=details&showClipboard=false";
+
+
+delete table DeploymentAttributesTable system;
+
+#table du channel Attributes du package de deploiement
+#DMA#
+add table DeploymentAttributesTable system
+column name "deploymentAttrName" label emxDataSpecialization.label.Name
+setting Editable true
+businessobject "$<attribute[OntoName].value>"
+setting "Registered Suite" DataSpecialization
+column name "attrIsVolatile" label emxDataSpecialization.label.Nature
+setting "Column Type" program
+setting function getAttributeVolatileStatus
+setting program emxPackagesConfigurationProgram
+setting "Registered Suite" DataSpecialization
+column name "attributeOwner" label emxDataSpecialization.label.AttributeOwner
+setting "Column Type" program
+setting program emxPackagesConfigurationProgram
+setting function getDeploymentAttributeOwner
+setting "Registered Suite" DataSpecialization
+column name "Deprecated" label emxDataSpecialization.label.DeprecatedStatus
+setting "Column Type" program
+setting function getAttrDeprecatedStatus
+setting program emxPackagesConfigurationProgram
+setting "Access Function" accessAttrDeprecatedStatus
+setting "Access Program" emxPackagesConfigurationProgram
+setting "Registered Suite" DataSpecialization
+column name "publication" label emxDataSpecialization.label.PublicationStatus
+setting "Column Type" program
+setting program emxPackagesConfigurationProgram
+setting function getDeploymentAttributePublicationStatus
+setting "Registered Suite" DataSpecialization
+column name "type" label emxDataSpecialization.label.AttributeType
+setting "Column Type" program
+setting program emxPackagesConfigurationProgram
+setting function getDeploymentAttributeType
+setting "Registered Suite" DataSpecialization
+column name "defaultValue" label emxDataSpecialization.label.AttributeDefaultValue
+setting Editable true
+setting "Column Type" program
+setting program emxPackagesConfigurationProgram
+setting function getDeploymentAttributeDefaultValue
+setting "Registered Suite" DataSpecialization
+column name "attrLaunchDetails"
+setting "Column Type" programHTMLOutput
+setting "program" emxPackagesConfigurationProgram
+setting "function" getEditAttrColumn
+setting "Registered Suite" DataSpecialization
+setting "Access Function" accessUKEditAttributes
+setting "Access Program" emxPackagesConfigurationProgram
+setting "Target Location" slidein
+setting "Registered Suite" DataSpecialization;
+
+

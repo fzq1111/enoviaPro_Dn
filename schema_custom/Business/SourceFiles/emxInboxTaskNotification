@@ -1,0 +1,143 @@
+/*
+ *  emxInboxTaskNotification.java
+ *
+ * Copyright (c) 1992-2015 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ */
+import matrix.db.*;
+import java.lang.*;
+import java.util.Map;
+/**
+ * @version AEF Rossini - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxInboxTaskNotificationBase}
+{
+
+    /**
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF Rossini
+     * @grade 0
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+    
+    /**
+	 * This method consolidates the given Notification Requests assuming these are similar notifications.
+	 * For now it merges the Attachments.
+	 *
+	 * @param mapSrcNotificationRequest Map of notification request which is to be merged
+	 * @param mapDestNotificationRequest Map of notification request in which to be merged.
+	 * This will be modified as a result.
+	 * @return void
+	 * @since R212
+	 */
+	protected void mergeSimilarNotification(Map mapSrcNotificationRequest, Map mapDestNotificationRequest, 
+											String[] fieldKeys, String[] fieldSeparators)
+	{
+		if (mapDestNotificationRequest != null && mapSrcNotificationRequest != null) {
+
+			for (int i = 0, j = 0; i < fieldKeys.length && j < fieldSeparators.length; i++, j++) {
+				
+				String strDest = (String) mapDestNotificationRequest.get(fieldKeys[i]);
+				String strSrc = (String) mapSrcNotificationRequest.get(fieldKeys[i]);
+				
+				if (strDest == null) {
+					strDest = "";
+				}
+				if (strSrc == null) {
+					strSrc = "";
+				}
+				
+				if (strSrc.length() != 0) {
+					// if this is the body html then do something different
+					if (fieldKeys[i].equals(SELECT_ATTRIBUTE_BODY_HTML)) {
+						// use only the html portion of the destination string
+						strDest = lastSubString(strDest, "<html>", "</html>");
+						
+						// compare table headers and use the longer
+						String strSrcHead = lastSubString(strSrc, "<thead>", "</thead>");
+						String strDestHead = lastSubString(strDest, "<thead>", "</thead>");
+						//add by ryan 2017-09-26
+						if(strSrcHead == null)
+						{
+							strSrcHead = "";
+						}
+						if(strDestHead == null)
+						{
+							strDestHead = "";
+						}
+						//add end
+						if (strSrcHead.length() > strDestHead.length()) {
+							int insertPos = strDest.indexOf("<thead>");
+							strDest = strDest.substring(0, insertPos) + strSrcHead + strDest.substring(insertPos + strDestHead.length());
+						}
+						
+						// find the last </tr> in the destination string
+						int indexDest = strDest.lastIndexOf("</tr>");
+						if (indexDest != -1) {
+							indexDest += "</tr>".length(); 
+						
+							// find the table row in the source message
+							String tableRow = lastSubString(strSrc, "<tr>", "</tr>");
+							if (tableRow != null) {
+								// insert into the destination table
+								strDest = strDest.substring(0, indexDest) + tableRow + strDest.substring(indexDest);
+							}
+						}
+					}
+					else {
+						// if not the first message then append the separator
+						if (strDest.length() != 0) {
+							strDest += fieldSeparators[j];
+						}
+						strDest += strSrc;
+					}
+					
+					mapDestNotificationRequest.put(fieldKeys[i], strDest);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Retrieves the last substring of the source wrapped by the 
+	 * begin and end strings.  The begin and end strings are 
+	 * included in the result.  Used to extract the last table row
+	 * from a notification so that it can be merged into another 
+	 * notification table.
+	 * 
+	 * @param source the source string
+     * @param begin the beginning of the string to extract
+     * @param end the end of the string to extract 
+	 * @return String the resulting string, null if unable to find begin or end
+	 * @throws Exception if the operation fails
+	 * @since V6R2012x
+	 */  
+	private String lastSubString(String source, String begin, String end) {
+		String result = null;
+		
+		if (source != null && source.length() > 0 && begin != null && begin.length() > 0 && end != null && end.length() > 0) {
+			int beginIndex = source.lastIndexOf(begin);
+			if (beginIndex != -1) {
+				int endIndex = source.lastIndexOf(end);
+				if (endIndex != -1) {
+					endIndex += end.length();
+					result = source.substring(beginIndex, endIndex);
+				}
+			}
+		}
+		
+		return (result);
+	}
+}

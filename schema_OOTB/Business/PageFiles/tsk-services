@@ -1,0 +1,679 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ds:services xmlns:ds="http://www.3ds.com/enovia/e6w"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.3ds.com/enovia/e6w services.xsd">
+
+  <ds:service name="TSK_WIDGET_CONSTANTS">
+    <!-- include base strings from foundation.  -->
+    <ds:ref-subservice name="E6W_WIDGET_CONSTANTS"/>
+	<ds:field name="REFRESH_TIMEOUT"><ds:label text="0"/></ds:field>
+    
+    <ds:field name="emxCollaborativeTasks.Label.DropHere"><ds:label text="emxCollaborativeTasks.Label.DropHere" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxFoundation.Widget.Date.PAST_DUE"><ds:label text="emxFoundation.Widget.Date.PAST_DUE" registeredSuite="Foundation"/></ds:field>
+    <ds:field name="emxFoundation.Widget.Date.NO_DATE"><ds:label text="emxFoundation.Widget.Date.NO_DATE" registeredSuite="Foundation"/></ds:field>
+    <ds:field name="emxFoundation.Widget.Date.DUE_TODAY"><ds:label text="emxFoundation.Widget.Date.DUE_TODAY" registeredSuite="Foundation"/></ds:field>
+    <ds:field name="emxFoundation.Widget.Date.DUE_TOMORROW"><ds:label text="emxFoundation.Widget.Date.DUE_TOMORROW" registeredSuite="Foundation"/></ds:field>
+    <ds:field name="emxFoundation.Widget.Date.DUE_THIS_WEEK"><ds:label text="emxFoundation.Widget.Date.DUE_THIS_WEEK" registeredSuite="Foundation"/></ds:field>
+    <ds:field name="emxFoundation.Widget.Date.DUE_FUTURE"><ds:label text="emxFoundation.Widget.Date.DUE_FUTURE" registeredSuite="Foundation"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Warning.PendingChanges"><ds:label text="emxCollaborativeTasks.Warning.PendingChanges" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskDetails"><ds:label text="emxCollaborativeTasks.Label.TaskDetails" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.HelpMenu"><ds:label text="emxCollaborativeTasks.Label.HelpMenu" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskName"><ds:label text="emxCollaborativeTasks.Label.TaskName" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskDescription"><ds:label text="emxCollaborativeTasks.Label.TaskDescription" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskStatus"><ds:label text="emxCollaborativeTasks.Label.TaskStatus" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskDueDate"><ds:label text="emxCollaborativeTasks.Label.TaskDueDate" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskAssignedTo"><ds:label text="emxCollaborativeTasks.Label.TaskAssignedTo" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskOwner"><ds:label text="emxCollaborativeTasks.Label.TaskOwner" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.AssociatedWith"><ds:label text="emxCollaborativeTasks.Label.AssociatedWith" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskOriginator"><ds:label text="emxCollaborativeTasks.Label.TaskOriginator" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskCreated"><ds:label text="emxCollaborativeTasks.Label.TaskCreated" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskModified"><ds:label text="emxCollaborativeTasks.Label.TaskModified" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskDuration"><ds:label text="emxCollaborativeTasks.Label.TaskDuration" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.Days"><ds:label text="emxCollaborativeTasks.Label.Days" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.Hours"><ds:label text="emxCollaborativeTasks.Label.Hours" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.CreateTask"><ds:label text="emxCollaborativeTasks.Label.CreateTask" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.CreateTaskForContext"><ds:label text="emxCollaborativeTasks.Label.CreateTaskForContext" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Add"><ds:label text="emxCollaborativeTasks.Command.Add" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.AddAndOpen"><ds:label text="emxCollaborativeTasks.Command.AddAndOpen" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Cancel"><ds:label text="emxCollaborativeTasks.Command.Cancel" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Close"><ds:label text="emxCollaborativeTasks.Command.Close" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.savedQuery"><ds:label text="emxCollaborativeTasks.Command.savedQuery" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Save"><ds:label text="emxCollaborativeTasks.Command.Save" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.TaskDeleted"><ds:label text="emxCollaborativeTasks.Label.TaskDeleted" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.FailedToDeleteTask"><ds:label text="emxCollaborativeTasks.Error.FailedToDeleteTask" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.FailedToDisconnectReference"><ds:label text="emxCollaborativeTasks.Error.FailedToDisconnectReference" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.FailedToDisconnectScope"><ds:label text="emxCollaborativeTasks.Error.FailedToDisconnectScope" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.SuccessfulRefresh"><ds:label text="emxCollaborativeTasks.Label.SuccessfulRefresh" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.SuccessfulSave"><ds:label text="emxCollaborativeTasks.Label.SuccessfulSave" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.FailedRefresh"><ds:label text="emxCollaborativeTasks.Label.FailedRefresh" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.assigneeSearchTitle"><ds:label text="emxCollaborativeTasks.Label.assigneeSearchTitle" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.referencesSearchTitle"><ds:label text="emxCollaborativeTasks.Label.referencesSearchTitle" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.References"><ds:label text="emxCollaborativeTasks.Label.References" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.referencesAssociatedWithTitle"><ds:label text="emxCollaborativeTasks.Label.referencesAssociatedWithTitle" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.SuccessfullyChangedAttribute"><ds:label text="emxCollaborativeTasks.Label.SuccessfullyChangedAttribute" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Menu.ShowTasksFor"><ds:label text="emxCollaborativeTasks.Menu.ShowTasksFor" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Hint.ScopeDropZone"><ds:label text="emxCollaborativeTasks.Hint.ScopeDropZone" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.ShowTasksForObject"><ds:label text="emxCollaborativeTasks.Label.ShowTasksForObject" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Menu.ViewBy"><ds:label text="emxCollaborativeTasks.Menu.ViewBy" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.AllMyTasks"><ds:label text="emxCollaborativeTasks.Command.AllMyTasks" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.WidgetLabel.MyTasks"><ds:label text="emxCollaborativeTasks.WidgetLabel.MyTasks" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.MyDeliverables"><ds:label text="emxCollaborativeTasks.Command.MyDeliverables" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.MyProjects"><ds:label text="emxCollaborativeTasks.Command.MyProjects" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.View.state"><ds:label text="emxCollaborativeTasks.Command.View.state" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.View.dueDateCategory"><ds:label text="emxCollaborativeTasks.Command.View.dueDateCategory" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Delete"><ds:label text="emxCollaborativeTasks.Command.Delete" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.OtherAction"><ds:label text="emxCollaborativeTasks.Command.OtherAction" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.MoreActions"><ds:label text="emxCollaborativeTasks.Command.MoreActions" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Reset"><ds:label text="emxCollaborativeTasks.Command.Reset" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Complete"><ds:label text="emxCollaborativeTasks.Command.Complete" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.FailedToCreateTask"><ds:label text="emxCollaborativeTasks.Error.FailedToCreateTask" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.MultipleDueDateFields"><ds:label text="emxCollaborativeTasks.Error.MultipleDueDateFields" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.FailedToChangeAttribute"><ds:label text="emxCollaborativeTasks.Error.FailedToChangeAttribute" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.MultipleDurationFields"><ds:label text="emxCollaborativeTasks.Error.MultipleDurationFields" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.InvalidDateValue"><ds:label text="emxCollaborativeTasks.Error.InvalidDateValue" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.InvalidScopesType"><ds:label text="emxCollaborativeTasks.Error.InvalidScopesType" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.MissingTitleField"><ds:label text="emxCollaborativeTasks.Error.MissingTitleField" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.InvalidDurationValue"><ds:label text="emxCollaborativeTasks.Error.InvalidDurationValue" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Alert.SuccessSetToComplete"><ds:label text="emxCollaborativeTasks.Alert.SuccessSetToComplete" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.FailSetToComplete"><ds:label text="emxCollaborativeTasks.Error.FailSetToComplete" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.FailedToAssignUser"><ds:label text="emxCollaborativeTasks.Error.FailedToAssignUser" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.FailedToCreateReference"><ds:label text="emxCollaborativeTasks.Error.FailedToCreateReference" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Error.FailedToModify"><ds:label text="emxCollaborativeTasks.Error.FailedToModify" registeredSuite="CollaborativeTasks"/></ds:field>     
+    <ds:field name="emxFoundation.Label.showLess"><ds:label text="emxFoundation.Label.showLess" registeredSuite="Foundation"/></ds:field>      
+    <ds:field name="emxFoundation.Label.showMore"><ds:label text="emxFoundation.Label.showMore" registeredSuite="Foundation"/></ds:field>      
+    <ds:field name="emxCollaborativeTasks.Label.ImportItemsSucess"><ds:label text="emxCollaborativeTasks.Label.ImportItemsSucess" registeredSuite="CollaborativeTasks"/></ds:field> 
+    <ds:field name="emxCollaborativeTasks.Label.ImportItemsFailure"><ds:label text="emxCollaborativeTasks.Label.ImportItemsFailure" registeredSuite="CollaborativeTasks"/></ds:field>      
+    <ds:field name="emxCollaborativeTasks.Command.OK"><ds:label text="emxCollaborativeTasks.Command.OK" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.WidgetLabel.Show"><ds:label text="emxCollaborativeTasks.WidgetLabel.Show" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.CreateTaskForContext"><ds:label text="emxCollaborativeTasks.Label.CreateTaskForContext" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.RemoveContext"><ds:label text="emxCollaborativeTasks.Command.RemoveContext" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.RemoveContextTitle"><ds:label text="emxCollaborativeTasks.Command.RemoveContextTitle" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.ImportItemsDone"><ds:label text="emxCollaborativeTasks.Label.ImportItemsDone" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.CollaborativeSpace"><ds:label text="emxCollaborativeTasks.Label.CollaborativeSpace" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.Percent"><ds:label text="emxCollaborativeTasks.Label.Percent" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.EstimatedDates"><ds:label text="emxCollaborativeTasks.Label.EstimatedDates" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.StartDate"><ds:label text="emxCollaborativeTasks.Label.StartDate" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.FinishDate"><ds:label text="emxCollaborativeTasks.Label.FinishDate" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.estimatedDuration"><ds:label text="emxCollaborativeTasks.Label.estimatedDuration" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.Deliverables"><ds:label text="emxCollaborativeTasks.Label.Deliverables" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.deliverablesSearchTitle"><ds:label text="emxCollaborativeTasks.Label.deliverablesSearchTitle" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.ActualDates"><ds:label text="emxCollaborativeTasks.Label.ActualDates" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.ActualDuration"><ds:label text="emxCollaborativeTasks.Label.ActualDuration" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.constraintType"><ds:label text="emxCollaborativeTasks.Label.constraintType" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.constraintDate"><ds:label text="emxCollaborativeTasks.Label.constraintDate" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.dependencies"><ds:label text="emxCollaborativeTasks.Label.dependencies" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.policy"><ds:label text="emxCollaborativeTasks.Label.policy" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Label.ShowProjectTasks"><ds:label text="emxCollaborativeTasks.Label.ShowProjectTasks" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.OpenProjectItem"><ds:label text="emxCollaborativeTasks.Command.OpenProjectItem" registeredSuite="CollaborativeTasks"/></ds:field>
+  	<ds:field name="hasDPJAccess" description="This field will be returned only if the user has DPJ license">
+   		<ds:label text="0"/>
+   		<ds:license products="ENO_PGE_TP"/>
+   		<ds:selectable format="transient" />
+   	</ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Filter.all"><ds:label text="emxCollaborativeTasks.Command.Filter.all" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Filter.owned"><ds:label text="emxCollaborativeTasks.Command.Filter.owned" registeredSuite="CollaborativeTasks"/></ds:field>
+    <ds:field name="emxCollaborativeTasks.Command.Filter.assigned"><ds:label text="emxCollaborativeTasks.Command.Filter.assigned" registeredSuite="CollaborativeTasks"/></ds:field>
+  </ds:service>
+
+  <ds:service name="TSK_CollaborativeTasks">
+
+    <ds:jsonldcontext>
+        <ds:alias property="base" predicate="http://www.3ds.com"/>
+        <ds:alias property="ds" predicate="http://www.3ds.com/schema/task/"/>
+        <ds:alias property="name" predicate="ds:label"/>
+        <ds:alias property="title" predicate="ds:label"/>
+        <ds:alias property="description" predicate="ds:comment"/>
+        <ds:alias property="physicalId" predicate="@id"/>
+        <ds:alias property="busType" predicate="@type"/>
+        <ds:alias property="datarecords" predicate="ds:datarecords"/>
+        <ds:alias property="datagroups" predicate="ds:datagroups"/>
+        <ds:alias property="dataelements" predicate="ds:dataelements"/>
+        <ds:alias property="value" predicate="ds:value"/>
+        <ds:alias property="relateddata" predicate="ds:relateddata"/>
+        <ds:alias property="originated" predicate="ds:created"/>
+        <ds:alias property="modified" predicate="ds:modified"/>
+        <ds:alias property="imageValue" predicate="ds:image"/>
+        <ds:alias property="project" predicate="ds:project"/>
+        <ds:alias property="duration" predicate="ds:duration"/>		
+        <ds:alias property="assignees" predicate="ds:assignees"/>		
+        <ds:alias property="references" predicate="ds:references"/>		
+        <ds:alias property="scopes" predicate="ds:scopes"/>
+        <ds:alias property="ownerInfo" predicate="ds:ownerInfo"/>
+        <ds:alias property="originatorInfo" predicate="ds:originatorInfo"/>
+        <ds:alias property="firstname" predicate="ds:firstname"/>
+        <ds:alias property="lastname" predicate="ds:lastname"/>
+        <ds:alias property="revision" predicate="ds:revision"/>
+    </ds:jsonldcontext>
+
+    <ds:label text="emxCollaborativeTasks.WidgetLabel.MyTasks" icon="/widget/images/MyApps/iconENOVIA.png" registeredSuite="CollaborativeTasks"/>
+    <ds:license products="ENOTASK_TP"/>
+
+    <ds:data>
+      <ds:jpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getTasks" localInvokation="true" returnedData="idsAndData">
+        <ds:arg arg-name="types" arg-value="Task" />
+      </ds:jpo>
+    </ds:data>
+    <ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateTasks" localInvokation="true" />
+<!-- turn off xss encoding as it is done on the client at display time -->    
+    <ds:field name="title"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="originated"><ds:selectable expression="originated" type="bus" format="date" /></ds:field>
+    <ds:field name="typeicon"><ds:image source="businessType" size="icon"/></ds:field>
+    <ds:field name="modifyAccess" hidden="true"><ds:selectable expression="current.access[modify,changename]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="deleteAccess" hidden="true"><ds:selectable expression="current.access[delete]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="description"><ds:selectable expression="description" format="noxssencoding"/></ds:field>
+    <ds:field name="state"><ds:selectable expression="current" format="state"/>
+       <ds:range>
+         <ds:rangejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getStates" localInvokation="true">
+           <ds:arg arg-name="policy" arg-value="Project Task" />
+         </ds:rangejpo>
+      </ds:range>
+    </ds:field>
+    <ds:field name="project"><ds:selectable expression="project" format="noxssencoding"/></ds:field>
+    <ds:field name="ownerName"><ds:selectable expression="owner" format="noxssencoding"/></ds:field>
+    <ds:field name="originatorName"><ds:selectable expression="attribute[Originator]" format="noxssencoding"/></ds:field>
+    <ds:field name="modified"><ds:selectable expression="modified" format="date"/></ds:field>
+    <ds:field name="PALId"><ds:selectable expression="to[Project Access Key].from.id" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="BusinessProcessId"><ds:selectable expression="attribute[BusinessProcessId]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="BusinessProcessDeploymentId"><ds:selectable expression="attribute[BusinessProcessDeploymentId]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="dueDate">
+      <ds:selectable expression="attribute[Task Estimated Finish Date]" type="bus" format="date"/>
+   </ds:field>
+   <ds:field name="dueDateCategory">
+      <ds:selectable format="transient"/>
+       <ds:range registeredSuite="Foundation">
+          <ds:item value="PAST_DUE" display="emxFoundation.Widget.Date.PAST_DUE"/>
+          <ds:item value="NO_DATE" display="emxFoundation.Widget.Date.NO_DATE"/>
+          <ds:item value="DUE_TODAY" display="emxFoundation.Widget.Date.DUE_TODAY"/>
+          <ds:item value="DUE_TOMORROW" display="emxFoundation.Widget.Date.DUE_TOMORROW"/>
+          <ds:item value="DUE_THIS_WEEK" display="emxFoundation.Widget.Date.DUE_THIS_WEEK"/>
+          <ds:item value="DUE_FUTURE" display="emxFoundation.Widget.Date.DUE_FUTURE"/>
+      </ds:range> 
+   </ds:field>
+   <ds:ref-subservice name="dsBPM:presentsForm"/>
+   <ds:field name="percentComplete"><ds:selectable expression="attribute[Percent Complete]" type="bus" format="noxssencoding"/></ds:field>
+	<ds:field name="estimatedStartDate"><ds:selectable expression="attribute[Task Estimated Start Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="estimatedFinishDate"><ds:selectable expression="attribute[Task Estimated Finish Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="estimatedDuration"><ds:selectable expression="attribute[Task Estimated Duration]" type="bus" format="noxssencoding"/></ds:field>
+	<ds:field name="actualStartDate"><ds:selectable expression="attribute[Task Actual Start Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="actualFinishDate"><ds:selectable expression="attribute[Task Actual Finish Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="actualDuration"><ds:selectable expression="attribute[Task Actual Duration]" type="bus" format="noxssencoding"/></ds:field>
+	<ds:field name="constraintDate"><ds:selectable expression="attribute[Task Constraint Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="constraintType">
+        <ds:selectable expression="attribute[Task Constraint Type]" type="bus" format="noxssencoding"/>
+    </ds:field>
+	<ds:field name="policy"><ds:selectable expression="policy" type="bus" format="noxssencoding"/></ds:field>
+   
+  <ds:subservice name="deliverables">
+     <ds:data>
+       <ds:expand relationshipPattern="Task Deliverable" getFrom="true" />
+     </ds:data>
+     <ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateTaskDeliverables" localInvokation="true" />
+	 <ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="hasfiles"><ds:selectable expression="format[generic].hasfile" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="revision"><ds:selectable expression="revision" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="image">
+       <ds:image source="primaryOrType" size="thumbnail" />
+     </ds:field> 
+
+
+ </ds:subservice>
+   
+ <ds:subservice name="dependenciesPredecessors">
+     <ds:data>
+   <!-- <ds:expand relationshipPattern="Dependency" getTo="true" getFrom="true"/> -->
+   <ds:expand relationshipPattern="Dependency" getFrom="true"/>     
+     </ds:data>
+     <ds:field name="title"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+    <!-- 
+    <ds:field name="isPredecessor"><ds:selectable expression="direction" type="key" format="range" />
+         <ds:selectable format="transient"/>
+           <ds:range registeredSuite="Foundation">
+              <ds:item value="from" display="true"/>
+              <ds:item value="to" display="false"/>
+          </ds:range>
+     </ds:field>
+      --> 
+     <ds:field name="image">
+       <ds:image source="primaryOrType" size="thumbnail" />
+     </ds:field>
+   </ds:subservice>
+<ds:subservice name="dependenciesSuccessors">
+     <ds:data>
+   <!-- <ds:expand relationshipPattern="Dependency" getTo="true" getFrom="true"/> -->
+   <ds:expand relationshipPattern="Dependency" getTo="true" />     
+     </ds:data>
+     <ds:field name="title"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="image">
+       <ds:image source="primaryOrType" size="thumbnail" />
+     </ds:field>
+   </ds:subservice>
+   
+   <ds:subservice name="ownerInfo">
+     <ds:data>
+       <!-- Requires local invokation to be false in order to retain private jpo cache. -->
+       <ds:jpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getPerson" localInvokation="false" returnedData="idsAndData">
+         <ds:arg arg-name="owner" arg-value="true" />
+       </ds:jpo>
+     </ds:data>
+
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+   </ds:subservice>
+
+   <ds:subservice name="originatorInfo">
+     <ds:data>        
+       <ds:jpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getPerson" localInvokation="false" returnedData="idsAndData">
+         <ds:arg arg-name="originator" arg-value="true" />
+       </ds:jpo>
+     </ds:data>
+
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+   </ds:subservice>
+
+   <ds:subservice name="assignees">
+     <ds:data>
+       <ds:expand relationshipPattern="Assigned Tasks" getTo="true" />
+     </ds:data>
+     <ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateTaskAssignees" localInvokation="true" />
+
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+   </ds:subservice>
+
+   <ds:subservice name="references">
+     <ds:data>
+       <ds:expand relationshipPattern="Reference Document" getFrom="true" />
+     </ds:data>
+     <ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateTaskReferences" localInvokation="true" />
+     
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="revision"><ds:selectable expression="revision" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="image"><ds:image source="primaryOrType" size="thumbnail" /></ds:field>
+     <ds:field name="hasfiles"><ds:selectable expression="format[generic].hasfile" type="bus" format="noxssencoding" /></ds:field>
+    
+
+   </ds:subservice>
+   <ds:subservice name="DPMProject">
+     <ds:data>
+       <ds:expand relationshipPattern="Project Access List" getFrom="true" idField="PALId"/>
+	 </ds:data>
+	<ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateProjectScope" localInvokation="true" />
+	  <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding" /></ds:field>
+    <ds:field name="revision"><ds:selectable expression="revision" type="bus" format="noxssencoding" /></ds:field>
+    <ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="image">
+        <ds:image source="primaryOrType" size="thumbnail" />
+    </ds:field> 
+   </ds:subservice>
+   <ds:subservice name="scopes">
+     <ds:data>
+       <ds:expand relationshipPattern="Contributes To" getTo="true" />
+     </ds:data>
+     <ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateTaskScopes" localInvokation="true" />
+	<ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus" format="noxssencoding"/></ds:field>
+      <ds:field name="hasfiles"><ds:selectable expression="format[generic].hasfile" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="revision"><ds:selectable expression="revision" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="image">
+       <ds:image source="primaryOrType" size="thumbnail" />
+     </ds:field>
+   </ds:subservice>
+  </ds:service>
+
+  <ds:service name="TSK_Reference">
+    <ds:data>
+      <ds:print />
+    </ds:data>
+
+    <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding" /></ds:field>
+    <ds:field name="revision"><ds:selectable expression="revision" type="bus" format="noxssencoding" /></ds:field>
+    <ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="image">
+        <ds:image source="primaryOrType" size="thumbnail" />
+    </ds:field>
+    <ds:field name="hasfiles"><ds:selectable expression="format[generic].hasfile" type="bus" format="noxssencoding" /></ds:field>
+  </ds:service>
+
+  <!-- <ds:service name="TSK_Person">
+    <ds:data>
+      <ds:print />
+    </ds:data>
+    <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+  </ds:service>
+-->
+
+  <ds:service name="TSK_GetTasksLight">
+
+    <ds:jsonldcontext>
+        <ds:alias property="base" predicate="http://www.3ds.com"/>
+        <ds:alias property="ds" predicate="http://www.3ds.com/schema/task/"/>
+        <ds:alias property="title" predicate="ds:label"/>
+        <ds:alias property="physicalId" predicate="@id"/>
+        <ds:alias property="busType" predicate="@type"/>
+        <ds:alias property="datarecords" predicate="ds:datarecords"/>
+        <ds:alias property="datagroups" predicate="ds:datagroups"/>
+        <ds:alias property="dataelements" predicate="ds:dataelements"/>
+        <ds:alias property="value" predicate="ds:value"/>
+        <ds:alias property="revision" predicate="ds:revision"/>
+    </ds:jsonldcontext>
+
+    <ds:label text="emxCollaborativeTasks.WidgetLabel.MyTasks" icon="/widget/images/MyApps/iconENOVIA.png" registeredSuite="CollaborativeTasks"/>
+    <ds:license products="ENOTASK_TP"/>
+
+    <ds:data>
+      <ds:jpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getTasks" localInvokation="true" returnedData="idsAndData">
+        <ds:arg arg-name="types" arg-value="Task" />
+      </ds:jpo>
+    </ds:data>
+    <ds:field name="deliverablesRelationship">
+       <ds:selectable format="transient"/>
+       <ds:range>
+         <ds:item value="parentDirection" display="from"/>
+         <ds:item value="parentRelName" display="Task Deliverable"/>
+       </ds:range> 
+    </ds:field>
+    <ds:field name="referencesRelationship">
+       <ds:selectable format="transient"/>
+       <ds:range>
+         <ds:item value="parentDirection" display="from"/>
+         <ds:item value="parentRelName" display="Reference Document"/>
+       </ds:range> 
+     </ds:field>
+      <ds:field name="scopesTypesForSearch">
+       <ds:selectable format="transient"/>
+       <ds:range>
+         <ds:rangejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getScopeRangeTypes" localInvokation="true">
+           <ds:arg arg-name="searchtypes" arg-value="VPMReference,Part,Product Line,DOCUMENTS,Deliverable Management,Products,Model,Product Configuration" />
+         </ds:rangejpo>
+       </ds:range> 
+     </ds:field>
+     <ds:field name="projectTypesForSearch">
+       <ds:selectable format="transient"/>
+       <ds:range>
+         <ds:rangejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getScopeRangeTypes" localInvokation="true">
+           <ds:arg arg-name="searchtypes" arg-value="Project Space" />
+         </ds:rangejpo>
+       </ds:range> 
+     </ds:field>
+     <ds:field name="deliverablesTypesForSearch">
+       <ds:selectable format="transient"/>
+       <ds:range>
+         <ds:rangejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getScopeRangeTypes" localInvokation="true">
+           <ds:arg arg-name="searchtypes" arg-value="PLMTaskAction,DELFmiFunctionReference,DMUValidationValidation,RFLVPMLogicalReference,Part Specification,DELLmiOperationReference,DELLmiProductionSystemReference,External Deliverable,CAD Drawing,CAD Model,Markup,Change,PLMActionBase,PLMDesignAction,VPMReference,RFLPLMFlowReference,RFLPLMFunctionalReference,Document,DOCUMENTS,ECO,ECR,Part,Drawing Print,Product Line,Sketch,RFLVPMSystemTypeReference" />
+         </ds:rangejpo>
+       </ds:range> 
+     </ds:field>
+    
+    <ds:field name="title"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="modifyAccess"><ds:selectable expression="current.access[modify,changename]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="deleteAccess"><ds:selectable expression="current.access[delete]" type="bus" format="noxssencoding"/></ds:field>
+	
+    <ds:field name="state"><ds:selectable expression="current" format="state"/>
+       <ds:range>
+         <ds:rangejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getStates" localInvokation="true">
+           <ds:arg arg-name="policy" arg-value="Project Task" />           
+         </ds:rangejpo>
+      </ds:range>
+    </ds:field>
+    <ds:field name="dueDate">
+      <ds:selectable expression="attribute[Task Estimated Finish Date]" type="bus" format="date"/>
+   </ds:field>
+   <ds:field name="dueDateCategory">
+       <ds:selectable format="transient"/>
+       <ds:range registeredSuite="Foundation">
+          <ds:item value="PAST_DUE" display="emxFoundation.Widget.Date.PAST_DUE"/>
+          <ds:item value="NO_DATE" display="emxFoundation.Widget.Date.NO_DATE"/>
+          <ds:item value="DUE_TODAY" display="emxFoundation.Widget.Date.DUE_TODAY"/>
+          <ds:item value="DUE_TOMORROW" display="emxFoundation.Widget.Date.DUE_TOMORROW"/>
+          <ds:item value="DUE_THIS_WEEK" display="emxFoundation.Widget.Date.DUE_THIS_WEEK"/>
+          <ds:item value="DUE_FUTURE" display="emxFoundation.Widget.Date.DUE_FUTURE"/>
+      </ds:range> 
+   </ds:field>
+
+   <ds:field name="constraintType">
+        <ds:selectable format="transient"/>
+        <ds:range registeredSuite="ProgramCentral">
+            <ds:item value="As Soon As Possible" display="emxProgramCentral.TaskConstriant.TaskConstriant.ASAP"/>
+            <ds:item value="As Late As Possible" display="emxProgramCentral.TaskConstriant.TaskConstriant.ALAP"/>
+            <ds:item value="Finish No Earlier Than" display="emxProgramCentral.TaskConstriant.TaskConstriant.FNET"/>
+            <ds:item value="Finish No Later Than" display="emxProgramCentral.TaskConstriant.TaskConstriant.FNLT"/>
+            <ds:item value="Must Finish On" display="emxProgramCentral.TaskConstriant.TaskConstriant.MFON"/>
+            <ds:item value="Must Start On" display="emxProgramCentral.TaskConstriant.TaskConstriant.MSON"/>
+            <ds:item value="Start No Earlier Than" display="emxProgramCentral.TaskConstriant.TaskConstriant.SNET"/>
+            <ds:item value="Start No Later Than" display="emxProgramCentral.TaskConstriant.TaskConstriant.SNLT"/>
+        </ds:range>
+    </ds:field>
+  </ds:service>
+
+  <ds:service name="TSK_Refresh">
+    <ds:jsonldcontext>
+        <ds:alias property="base" predicate="http://www.3ds.com"/>
+        <ds:alias property="ds" predicate="http://www.3ds.com/schema/task/"/>
+        <ds:alias property="name" predicate="ds:label"/>
+        <ds:alias property="title" predicate="ds:label"/>
+        <ds:alias property="description" predicate="ds:comment"/>
+        <ds:alias property="physicalId" predicate="@id"/>
+        <ds:alias property="busType" predicate="@type"/>
+        <ds:alias property="datarecords" predicate="ds:datarecords"/>
+        <ds:alias property="datagroups" predicate="ds:datagroups"/>
+        <ds:alias property="dataelements" predicate="ds:dataelements"/>
+        <ds:alias property="value" predicate="ds:value"/>
+        <ds:alias property="relateddata" predicate="ds:relateddata"/>
+        <ds:alias property="originated" predicate="ds:created"/>
+        <ds:alias property="modified" predicate="ds:modified"/>
+        <ds:alias property="imageValue" predicate="ds:image"/>
+        <ds:alias property="project" predicate="ds:project"/>
+        <ds:alias property="duration" predicate="ds:duration"/>		
+        <ds:alias property="assignees" predicate="ds:assignees"/>		
+        <ds:alias property="references" predicate="ds:references"/>		
+        <ds:alias property="scopes" predicate="ds:scopes"/>
+        <ds:alias property="ownerInfo" predicate="ds:ownerInfo"/>
+        <ds:alias property="originatorInfo" predicate="ds:originatorInfo"/>
+        <ds:alias property="firstname" predicate="ds:firstname"/>
+        <ds:alias property="lastname" predicate="ds:lastname"/>
+        <ds:alias property="revision" predicate="ds:revision"/>
+    </ds:jsonldcontext>
+
+    <ds:label text="emxCollaborativeTasks.WidgetLabel.MyTasks" icon="/widget/images/MyApps/iconENOVIA.png" registeredSuite="CollaborativeTasks"/>
+    <ds:license products="ENOTASK_TP"/>
+
+    <ds:data>
+      <ds:jpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="refreshTasks" localInvokation="true" returnedData="ids">
+        <ds:arg arg-name="types" arg-value="Task" />
+      </ds:jpo>
+    </ds:data>
+    <ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateTasks" localInvokation="true" />
+<!-- turn off xss encoding as it is done on the client at display time -->    
+    <ds:field name="title"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="originated"><ds:selectable expression="originated" type="bus" format="date" /></ds:field>
+    <ds:field name="typeicon"><ds:image source="businessType" size="icon"/></ds:field>
+    <ds:field name="modifyAccess" hidden="true"><ds:selectable expression="current.access[modify,changename]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="deleteAccess" hidden="true"><ds:selectable expression="current.access[delete]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="description"><ds:selectable expression="description" format="noxssencoding"/></ds:field>
+    <ds:field name="state"><ds:selectable expression="current" format="state"/>
+       <ds:range>
+         <ds:rangejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getStates" localInvokation="true">
+           <ds:arg arg-name="policy" arg-value="Project Task" />
+         </ds:rangejpo>
+      </ds:range>
+    </ds:field>
+    <ds:field name="project"><ds:selectable expression="project" format="noxssencoding"/></ds:field>
+    <ds:field name="ownerName"><ds:selectable expression="owner" format="noxssencoding"/></ds:field>
+    <ds:field name="originatorName"><ds:selectable expression="attribute[Originator]" format="noxssencoding"/></ds:field>
+    <ds:field name="modified"><ds:selectable expression="modified" format="date"/></ds:field>
+    <ds:field name="duration"><ds:selectable expression="attribute[Task Estimated Duration]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="PALId"><ds:selectable expression="to[Project Access Key].from.id" type="bus" format="noxssencoding"/></ds:field>
+	<ds:field name="BusinessProcessId"><ds:selectable expression="attribute[BusinessProcessId]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="BusinessProcessDeploymentId"><ds:selectable expression="attribute[BusinessProcessDeploymentId]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="hasProject"><ds:selectable expression="to[Project Access Key]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="dueDate">
+      <ds:selectable expression="attribute[Task Estimated Finish Date]" type="bus" format="date"/>
+   </ds:field>
+   <ds:field name="dueDateCategory">
+      <ds:selectable format="transient"/>
+       <ds:range registeredSuite="Foundation">
+          <ds:item value="PAST_DUE" display="emxFoundation.Widget.Date.PAST_DUE"/>
+          <ds:item value="NO_DATE" display="emxFoundation.Widget.Date.NO_DATE"/>
+          <ds:item value="DUE_TODAY" display="emxFoundation.Widget.Date.DUE_TODAY"/>
+          <ds:item value="DUE_TOMORROW" display="emxFoundation.Widget.Date.DUE_TOMORROW"/>
+          <ds:item value="DUE_THIS_WEEK" display="emxFoundation.Widget.Date.DUE_THIS_WEEK"/>
+          <ds:item value="DUE_FUTURE" display="emxFoundation.Widget.Date.DUE_FUTURE"/>
+      </ds:range> 
+   </ds:field>
+   <ds:ref-subservice name="dsBPM:presentsForm"/>
+   
+   <ds:field name="percentComplete"><ds:selectable expression="attribute[Percent Complete]" type="bus" format="noxssencoding"/></ds:field>
+	<ds:field name="estimatedStartDate"><ds:selectable expression="attribute[Task Estimated Start Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="estimatedFinishDate"><ds:selectable expression="attribute[Task Estimated Finish Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="estimatedDuration"><ds:selectable expression="attribute[Task Estimated Duration]" type="bus" format="noxssencoding"/></ds:field>
+	<ds:field name="actualStartDate"><ds:selectable expression="attribute[Task Actual Start Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="actualFinishDate"><ds:selectable expression="attribute[Task Actual Finish Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="actualDuration"><ds:selectable expression="attribute[Task Actual Duration]" type="bus" format="noxssencoding"/></ds:field>
+	<ds:field name="constraintDate"><ds:selectable expression="attribute[Task Constraint Date]" type="bus" format="date"/></ds:field>
+	<ds:field name="constraintType">
+        <ds:selectable expression="attribute[Task Constraint Type]" type="bus" format="noxssencoding"/>
+    </ds:field>
+	<ds:field name="policy"><ds:selectable expression="policy" type="bus" format="noxssencoding"/></ds:field>
+   
+   
+   
+   <ds:subservice name="ownerInfo">
+     <ds:data>
+       <!-- Requires local invokation to be false in order to retain private jpo cache. -->
+       <ds:jpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getPerson" localInvokation="false" returnedData="idsAndData">
+         <ds:arg arg-name="owner" arg-value="true" />
+       </ds:jpo>
+     </ds:data>
+
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+   </ds:subservice>
+
+   <ds:subservice name="originatorInfo">
+     <ds:data>        
+       <ds:jpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="getPerson" localInvokation="false" returnedData="idsAndData">
+         <ds:arg arg-name="originator" arg-value="true" />
+       </ds:jpo>
+     </ds:data>
+
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+   </ds:subservice>
+
+   <ds:subservice name="assignees">
+     <ds:data>
+       <ds:expand relationshipPattern="Assigned Tasks" getTo="true" />
+     </ds:data>
+     <ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateTaskAssignees" localInvokation="true" />
+
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+   </ds:subservice>
+
+   <ds:subservice name="references">
+     <ds:data>
+       <ds:expand relationshipPattern="Reference Document" getFrom="true" />
+     </ds:data>
+     <ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateTaskReferences" localInvokation="true" />
+
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="revision"><ds:selectable expression="revision" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="firstname"><ds:selectable expression="attribute[First Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="lastname"><ds:selectable expression="attribute[Last Name]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="image"><ds:image source="primaryOrType" size="thumbnail" /></ds:field>
+     <ds:field name="hasfiles"><ds:selectable expression="format[generic].hasfile" type="bus" format="noxssencoding" /></ds:field>
+
+   </ds:subservice>
+
+   <ds:subservice name="scopes">
+     <ds:data>
+       <ds:expand relationshipPattern="Contributes To" getTo="true" />
+     </ds:data>
+     <ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateTaskScopes" localInvokation="true" />
+	<ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus" format="noxssencoding"/></ds:field>
+      <ds:field name="hasfiles"><ds:selectable expression="format[generic].hasfile" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="revision"><ds:selectable expression="revision" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="image">
+       <ds:image source="primaryOrType" size="thumbnail" />
+     </ds:field>
+   </ds:subservice>
+
+   <ds:subservice name="deliverables">
+     <ds:data>
+       <ds:expand relationshipPattern="Task Deliverable" getFrom="true" />
+     </ds:data>
+	 <ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="hasfiles"><ds:selectable expression="format[generic].hasfile" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="revision"><ds:selectable expression="revision" type="bus" format="noxssencoding" /></ds:field>
+     <ds:field name="image">
+       <ds:image source="primaryOrType" size="thumbnail" />
+     </ds:field> 
+    
+   </ds:subservice>
+   
+   <ds:subservice name="DPMProject">
+     <ds:data>
+       <ds:expand relationshipPattern="Project Access List" getFrom="true" idField="PALId"/>
+	 </ds:data>
+	<ds:updatejpo classname="com.dassault_systemes.enovia.tsk.TaskService" function="updateProjectScope" localInvokation="true" />
+	  <ds:field name="name"><ds:selectable expression="name" type="bus" format="noxssencoding" /></ds:field>
+    <ds:field name="revision"><ds:selectable expression="revision" type="bus" format="noxssencoding" /></ds:field>
+    <ds:field name="title"><ds:selectable expression="attribute[Title]" type="bus" format="noxssencoding"/></ds:field>
+    <ds:field name="image">
+        <ds:image source="primaryOrType" size="thumbnail" />
+    </ds:field> 
+   </ds:subservice>
+   
+   
+   <ds:subservice name="dependenciesPredecessors">
+     <ds:data>
+   <!-- <ds:expand relationshipPattern="Dependency" getTo="true" getFrom="true"/> -->
+   <ds:expand relationshipPattern="Dependency" getFrom="true"/>     
+     </ds:data>
+     <ds:field name="title"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+    <!-- 
+    <ds:field name="isPredecessor"><ds:selectable expression="direction" type="key" format="range" />
+         <ds:selectable format="transient"/>
+           <ds:range registeredSuite="Foundation">
+              <ds:item value="from" display="true"/>
+              <ds:item value="to" display="false"/>
+          </ds:range>
+     </ds:field>
+      --> 
+     <ds:field name="image">
+       <ds:image source="primaryOrType" size="thumbnail" />
+     </ds:field>
+   </ds:subservice>
+<ds:subservice name="dependenciesSuccessors">
+     <ds:data>
+   <!-- <ds:expand relationshipPattern="Dependency" getTo="true" getFrom="true"/> -->
+   <ds:expand relationshipPattern="Dependency" getTo="true" />     
+     </ds:data>
+     <ds:field name="title"><ds:selectable expression="name" type="bus" format="noxssencoding"/></ds:field>
+     <ds:field name="image">
+       <ds:image source="primaryOrType" size="thumbnail" />
+     </ds:field>
+   </ds:subservice>
+  </ds:service>
+
+</ds:services>
+
+

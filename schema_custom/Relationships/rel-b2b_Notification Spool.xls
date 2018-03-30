@@ -1,0 +1,13 @@
+Rel Name	from.type	from.name	from.revision	to.type	to.name	to.revision	Override Settings	Create Trigger	Modify Trigger	Delete Trigger
+Notification Spool	Notification	PMCWeeklyTimesheetRejectionEvent	-	Notification Spool	Daily	-
+Notification Spool	Notification	PMCWeeklyTimesheetSubmissionEvent	-	Notification Spool	Daily	-
+Notification Spool	Notification	APPObjectRouteTaskAssignedEvent	Route Task Assigned	Notification Spool	Daily	-
+Notification Spool	Notification	APPObjectProjectTaskAssignedEvent		Notification Spool	Daily	-
+Notification Spool	Notification	SEMObjectProjectTaskReviewEvent		Notification Spool	Daily	-
+Notification Spool	Notification	SEMObjectIssueAssignedEvent		Notification Spool	Daily	-
+Notification Spool	Notification	SEMObjectIssueOwnerEvent		Notification Spool	Daily	-
+Notification Spool	Notification	SEMObjectProjectTaskExpiresEvent		Notification Spool	Daily	-
+Notification Spool	Notification	SEMObjectProjectTaskOverdueEvent		Notification Spool	Daily	-
+Notification Spool	Notification	SEMObjectMeetingScheduledEvent		Notification Spool	Daily	-
+Notification Spool	Notification	APPObjectRouteTaskRejectedEvent	Route Task Rejected	Notification Spool	Daily	-
+Notification Spool	Notification	APPObjectRouteTaskApprovedEvent	Route Task Approved	Notification Spool	Daily	-

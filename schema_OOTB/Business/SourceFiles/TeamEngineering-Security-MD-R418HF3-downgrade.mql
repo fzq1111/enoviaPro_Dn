@@ -1,0 +1,65 @@
+# File: TeamEngineering-Security-MD-R418HF3-downgrade.mql
+# Description: This file downgrades VPLM security data from R418 HF3 to R418 GA for One-Click
+#
+# MBH 16:02:01 Created file
+# MBH 16:02:01 IR-420585-3DEXPERIENCER2016x : Repair of command vplm::DisableChangeControl
+# MBH 16:02:11 TSK2207688 : Action Flow trigger on promote/demote check - change name of trigger
+# MBH 16:02:12 IR-401423-3DEXPERIENCER2016x : Personnal settings management
+
+# IR-405220-3DEXPERIENCER2016x
+modify command vplm::DisableChangeControl
+   remove user "VPLMProjectLeader", "VPLMProjectAdministrator";
+
+# TSK2207688
+tcl;
+eval {
+  source "$env(INSTALL_TCL_PROGRAMS_DIR)/VPLMxCommon-PnOSecurity-MD-Utilities-R418.tcl"
+
+  #Remove new CA trigger
+  set TriggerName "ECMObjectStateTransitionCheck";
+  set States "PRIVATE|IN_WORK|FROZEN|RELEASED|OBSOLETE"
+  set Policies "VPLM_SMB_Definition|VPLM_SMB_Definition_Document|VPLM_SMB_Evaluation|VPLM_SMB_Resource"
+  set lSta [split $States "|"]
+  set lPol [split $Policies "|"]
+  foreach sPol $lPol {
+    foreach sSta $lSta {
+      removeTriggerProgramParameterFromPolicyState "$sPol" "$sSta" "Promote" "check" "PromoteCheck" "$TriggerName"
+
+      if {$sSta == "FROZEN"} {
+        removeTriggerProgramParameterFromPolicyState "$sPol" "$sSta" "Demote" "check" "DemoteCheck" "$TriggerName"
+      } 
+    }
+  }
+
+  #Install new CA trigger
+  set TriggerName "PolicyChangeActionPromoteCheck";
+  foreach sPol $lPol {
+    foreach sSta $lSta {
+      set paramValue [appendTriggerProgramParameterToPolicyState "$sPol" "$sSta" "PromoteCheck" "$TriggerName"]
+      mql modify policy "$sPol" state "$sSta" add trigger "Promote" check "emxTriggerManager" input "$paramValue";
+
+      if {$sSta == "FROZEN"} {
+        set paramValue [appendTriggerProgramParameterToPolicyState "$sPol" "$sSta" "DemoteCheck" "$TriggerName"]
+        mql modify policy "$sPol" state "FROZEN" add trigger "Demote" check "emxTriggerManager" input "$paramValue";
+      }
+    } 
+  }
+}
+exit
+
+# IR-401423-3DEXPERIENCER2015x
+modify policy VPLM_PosResourceRef
+   state DEFAULT
+      remove login owner key PersonalSettingsAccess all single project localfilter "type == 'PLMPosSettingsRef'";
+
+modify policy VPLM_PosResourceRep
+   state DEFAULT
+      login VPLMViewer all related organization;
+
+modify policy VPLM_PosDeliverableCnx
+  state DEFAULT
+   remove login owner key PersonalSettingsAccess all single project localfilter "to[VPLMrel/PLMConnection/V_Owner].from.type == 'PLMPosSettingsRef'";
+
+modify rule VPLM_UNSECURED_REL
+  remove login owner key PersonalSettingsAccess all single project localfilter "from.type == 'PLMPosSettingsRef'";
+

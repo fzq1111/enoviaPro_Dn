@@ -1,0 +1,19 @@
+import matrix.db.Context;
+
+
+/**
+ * @author G1F
+ *
+ */
+public class ${CLASSNAME} extends ${CLASS:emxDashboardIssuesBase} {
+    /**
+     * @param context
+     * @param args
+     * @throws Exception
+     */
+    public ${CLASSNAME}(Context context, String[] args) throws Exception {
+    	super(context, args);
+    } 
+
+}
+

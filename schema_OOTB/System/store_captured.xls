@@ -1,0 +1,5 @@
+name	Registry Name	description	type	filename	permission	protocol	port	host	path	user	password	location	fcs	hidden	multipledirectories	lock	icon
+plmx			captured	hashed	RW,RW,RW	file		localhost	C:\DassaultSystemes\3DSpaceData\plmx				https://3dspace.mydomain/internal	nothidden	N/A	unlocked
+STORE	STORE	this store is created for DEMO purposes	captured	hashed	RW,RW,RW	file		localhost	C:\DassaultSystemes\3DSpaceData\STORE				https://3dspace.mydomain/internal	nothidden	N/A	unlocked
+Image Store	Image Store	this store is created for Image purposes	captured	hashed	RW,RW,RW	file		localhost	C:\DassaultSystemes\3DSpaceData\ImageStore				https://3dspace.mydomain/internal	nothidden	N/A	unlocked
+

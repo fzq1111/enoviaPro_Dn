@@ -1,0 +1,38 @@
+var params = proc.declareParameters(["name"], ["label", "select", "dump", "format"]);
+mql.startTransaction(false);
+
+var ok = true;
+
+var cmd = "print pack";
+cmd += params.addVar(name);
+
+if (select)
+    cmd += " select" + params.addVars(JSON.parse(select));
+
+if (dump)
+    cmd += " dump" + params.addVar(dump);
+    
+if (format) {
+    switch (format) {
+        case "tcl":
+            cmd += " tcl";
+            break;
+        case "json":
+            cmd += " json";
+            break;
+        case "txt":
+            break;
+        default:
+            proc.write(label, null, "format " + format + " not supported");
+            ok = false;
+    }
+}
+else {
+   cmd += " tcl";
+}
+
+if (ok)
+    mql.execute(label, cmd, params);
+
+mql.abortTransaction();
+

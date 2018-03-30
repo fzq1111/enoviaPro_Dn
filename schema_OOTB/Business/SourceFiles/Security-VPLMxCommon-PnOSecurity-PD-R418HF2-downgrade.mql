@@ -1,0 +1,22 @@
+# File: Security-VPLMxCommon-PnOSecurity-PD-R418HF2-downgrade.mql
+#
+# LFE 15:10:28 Created file
+# JIC 16:01:13 IR IR-419254-3DEXPERIENCER2016x: Added deactivation of 4 proxy-related triggers
+
+tcl;
+eval {
+    puts "Starting Security-VPLMxCommon-PnOSecurity-PD-R418HF2-downgrade.mql..."
+
+    # Create/modify triggers
+    mql demote bus "eService Trigger Program Parameters" "RelationshipAssignedSecurityContextCreateAction" "AssignAdminProxy";
+
+    mql demote bus "eService Trigger Program Parameters" "RelationshipAssignedSecurityContextDeleteAction" "UnassignAdminProxy";
+
+    mql demote bus "eService Trigger Program Parameters" "TypePnOProjectCreateAction" "CreateProjectAdminProxy";
+
+    mql demote bus "eService Trigger Program Parameters" "TypePnOProjectDeleteAction" "DeleteProjectAdminProxy";
+
+    puts "Security-VPLMxCommon-PnOSecurity-PD-R418HF2-downgrade.mql ended."
+}
+exit
+

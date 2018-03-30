@@ -1,0 +1,280 @@
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UINavigatorUtil;
+
+public class ${CLASSNAME} {
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	public ${CLASSNAME}(Context context, String[] args)throws Exception 
+	{
+		
+	}
+
+	public static MapList searchSEMBudget(Context context, String[] args)
+			throws Exception {
+		MapList dataList=new MapList();
+		try{
+			
+		StringList busList = new StringList(DomainConstants.SELECT_ID);
+		busList.add(DomainConstants.SELECT_NAME);
+		busList.add(DomainObject.SELECT_TYPE);
+	    busList.add("attribute[SEM DepCode]");
+	    busList.add("attribute[Planned Cost]");
+	    busList.add("attribute[SEM Cost Type]");
+	    StringList relList = new StringList("id[connection]");
+	    relList.add("attribute[SEM Sequence]");
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		String objectId = (String) programMap.get("objectId");
+		DomainObject projectObj = new DomainObject(objectId);
+		MapList deplist = projectObj.getRelatedObjects(context,
+				"Project Financial Item", "Budget", busList, relList, false,
+				true, (short) 1, "", "");
+		if(deplist!=null&&deplist.size()!=0)
+		{
+		for(int i=0;i<deplist.size();i++)
+		{
+			Map depmap =(Map)deplist.get(i);
+			String depid = (String) depmap.get(DomainConstants.SELECT_ID);
+			String depname=(String)depmap.get(DomainConstants.SELECT_NAME);
+			String SEMDepCode = (String) depmap.get("attribute[SEM DepCode]");
+			
+			DomainObject depobj = new DomainObject(depid);
+			MapList goulist = depobj.getRelatedObjects(context,"SEM Sub Budget","Budget", busList, relList,false,true, (short)1,"","");
+
+			if(goulist!=null&&goulist.size()>0)
+			{
+				for(int j=0;j<goulist.size();j++)
+				{ 
+					Map goumap =(Map)goulist.get(j);
+					String gouid = (String) goumap.get(DomainConstants.SELECT_ID);
+					String gouname=(String)goumap.get(DomainConstants.SELECT_NAME);
+					String SEMGouCode = (String) goumap.get("attribute[SEM DepCode]");
+					String SEMSequence="";
+				
+					DomainObject gouobj = new DomainObject(gouid);
+					MapList costItemList = gouobj.getRelatedObjects(context,"Financial Items","Cost Item", busList, relList,false,true, (short)1,"","");
+					
+						if(costItemList!=null&&costItemList.size()>0)
+						{
+							for(int k=0;k<costItemList.size();k++)
+							{
+								Map costItemmap =(Map)costItemList.get(k);
+								System.out.println("dataList111111="+dataList);
+								String costItemId = (String) costItemmap.get(DomainConstants.SELECT_ID);
+								String costItemName=(String)costItemmap.get(DomainConstants.SELECT_NAME);
+								String costItemPlannedCost = (String) costItemmap.get("attribute[Planned Cost]");
+								String costItemCode = (String) costItemmap.get("attribute[SEM DepCode]");
+								String SEMCostType = (String) costItemmap.get("attribute[SEM Cost Type]");
+								SEMSequence=(String)costItemmap.get("attribute[SEM Sequence]");
+								System.out.println("SEMSequence==="+SEMSequence);
+								HashMap datamap=new HashMap();	
+								datamap.put("depname",depname);
+								datamap.put("SEMdepCode",SEMDepCode);
+								datamap.put("gouname",gouname);
+								datamap.put("SEMGouCode",SEMGouCode);
+								datamap.put("SEMSequence",SEMSequence);
+								datamap.put("costItemName",costItemName);
+								datamap.put("costItemPlannedCost",costItemPlannedCost);
+								datamap.put("SEMCostType",SEMCostType);
+								System.out.println("datamap=="+datamap);
+								dataList.add(datamap);
+								System.out.println("dataList=="+dataList);
+							}
+						}
+						else
+						{
+							HashMap datamap=new HashMap();	
+							datamap.put("depname",depname);
+							datamap.put("SEMdepCode",SEMDepCode);
+							datamap.put("gouname",gouname);
+							datamap.put("SEMGouCode",SEMGouCode);
+							datamap.put("SEMSequence",SEMSequence);
+							//System.out.println("datamap11111=="+datamap);
+							dataList.add(datamap);
+						}
+				}
+			}else
+			{
+				HashMap datamap=new HashMap();	
+				datamap.put("depname",depname);
+				datamap.put("SEMdepCode",SEMDepCode);
+			
+				dataList.add(datamap);
+			}
+		}
+		}
+		}catch(Exception e)
+		{
+			m_logger.error(e.getMessage(), e);
+			throw(e);
+		}
+		System.out.println("dataList==="+dataList);
+		return dataList;
+	}
+
+	public void fillSheetInfo(Context context,String[] titles,MapList dataList,HSSFWorkbook workbook) throws Exception {
+		try {	
+			int curRowIndex = 0;
+			int curDataIndex=0;
+			int maxRowCount = dataList.size();
+			int maxcolumnCount = titles.length;
+			int maxSheetRow = 60000;
+			int sheetNum = maxRowCount/maxSheetRow;
+			if(maxRowCount%maxSheetRow!=0){
+				sheetNum = sheetNum+1;
+			}
+			String sheetName;
+
+			HSSFCell cell_depName,cell_SEMDepCode,cell_gouname,cell_SEMgouCode,cell_costItemName,cell_SEMSequence,cell_plannedCost,cell_SEMCostType;	
+			
+			HSSFCellStyle sheetStyle = workbook.createCellStyle();
+			sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);		
+			sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			
+			
+			HSSFFont columnHeadFont = workbook.createFont(); 
+			columnHeadFont.setColor(HSSFFont.COLOR_RED);
+			columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			
+			
+			HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook.createCellStyle();  
+			columnHeadStyle.setFont(columnHeadFont); 
+			columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			
+			for(int n=1;n<=sheetNum;n++){
+				
+				sheetName = "\u6295\u8D44\u6E05\u5355"+n;
+				HSSFSheet sheet = workbook.createSheet(sheetName);
+				sheet.createFreezePane(1,1,1,1);
+				
+				for(int i=0;i<maxcolumnCount;i++){
+					sheet.setColumnWidth(i, 9000);
+				}
+				sheet.setColumnWidth(2, 3000);
+				sheet.setColumnWidth(3, 3000);
+				sheet.setColumnWidth(4, 3000);
+				HSSFRow row = sheet.createRow(curRowIndex); 		
+				row.setHeight((short) 600);
+				for(int i=0;i<maxcolumnCount;i++){
+					HSSFCell cell = row.createCell(i);
+					cell.setCellValue(titles[i]);
+					cell.setCellStyle(columnHeadStyle); 
+				}
+				curRowIndex=curRowIndex+1;
+		
+				ContextUtil.pushContext(context);
+				
+				for(int i=0; i<maxSheetRow&&curDataIndex<maxRowCount; curDataIndex++,i++){
+					
+					row =sheet.createRow(curRowIndex); 
+					Map map = (Map) dataList.get(curDataIndex);
+					System.out.println("map======"+map);
+					
+					cell_depName = row.createCell(0);
+					cell_depName.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_depName.setCellValue((String)map.get("depname"));
+					cell_depName.setCellStyle(sheetStyle); 
+					
+					cell_SEMDepCode = row.createCell(1);
+					cell_SEMDepCode.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_SEMDepCode.setCellValue((String)map.get("SEMdepCode"));
+					cell_SEMDepCode.setCellStyle(sheetStyle); 
+					
+					cell_gouname = row.createCell(2);
+					cell_gouname.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_gouname.setCellValue((String)map.get("gouname")); 
+					cell_gouname.setCellStyle(sheetStyle); 
+					
+					cell_SEMgouCode = row.createCell(3);
+					cell_SEMgouCode.setCellType(HSSFCell.CELL_TYPE_STRING);	
+					cell_SEMgouCode.setCellValue((String)map.get("SEMGouCode"));
+					System.out.println("SEMGouCode="+(String)map.get("SEMGouCode"));
+					cell_SEMgouCode.setCellStyle(sheetStyle);
+					
+					cell_costItemName = row.createCell(4);
+					cell_costItemName.setCellType(HSSFCell.CELL_TYPE_STRING);
+					cell_costItemName.setCellValue((String)map.get("costItemName"));
+					cell_costItemName.setCellStyle(sheetStyle);
+					
+					cell_SEMSequence = row.createCell(5);
+					cell_SEMSequence.setCellType(HSSFCell.CELL_TYPE_STRING);
+					String SEMSequence=(String)map.get("SEMSequence");
+					System.out.println("SEMSequence====="+SEMSequence);
+					cell_SEMSequence.setCellValue(SEMSequence); 
+					cell_SEMSequence.setCellStyle(sheetStyle);
+					
+
+					
+					cell_plannedCost = row.createCell(6);
+					cell_plannedCost.setCellType(HSSFCell.CELL_TYPE_STRING);
+					String planCost = (String)map.get("costItemPlannedCost");
+					cell_plannedCost.setCellValue(planCost); 
+					cell_plannedCost.setCellStyle(sheetStyle);
+					
+					cell_SEMCostType = row.createCell(7);
+					cell_SEMCostType.setCellType(HSSFCell.CELL_TYPE_STRING);
+					String SEMCostType = (String)map.get("SEMCostType");
+					cell_SEMCostType.setCellValue(SEMCostType); 
+					cell_SEMCostType.setCellStyle(sheetStyle);					
+					
+					curRowIndex=curRowIndex+1;
+				}
+				curRowIndex = 0;
+			}//for sheet
+			
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw new FrameworkException(e);
+		}finally{
+			ContextUtil.popContext(context);
+		}
+	}		
+//exprot  
+	public void exportExcel(Context context,String[] args) {
+System.out.println("....exportExcel......start..");
+	 try{
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	    	MapList dataList = (MapList)programMap.get("dataList");
+	    	if(dataList==null||dataList.size()==0){
+	    		return;
+	    	}
+			HSSFWorkbook workbook = (HSSFWorkbook)programMap.get("workbook");
+            String[] titles = {"\u90E8\u95E8","\u90E8\u95E8\u4EE3\u7801","\u7EC4\u522B","\u7EC4\u522B\u4EE3\u7801","\u6295\u8D44\u9879","\u9879\u6B21","\u6295\u8D44\u91D1\u989D","\u8D39\u7528/\u8D44\u672C" };
+            fillSheetInfo(context,titles,dataList,workbook);
+System.out.println("....exportExcel......end..");            
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+	}//end method
+}

@@ -1,0 +1,1603 @@
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TimeZone;
+import java.util.Vector;
+import java.text.DateFormat;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+
+import matrix.db.AccessConstants;
+import matrix.db.AttributeType;
+import matrix.db.BusinessObject;
+import matrix.db.BusinessObjectWithSelectList;
+import matrix.db.Context;
+import matrix.db.Dimension;
+import matrix.db.JPO;
+import matrix.db.MQLCommand;
+import matrix.db.SetList;
+import matrix.db.Unit;
+import matrix.db.UnitItr;
+import matrix.db.UnitList;
+import matrix.db.User;
+import matrix.util.MatrixException;
+import matrix.util.StringList;
+
+import com.matrixone.apps.common.MemberRelationship;
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.common.SubtaskRelationship;
+import com.matrixone.apps.common.TaskHolder;
+import com.matrixone.apps.common.util.ComponentsUtil;
+import com.matrixone.apps.domain.DomainAccess;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.FrameworkStringResource;
+import com.matrixone.apps.domain.Job;
+import com.matrixone.apps.domain.util.CacheUtil;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.DateUtil;
+import com.matrixone.apps.domain.util.DebugUtil;
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.framework.ui.UINavigatorUtil;
+import com.matrixone.apps.domain.util.MailUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MessageUtil;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.StringUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.domain.util.mxType;
+import com.matrixone.apps.framework.ui.UIMenu;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.apps.program.Currency;
+import com.matrixone.apps.program.FinancialItem;
+import com.matrixone.apps.program.NotificationUtil;
+import com.matrixone.apps.program.ProgramCentralConstants;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.apps.program.ProjectSpace;
+import com.matrixone.apps.program.ProjectTemplate;
+import com.matrixone.apps.program.Question;
+import com.matrixone.apps.program.ResourcePlanTemplate;
+import com.matrixone.apps.program.ResourceRequest;
+import com.matrixone.apps.program.Risk;
+import com.matrixone.apps.program.Task;
+import com.matrixone.apps.program.mycalendar.MyCalendarUtil;
+import java.lang.reflect.Method;
+
+import org.apache.log4j.Logger;
+
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.domain.util.mxAttr;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import matrix.db.Policy;
+import matrix.db.StateRequirement;
+
+public class ${CLASSNAME} 
+{
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+    static StringList busList = new StringList("id");
+    static StringList relList = new StringList(DomainRelationship.SELECT_ID);
+    private static final int slash =47; // ASCII 47 == '/'
+    public ${CLASSNAME}(Context context, String[] args)throws Exception
+    {
+    }
+  public Map createNewIssue(Context context,String[] args)throws Exception
+	{
+		HashMap programMap = (HashMap)JPO.unpackArgs(args);
+		HashMap requestMap = (HashMap)programMap.get("RequestValuesMap");	
+		String pre="";
+		DomainObject projectObj=new DomainObject();
+        String projectId=(String) programMap.get("projectId");
+        DomainObject proObj=new DomainObject(projectId);
+        String proTypeName=proObj.getInfo(context,"type");      
+        String SEMCarCode=proObj.getAttributeValue(context,"SEM Car Code");
+		if(proTypeName.equals("Meeting"))
+		{
+		try{
+		MapList prolist=proObj.getRelatedObjects(context,
+				"Meeting Context", "Project Space", busList, relList,true,false,
+				(short)1,"", null);
+		if(prolist!=null&&prolist.size()>0)
+		{
+			for(int i=0;i<prolist.size();i++)
+			{
+				Map promap=(Map)prolist.get(i);
+				String proId=(String)promap.get("id");
+				 projectObj=new DomainObject(proId);	
+				SEMCarCode=projectObj.getAttributeValue(context,"SEM Car Code");
+			}
+		}
+		}catch(Exception e)
+		{
+			m_logger.error(e.getMessage(), e);
+		}
+	}
+        if(SEMCarCode.length()>=5){
+        	pre=SEMCarCode.substring(0,5)+"-";
+        }
+		String[] SEMIssueType= (String[])requestMap.get("SEMIssueType");
+		String sit=SEMIssueType[0];
+		String where="attribute[LS Index Key1]=='SEM Issue Type'&&attribute[LS Attribute1]=='"+sit+"'";
+		MapList mapList=new MapList();
+		String SITCode="";
+		try{
+		   ContextUtil.pushContext(context);
+		   mapList=DomainObject.findObjects(context,"LS Property Key","*",where,busList);
+		   if(mapList.size()>0){
+		    Map map =(Map) mapList.get(0);
+		    String id = (String)map.get("id");
+			DomainObject rtObj=new DomainObject(id);
+			SITCode=rtObj.getAttributeValue(context,"LS Attribute2");
+		   }
+		}finally{
+			   ContextUtil.popContext(context);
+		}
+		String strName = (String)programMap.get("Name");
+		String strType = "Issue";
+  		String strPolicy="Issue";
+  		String  realName="";
+  		if(strName == null || strName =="" )
+  		{
+  			strName= FrameworkUtil.autoName(context,"type_Issue",null,"policy_Issue",null,null,true,true);
+  			realName=pre+SITCode+"-"+strName;
+  		}
+        DomainObject dom=new DomainObject();
+		dom.createObject(context, strType,realName , "-", strPolicy, "eService Production");
+		String ojectId =dom.getInfo(context, "id");
+		DomainObject strObj = new DomainObject(ojectId);
+		if(proTypeName.equals("Meeting"))
+		{
+			ContextUtil.pushContext(context);	
+			strObj.connectFrom(context,"Issue",projectObj);
+			ContextUtil.popContext(context);
+		}
+  		Map returnMap = new HashMap();
+		returnMap.put("id",ojectId);
+  		return returnMap;
+}
+    public static MapList getMarketSurveyIssueList(Context context,String[] args)throws Exception 
+    {   	
+    		String where="attribute[SEM Issue Type]=='\u5E02\u8C03\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getSEMModellingIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='SEG\u9020\u578B\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getSEGEngingeeringIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='SEG\u5DE5\u7A0B\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getModellingReviewIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u6784\u9020\u68C0\u8BA8\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getTestStampingIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u8BD5\u88C5\u51B2\u538B\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getTestWeldingIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u8BD5\u88C5\u710A\u88C5\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getTestPaintingIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u8BD5\u88C5\u6D82\u88C5\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getTestGeneralAssemblyIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u8BD5\u88C5\u603B\u88C5\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getVehicleTestingIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u8F66\u68C0\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList geEvaluatingIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u8BC4\u4EF7\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getVehicleInspectIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u8F66\u8F86\u6D4B\u8BD5\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getPerformanceTestIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u6027\u80FD\u6D4B\u8BD5\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getTestDriveIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u8BD5\u4E58\u8BD5\u9A7E\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    public static MapList getSpecialIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u4E13\u6848\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+
+    public static MapList getInvestingIssueList(Context context,String[] args)throws Exception 
+    {
+    		String where="attribute[SEM Issue Type]=='\u6295\u8D44\u95EE\u9898'";
+    		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("objectId");
+    		DomainObject strObj = new DomainObject(objectId);
+    		MapList mapList = strObj.getRelatedObjects(context,
+    				"Issue", "Issue", busList, relList,false,true,
+    				(short)1,where, null);
+    		return mapList;
+    }
+    //thought difference command  to  get [SEM Issue Type ]
+    public HashMap getSEMIssueType(Context context, String args[])throws Exception
+    {
+   	     HashMap tempMap = new HashMap();
+   	     HashMap programMap = (HashMap)JPO.unpackArgs(args);
+		 HashMap requestMap = (HashMap)programMap.get("requestMap");
+		 String value=(String) requestMap.get("typeflag");
+		 String language=(String)requestMap.get("languageStr");
+         StringList fieldChoices= new StringList();
+         StringList fieldDisplayChoices=new StringList();
+         StringList orang=mxAttr.getChoices(context,"SEM Issue Type1");
+     	 StringList fyorang=i18nNow.getAttrRangeI18NStringList("SEM Issue Type1", orang,language);
+         for (int i = 0; i <orang.size(); i++)
+         {
+         	if(orang.get(i).equals(value)){
+         		fieldChoices.add(fyorang.get(i));
+	            fieldDisplayChoices.add(fyorang.get(i));
+         	}
+         }
+    	 tempMap.put("field_choices", fieldChoices);
+         tempMap.put("field_display_choices",fieldDisplayChoices);
+         return tempMap; 
+   }
+   //IssueViewTable get Assigned Person
+    public Vector getResponsiblePerson(Context context, String args[])throws Exception{
+			HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+			MapList objectList = (MapList)paramMap.get("objectList");
+			Iterator it = objectList.iterator();
+			Vector vc = new Vector();
+			while(it.hasNext())
+			{
+				Map taskMap = (Map)it.next();
+				String IssueId = (String)taskMap.get("id");
+				DomainObject IssueObj = new DomainObject(IssueId);
+				String tableId =  (String)taskMap.get("id[level]");
+				StringList personIdList =IssueObj.getInfoList(context,"to[Assigned Issue].from.id");
+				StringBuffer sb = new StringBuffer();				
+				if(personIdList.size()>0)
+				{
+					String personName = "";
+					for(int i = 0 ; i < personIdList.size(); i++)
+					{
+						String personId = (String)personIdList.get(i);
+						DomainObject personObj = new DomainObject(personId);
+						String strPersonName = personObj.getName(context);
+						Person person = new Person(personId);
+                        String fullName=person.getDisplayName(context,strPersonName);
+						String[] names=fullName.split(" ");
+						//modify get lastName
+						personName+=names[1]+",";
+					}
+					personName = personName.substring(0,personName.length()-1);
+					sb.append(personName);
+				}else{
+					sb.append("");	
+				}
+				vc.add(sb.toString());
+			}
+			return vc;
+   }
+   public void updateIssueOwner(Context context,String[]args)throws Exception
+	{
+	   	 HashMap programMap = (HashMap)JPO.unpackArgs(args);
+	   	 HashMap paramMap=(HashMap)programMap.get("paramMap");
+	   	 String newValue=(String) paramMap.get("New Value");
+	 	 String ownerId=(String)paramMap.get("New OID");
+	 	 DomainObject presonId=null;
+	 	 if(ownerId==null||ownerId.equals("")){
+	 		 Person person =Person.getPerson(context);
+	 		 ownerId=person.getId(context); 
+	 	 }
+	 	 String objID=(String) paramMap.get("objectId");
+		 DomainObject strObj=new DomainObject(objID);
+		 strObj.setOwner(context,newValue); 
+		 DomainObject personId=new DomainObject(ownerId);
+		 MapList mapList=personId.getRelatedObjects(context,
+ 				"Member","Department", busList, relList,true,false,
+ 				(short)1,"", null);
+		 if(mapList.size()>0){
+			 Map map=(Map) mapList.get(0);
+			 String departmentId=(String) map.get("id");
+			 DomainObject departmentObj=new DomainObject(departmentId);
+			 strObj.setAttributeValue(context,"SEM Issue Owner Department",departmentObj.getName(context));
+		 }
+	}
+    public void updateSEMIssueSolutionDealer(Context context,String[]args)throws Exception
+	{
+	   	 HashMap programMap = (HashMap)JPO.unpackArgs(args);
+	   	 HashMap paramMap=(HashMap)programMap.get("paramMap");
+	   	 String newValue=(String) paramMap.get("New Value");
+	 	 String ownerId=(String)paramMap.get("New OID");
+		 String objID=(String) paramMap.get("objectId");
+		 DomainObject strObj=new DomainObject(objID);
+		 try{
+				ContextUtil.pushContext(context);
+				MapList mapList= strObj.getRelatedObjects(context,"Assigned Issue","Person", busList, relList,true,false, (short)1, null, null);
+				Iterator items=mapList.iterator();
+			    while(items.hasNext()){
+				       Map map=(Map) items.next();
+				       String relId=(String)map.get("id[connection]");
+				       DomainRelationship.disconnect(context,relId);
+	            }
+			    strObj.setAttributeValue(context,"SEM IssueSolution Dealer",newValue);
+	 	        if(ownerId!=null&&!ownerId.equals("")){
+			      DomainObject personId=new DomainObject(ownerId);
+			      strObj.connectFrom(context,"Assigned Issue",personId);
+			    }
+			 }catch(Exception e){
+				 m_logger.error(e.getMessage(), e);
+			 }finally{
+				ContextUtil.popContext(context);
+			 }	
+	}
+    public boolean IssueAccessCheck(Context context,String[]args)throws Exception
+	{
+	   	 HashMap programMap = (HashMap)JPO.unpackArgs(args);
+	   	 HashMap  setMap =(HashMap) programMap.get("SETTINGS"); 
+	   	 String objectId     = (String) programMap.get("objectId");
+	   	 String flag=(String) setMap.get("flag");
+	   	 String name=new DomainObject(objectId).getName(context);
+	 	 if(name.contains(flag)){
+	 		 return true;
+	 	 }else{
+	 	   	 return false;
+	 	 }
+	}
+    //get SEM Part Task in  current ProjectSpace 
+    public StringList getProjectSpaceSEMPartTask(Context context, String args[]) throws Exception{
+    	 StringList ids=new StringList();
+    	 HashMap programMap = (HashMap)JPO.unpackArgs(args);
+	   	 String objectId     = (String) programMap.get("objectId");
+    	 DomainObject strObj=new DomainObject(objectId);
+    	 if(strObj.getType(context).equals("Issue")){
+    		 MapList mapList1=strObj.getRelatedObjects(context, "Issue","Project Space", busList, relList,true,false, (short)1, null, null);
+    	     if(mapList1.size()>0){
+    	    	Map map1=(Map) mapList1.get(0); 
+    	    	strObj=new DomainObject((String)map1.get("id"));
+    	     }
+    	 }
+		 MapList mapList=strObj.getRelatedObjects(context, "SEM Related DrwTask,SEM Project PartTask,SEM SubPart","SEM Part Task", busList, relList,false,true, (short)3, null, null);
+		 for (int i = 0; i <mapList.size(); i++) {
+				Map partTemplate = (Map)mapList.get(i);
+				String partId=(String)partTemplate.get("id");
+				ids.add(partId);
+		 } 
+		 return ids;
+	}
+    public void updateSEMPart(Context context,String[]args)throws Exception
+	{
+	   	 HashMap programMap = (HashMap)JPO.unpackArgs(args);
+	   	 HashMap paramMap=(HashMap)programMap.get("paramMap");
+	   	 String newValue=(String) paramMap.get("New Value");
+	 	 String SEMPartTaskId="";
+	     String where="name=='"+newValue+"'";
+	   	 MapList partList=DomainObject.findObjects(context,"SEM Part Task","*",where,busList);
+	   	 if(partList.size()>0){
+	   		 Map map=(Map)partList.get(0);
+	   		 SEMPartTaskId=(String)map.get("id");
+	   	 }
+	 	 String objID=(String) paramMap.get("objectId");
+		 DomainObject strObj=new DomainObject(objID);
+		 try{
+				ContextUtil.pushContext(context);
+		        MapList mapList= strObj.getRelatedObjects(context,"Issue","SEM Part Task", busList, relList,false,true, (short)1, null, null);
+		        Iterator items=mapList.iterator();
+		        while(items.hasNext()){
+			       Map map=(Map) items.next();
+			       String relId=(String)map.get("id[connection]");
+			       DomainRelationship.disconnect(context,relId);
+		        }
+		        strObj.setAttributeValue(context,"SEM Part",newValue);
+	 	        StringBuffer sb=new StringBuffer();
+	 	        if(SEMPartTaskId!=null&&!SEMPartTaskId.equals("")){
+			      DomainObject SEMPartTaskObj=new DomainObject(SEMPartTaskId);
+			      strObj.connectTo(context,"Issue",SEMPartTaskObj);
+			      MapList mapList1=SEMPartTaskObj.getRelatedObjects(context,"SEM SubPart","SEM Part Task", busList, relList,true,false, (short)1, null, null);
+			      Iterator items1=mapList1.iterator();
+			        while(items1.hasNext()){
+				       Map map1=(Map) items1.next();
+				       String id=(String) map1.get("id");
+				       sb.append(new DomainObject(id).getName(context)+" ");
+			        }
+			    }
+	 	        strObj.setAttributeValue(context,"SEM UPG Part",sb.toString());
+		 }catch(Exception e){
+			 m_logger.error(e.getMessage(), e);
+		 }finally{
+				ContextUtil.popContext(context);
+		 }
+	}
+    public void updateSEMIssueTestCarCode(Context context,String[]args)throws Exception
+	{
+	   	 HashMap programMap = (HashMap)JPO.unpackArgs(args);
+	   	 HashMap paramMap=(HashMap)programMap.get("paramMap");
+	   	 String newValue=(String) paramMap.get("New Value");
+	   	 String[] num=newValue.split(",");
+	   	 String number="0";
+	   	 if(!newValue.equals("")){
+	   		 number=num.length+""; 
+	   	 }
+	 	 String objID=(String) paramMap.get("objectId");
+		 DomainObject strObj=new DomainObject(objID);
+		 strObj.setAttributeValue(context,"SEM Issue TestCarCode",newValue);
+		 strObj.setAttributeValue(context,"SEM IssueCar Number",number);
+	}
+	 /*
+     * relate send email notify
+     * get  isssue assigned
+     */
+    public StringList getIssueAssigned(Context context, String[] args)throws MatrixException {
+    	StringList  issueAssignedList = new StringList();
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String objectId = (String) programMap.get("id");
+			DomainObject issueObj = DomainObject.newInstance(context, objectId);
+			StringList personIdList = issueObj.getInfoList(context,"to[Assigned Issue].from.id");
+			if(personIdList.size()>0)
+			{
+				for(int i = 0 ; i < personIdList.size(); i++)
+				{
+					String personId = (String)personIdList.get(i);
+					DomainObject personObj = new DomainObject(personId);
+					String strPersonName = personObj.getName(context);
+					if(strPersonName!=null){
+						issueAssignedList.add(strPersonName);
+					}
+				}					
+			}
+			
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+			throw new MatrixException(e.getMessage());
+		}
+		return (issueAssignedList);
+    }
+    public String getSEMIssueAssignedMessageHTML(Context context, String args[])throws Exception{
+    	String message="";
+    	try {
+            String issueOwner="";
+            String issueDescription="";
+        	String SEMIssueType="";
+        	String issueName ="";
+        	String issueURL ="";
+        	String SEMIssueProject="";
+            String EstimatedEndDate="";
+            String IssueSolutionProgress="";
+        	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("id");
+    		DomainObject projectObject = DomainObject.newInstance(context, objectId);
+    		SEMIssueType = projectObject.getAttributeValue(context,"SEM Issue Type");
+    		issueName = projectObject.getName(context);
+    		User Owner= projectObject.getOwner(context);
+    		issueOwner=PersonUtil.getFullName(context,Owner.toString());
+    		issueDescription=projectObject.getDescription(context);
+    		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(
+    				eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+    		EstimatedEndDate=projectObject.getAttributeValue(context,"Estimated End Date");
+    		if(!EstimatedEndDate.equals("")){
+    		  Date endData=formatter.parse(EstimatedEndDate);
+    		  EstimatedEndDate=format.format(endData);
+    		}
+    		IssueSolutionProgress=projectObject.getAttributeValue(context,"SEM Issue SolutionProgress");
+    	    busList.add("name");
+    		MapList mapList=projectObject.getRelatedObjects(context,"Issue", "Project Space", busList, relList,true,false,
+    				(short)1,"", null);
+    		if(mapList.size()>0){
+    			Map map=(Map) mapList.get(0);
+    			SEMIssueProject=(String) map.get("name");
+    		}
+    		String url="";
+    		String fileName ="";
+    		try {
+    		    url=this.getClass().getResource("/").getPath();
+    			url = url.substring(1,url.length()-16);
+    			fileName = url+"ContentTextHtmlTemplate"+String.format("%c", slash)+"SEMIssueAssigned.html";
+    		} catch (Exception e) {
+    			m_logger.error(e.getMessage(), e);
+    			message = "Can Not Find Email Template \"SEMIssueAssigned.html\", Please Connect Administrator.";
+    			return message;
+    		}    		
+    		try {
+    			issueURL= FrameworkProperties.getProperty(context, "CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+    		} catch (Exception e) {
+    			issueURL =(String) programMap.get("baseURL");
+    		}
+    		//issueURL =issueURL+ "?objectId="+objectId;	
+    		File file = new File(fileName);
+    		InputStreamReader imput = new InputStreamReader(new FileInputStream(file), "UTF-8");
+    		BufferedReader reader = new BufferedReader(imput);
+    		String htmlStr = "";
+    		StringBuffer htmlContent = new StringBuffer();
+    		String tmpStr = "";
+    		while ((tmpStr = reader.readLine()) != null) {
+    			htmlContent.append(tmpStr);
+    		}
+    		reader.close();
+    		imput.close();
+    		htmlStr = htmlContent.toString();
+    		htmlStr = htmlStr.replace("${IssueOwner}",issueOwner);
+    		htmlStr = htmlStr.replace("${SEMIssueType}",SEMIssueType);
+    		htmlStr = htmlStr.replace("${IssueName}",issueName);
+    		htmlStr = htmlStr.replace("${IssueDescription}",issueDescription);
+    		htmlStr = htmlStr.replace("${SEMIssueProject}",SEMIssueProject);
+    		htmlStr = htmlStr.replace("${IssueEstimatedEndDate}",EstimatedEndDate);
+    		htmlStr = htmlStr.replace("${IssueSEMIssueSolutionProgress}",IssueSolutionProgress);
+    		htmlStr = htmlStr.replace("${IssueURL}", issueURL);
+    		
+    		//System.out.println("+++++++++++++++++++++++++++"+htmlStr); 
+    		
+    		message = htmlStr;
+        	return message;
+        
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+    	return message;
+    }
+    
+    public String getSEMIssueOwnerMessageHTML(Context context, String args[])throws Exception{
+    	String message="";
+    	try {
+        	String SEMIssueType ="";
+        	String issueName ="";
+        	String issueDescription="";
+        	String issueURL ="";
+        	String issueResolutionRecommendation="";
+        	String SEMIssueProject="";
+        	String IssueResolutionDate="";
+        	String IssueAssignee="";
+        	String IssueAssigneeDepartment="";
+        	HashMap programMap = (HashMap) JPO.unpackArgs(args);
+    		String objectId = (String) programMap.get("id");
+    		DomainObject projectObject = DomainObject.newInstance(context, objectId);
+    		SEMIssueType = projectObject.getAttributeValue(context,"SEM Issue Type");
+    		issueResolutionRecommendation= projectObject.getAttributeValue(context,"Resolution Recommendation");
+    		issueName = projectObject.getName(context);
+    		issueDescription= projectObject.getDescription(context);
+    		IssueAssigneeDepartment=projectObject.getAttributeValue(context,"SEM IssueSolution Dealer Department");
+    		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    		java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(
+    				eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+    		IssueResolutionDate=projectObject.getAttributeValue(context,"Resolution Date");
+    		if(!IssueResolutionDate.equals("")){
+    			Date ResolutionDate=formatter.parse(IssueResolutionDate);
+        		IssueResolutionDate=format.format(ResolutionDate);
+    		}
+
+    		busList.add("name");
+    		MapList mapList=projectObject.getRelatedObjects(context,"Issue", "Project Space", busList, relList,true,false,
+    				(short)1,"", null);
+    		if(mapList.size()>0){
+    			Map map=(Map) mapList.get(0);
+    			SEMIssueProject=(String) map.get("name");
+    		}
+    		
+    		StringList personIdList =projectObject.getInfoList(context,"to[Assigned Issue].from.id");		
+			if(personIdList.size()>0){
+					for(int i = 0 ; i < personIdList.size(); i++)
+					{
+						String personId = (String)personIdList.get(i);
+						DomainObject personObj = new DomainObject(personId);
+						String strPersonName = personObj.getName(context);
+						Person person = new Person(personId);
+						String fullName=person.getDisplayName(context,strPersonName);
+						String[] names=fullName.split(" ");
+						IssueAssignee+=names[1]+",";
+					}
+					IssueAssignee=IssueAssignee.substring(0,IssueAssignee.length()-1);
+			}
+    		
+    		
+    		String url="";
+    		String fileName ="";
+    		try {
+    		    url=this.getClass().getResource("/").getPath();
+    			url = url.substring(1,url.length()-16);
+    			fileName = url+"ContentTextHtmlTemplate"+String.format("%c", slash)+"SEMIssueOwner.html";
+    		} catch (Exception e) {
+    			m_logger.error(e.getMessage(), e);
+    			message = "Can Not Find Email Template \"SEMIssueOwner.html\", Please Connect Administrator.";
+    			return message;
+    		}    		
+    		try {
+    			issueURL= FrameworkProperties.getProperty(context, "CH.Notification.ProjectWindfarmStateSwitch.ProjectURL");
+    		} catch (Exception e) {
+    			issueURL =(String) programMap.get("baseURL");
+    		}
+    		//issueURL =issueURL+ "?objectId="+objectId;	
+    		File file = new File(fileName);
+    		InputStreamReader imput = new InputStreamReader(new FileInputStream(file), "UTF-8");
+    		BufferedReader reader = new BufferedReader(imput);
+    		String htmlStr = "";
+    		StringBuffer htmlContent = new StringBuffer();
+    		String tmpStr = "";
+    		while ((tmpStr = reader.readLine()) != null) {
+    			htmlContent.append(tmpStr);
+    		}
+    		reader.close();
+    		imput.close();
+    		htmlStr = htmlContent.toString();
+    		htmlStr = htmlStr.replace("${SEMIssueType}",SEMIssueType);
+    		htmlStr = htmlStr.replace("${IssueName}",issueName);
+    		htmlStr = htmlStr.replace("${IssueDescription}",issueDescription);
+    		htmlStr = htmlStr.replace("${SEMIssueProject}",SEMIssueProject);
+    		htmlStr = htmlStr.replace("${IssueResolutionDate}",IssueResolutionDate);
+    		htmlStr = htmlStr.replace("${IssueAssignee}",IssueAssignee);
+    		htmlStr = htmlStr.replace("${IssueAssigneeDepartment}",IssueAssigneeDepartment);
+    		htmlStr = htmlStr.replace("${IssueResolutionRecommendation}",issueResolutionRecommendation);
+    		htmlStr = htmlStr.replace("${IssueURL}", issueURL);
+    		
+    		//System.out.println("+++++++++++++++++++++++++++"+htmlStr); 
+    		
+    		message = htmlStr;
+        	return message;
+        
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+    	return message;
+    }
+	
+	public String getIssueAssignedSubject(Context context, String[] args) throws Exception {
+ 	    Map info = (Map) JPO.unpackArgs(args);
+        String subject="\u95EE\u9898\u5206\u914D\u63D0\u9192";
+        String companyName = null;
+        String basePropName = (String) info.get("bundleName");
+        Locale locale = (Locale) info.get("locale");
+        subject = MessageUtil.getMessage(context, null, subject,null,null, companyName, locale, basePropName);
+        return (subject);
+   }
+   public String getIssueOwnerSubject(Context context, String[] args) throws Exception {
+ 	    Map info = (Map) JPO.unpackArgs(args);
+        String subject="\u95EE\u9898\u5BF9\u7B56\u63D0\u9192";
+        String companyName = null;
+        String basePropName = (String) info.get("bundleName");
+        Locale locale = (Locale) info.get("locale");
+        subject = MessageUtil.getMessage(context, null, subject,null,null, companyName, locale, basePropName);
+        return (subject);
+   }
+    //Editable Access(table)
+   public StringList cheackIsOwner(Context context, String[] args) throws Exception {
+	   HashMap programMap = (HashMap) JPO.unpackArgs(args);
+   	   MapList objectList = (MapList) programMap.get("objectList");
+   	   Map tempMap = null;
+   	   String objectId = "";
+   	   DomainObject currObject = DomainObject.newInstance(context);
+   	   StringList retList = new StringList();
+   	   for(int i = 0; i < objectList.size(); i++)
+   	   {
+   		  boolean flage = false;
+   		  tempMap = (Map) objectList.get(i);
+   		  objectId = (String) tempMap.get("id");
+   		  currObject.setId(objectId);
+   		  User owner=currObject.getOwner(context);
+   		  if(owner.toString().equals(context.getUser()))
+   		  {
+				flage=true;
+   		  }
+   		  retList.addElement(flage);
+   	}
+   	return retList;
+   }
+   public StringList cheackIsAssigned(Context context, String[] args) throws Exception {
+	   HashMap programMap = (HashMap) JPO.unpackArgs(args);
+   	   MapList objectList = (MapList) programMap.get("objectList");
+   	   Map tempMap = null;
+   	   String objectId = "";
+   	   DomainObject currObject = DomainObject.newInstance(context);
+   	   StringList retList = new StringList();
+   	   for(int i = 0; i < objectList.size(); i++)
+   	   {
+   		  boolean flage = false;
+   		  tempMap = (Map) objectList.get(i);
+   		  objectId = (String) tempMap.get("id");
+   		  currObject.setId(objectId);
+   		  StringList personIdList = currObject.getInfoList(context,"to[Assigned Issue].from.id");
+		  if(personIdList.size()>0)
+		  {
+			for(int j = 0 ; j< personIdList.size();j++)
+			{
+				String personId = (String)personIdList.get(j);
+				DomainObject personObj = new DomainObject(personId);
+				String strPersonName = personObj.getName(context);
+				if(strPersonName.equals(context.getUser())){
+					flage=true;
+					break;
+				}
+			}					
+		  }
+   		  retList.addElement(flage);
+   	}
+   	return retList;
+   }
+   //display issue details field
+    public String getIssueType(Context context, String[] args) throws Exception {
+	   String issueType="";
+	   HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	   String objectId=(String) programMap.get("objectId");
+	   String language=(String)programMap.get("languageStr");
+	   DomainObject obj=DomainObject.newInstance(context,objectId);
+	   if(obj.getType(context).equals("Issue")){
+	   	   issueType=obj.getAttributeValue(context,"SEM Issue Type");//edit Issue
+	   }else{
+		   String value=(String)programMap.get("typeflag"); //create Issue 
+		   if(value==null){
+			   value=(String)programMap.get("flag"); //Issue  table view
+		   }
+		   StringList orang=mxAttr.getChoices(context,"SEM Issue Type1");
+	       StringList fyorang=i18nNow.getAttrRangeI18NStringList("SEM Issue Type1", orang,language);
+	       for (int i = 0; i <orang.size(); i++)
+	       {
+	         	if(orang.get(i).equals(value)){
+	         		 issueType=(String)fyorang.get(i);
+	         		 break;
+	         	}
+	       }
+	   }
+   	   return issueType;
+   }
+   public boolean displaySEMSupplierResolutionRecommendation(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u5E02\u8C03\u95EE\u9898")||issueType.equals("\u8BD5\u4E58\u8BD5\u9A7E\u95EE\u9898")||issueType.equals("\u4E13\u6848\u95EE\u9898")||issueType.equals("\u6295\u8D44\u95EE\u9898")){
+   		   return false;
+   	   }else{
+   	       return true;
+   	   }
+   }
+   //SEM Issue Solution TestCarCode/SEM Phase To Resolution/SEM Issue EO
+   public boolean displaySEMIPI(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u5E02\u8C03\u95EE\u9898")||issueType.equals("SEG\u9020\u578B\u95EE\u9898")||issueType.equals("SEG\u5DE5\u7A0B\u95EE\u9898")||issueType.equals("\u6784\u9020\u68C0\u8BA8\u95EE\u9898")||
+   			   issueType.equals("\u8BD5\u4E58\u8BD5\u9A7E\u95EE\u9898")||issueType.equals("\u4E13\u6848\u95EE\u9898")||issueType.equals("\u6295\u8D44\u95EE\u9898")){
+   		   return false;
+   	   }else{
+   	       return true;
+   	   }
+   }
+   //SEM Supplier
+   public boolean displaySEMSupplier(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u5E02\u8C03\u95EE\u9898")||issueType.equals("SEG\u9020\u578B\u95EE\u9898")||issueType.equals("\u6784\u9020\u68C0\u8BA8\u95EE\u9898")||
+   			   issueType.equals("\u8BD5\u4E58\u8BD5\u9A7E\u95EE\u9898")||issueType.equals("\u4E13\u6848\u95EE\u9898")||issueType.equals("\u6295\u8D44\u95EE\u9898")){
+   		   return false;
+   	   }else{
+   	       return true;
+   	   }
+   }
+   //SEM TestIssue Number
+   public boolean displaySEMTestIssueNumber(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("SEG\u9020\u578B\u95EE\u9898")||issueType.equals("SEG\u5DE5\u7A0B\u95EE\u9898")||issueType.equals("\u6784\u9020\u68C0\u8BA8\u95EE\u9898")||
+   			   issueType.equals("\u8F66\u8F86\u6D4B\u8BD5\u95EE\u9898")||issueType.equals("\u6027\u80FD\u6D4B\u8BD5\u95EE\u9898")){
+   		   return true;
+   	   }else{
+   	       return false;
+   	   }
+   }
+   public boolean displaySEMIssuePartType(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u5E02\u8C03\u95EE\u9898")||issueType.equals("\u4E13\u6848\u95EE\u9898")||issueType.equals("\u6295\u8D44\u95EE\u9898")){
+   		   return false;
+   	   }else{
+   	       return true;
+   	   }
+   }
+   public boolean displaySEMIssuePointsDeduction(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u8BC4\u4EF7\u95EE\u9898")){
+   		   return true;
+   	   }else{
+   	       return false;
+   	   }
+   }
+   public boolean displaySEMIssueCarProperty(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u8F66\u68C0\u95EE\u9898")||issueType.equals("\u8BC4\u4EF7\u95EE\u9898")||issueType.equals("\u8F66\u8F86\u6D4B\u8BD5\u95EE\u9898")||issueType.equals("\u6027\u80FD\u6D4B\u8BD5\u95EE\u9898")){
+   		   return true;
+   	   }else{
+   	       return false;
+   	   }
+   }
+   public boolean displaySEMCarLeakageState(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u8F66\u68C0\u95EE\u9898")){
+   		   return true;
+   	   }else{
+   	       return false;
+   	   }
+   }
+   public boolean displaySEMEquipmentType(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u8BD5\u88C5\u51B2\u538B\u95EE\u9898")||issueType.equals("\u8BD5\u88C5\u710A\u88C5\u95EE\u9898")){
+   		   return true;
+   	   }else{
+   	       return false;
+   	   }
+   }
+   public boolean displaySEMTestEngine(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u8F66\u8F86\u6D4B\u8BD5\u95EE\u9898")||issueType.equals("\u6027\u80FD\u6D4B\u8BD5\u95EE\u9898")){
+   		   return true;
+   	   }else{
+   	       return false;
+   	   }
+   }
+   public boolean displaySEMModelDataPhaseVersion(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("SEG\u9020\u578B\u95EE\u9898")||issueType.equals("SEG\u5DE5\u7A0B\u95EE\u9898")){
+   		   return true;
+   	   }else{
+   	       return false;
+   	   }
+   }
+   public boolean displaySEMProductionDate(Context context, String[] args) throws Exception {
+	   String issueType=getIssueType(context,args);
+   	   if(issueType.equals("\u5E02\u8C03\u95EE\u9898")){
+   		   return true;
+   	   }else{
+   	       return false;
+   	   }
+   }//
+   public HashMap getIssueStateRange(Context context, String args[])throws Exception
+   {
+	   String strLan = context.getSession().getLanguage();
+  	   HashMap tempMap = new HashMap();
+       StringList fieldChoices= new StringList();
+       StringList fieldDisplayChoices=new StringList();
+       Policy mxPolicy = new Policy("Issue");
+       Iterator stateItr = mxPolicy.getStateRequirements(context).iterator();
+       while (stateItr.hasNext()) {
+            StateRequirement stateReq = (StateRequirement) stateItr.next();
+            String stateName = stateReq.getName();
+            String zwState=i18nNow.getStateI18NString("Issue",stateName, strLan);
+            fieldChoices.add(stateName);
+			fieldDisplayChoices.add(zwState);	
+       }
+   	   tempMap.put("field_choices", fieldChoices);
+       tempMap.put("field_display_choices",fieldDisplayChoices);
+       return tempMap; 
+  }
+  public void updateState(Context context, String[] args) throws Exception {
+		HashMap inputMap = (HashMap)JPO.unpackArgs(args);
+		HashMap columnMap = (HashMap) inputMap.get("columnMap");
+		HashMap paramMap = (HashMap) inputMap.get("paramMap");
+		String objectId = (String) paramMap.get("objectId");
+		String newAttrValue = (String) paramMap.get("New Value");
+        DomainObject issueObj=new DomainObject(objectId);
+        if(ProgramCentralUtil.isNotNullString(newAttrValue)){
+        	issueObj.setState(context,newAttrValue);
+		}
+	}
+	public void updateIssueResponsiblePerson(Context context,String[] args)throws Exception
+	{
+		 try{
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			HashMap paramMap = (HashMap) programMap.get("paramMap");
+			HashMap requestMap = (HashMap) programMap.get("requestMap");
+			String objectId = (String) paramMap.get("objectId");// get the task Id
+			String newValue = (String) paramMap.get("New Value");//Get the dependency entered by the user.Eg:Project1:1:FS+5, 2:SF-5, 4:SS
+			ContextUtil.pushContext(context);
+			DomainObject strIssueObj = new DomainObject(objectId);
+			MapList personList =strIssueObj.getRelatedObjects(context,"Assigned Issue","Person",busList,relList,true,false,(short)1,"","");
+			Iterator it = personList.iterator();
+			while(it.hasNext())
+			{
+				Map personMap = (Map)it.next();
+				String relId = (String)personMap.get("id[connection]");
+				DomainRelationship.disconnect(context, relId);
+			}
+			if(!newValue.equals("")&&newValue.length()>0){
+		  	    String personId =PersonUtil.getPersonObjectID(context,newValue);
+		  	    if(personId.length()>0)
+				{
+					DomainObject strPersonObj = new DomainObject(personId);
+					DomainRelationship del = strIssueObj.connectFrom(context,"Assigned Issue",strPersonObj); 
+				}
+			}
+		 }catch(Exception e){
+			 m_logger.error(e.getMessage(), e);
+		 }finally{
+			 ContextUtil.popContext(context);
+		 }
+	} 
+	
+	//add by ryan 2017-03-11
+	public StringList getIssueTypeListInProject(Context context, String strSEMCarCode) throws Exception
+	{
+		StringList resList = new StringList();
+		try
+		{
+			String strLoginUserId = PersonUtil.getPersonObjectID(context);
+			DomainObject personObj = DomainObject.newInstance(context, strLoginUserId);
+			MapList departmentList = personObj.getRelatedObjects(context,
+																 "Member",
+																 "Department",
+																 new StringList("attribute[Organization ID]"),
+																 null,
+																 true,
+																 false,
+																 (short)1,
+																 "",
+																 "");
+			
+			for(int i = 0; i < departmentList.size(); i ++)
+			{
+				Map departmentMap = (Map)departmentList.get(i);
+				String strOrgId = (String)departmentMap.get("attribute[Organization ID]");
+				String strWhereClause = "attribute[LS Index Key1]==\"SEM Issue Authorization\" && " +
+										"(attribute[LS Index Key2]==\"\u9ED8\u8BA4\" || attribute[LS Index Key2]==\"" + strSEMCarCode + "\") && " + 
+										"(attribute[LS Attribute1]==\"" + strOrgId + "\" || " + 
+										"attribute[LS Attribute2]==\"" + strOrgId + "\" || " +
+										"attribute[LS Attribute3]==\"" + strOrgId + "\" || " +
+										"attribute[LS Attribute4]==\"" + strOrgId + "\" || " +
+										"attribute[LS Attribute5]==\"" + strOrgId + "\")";
+				MapList propertyKeyList = DomainObject.findObjects(context, "LS Property Key", "*", strWhereClause, new StringList("attribute[LS Index Key3]"));
+				for(int j = 0; j < propertyKeyList.size(); j ++)
+				{
+					Map map = (Map)propertyKeyList.get(j);
+					String strIssueType = (String)map.get("attribute[LS Index Key3]");
+					if(!resList.contains(strIssueType))
+					{
+						resList.addElement(strIssueType);
+					}
+				}
+				
+			}
+		}catch(Exception e){
+			 m_logger.error(e.getMessage(), e);
+			 throw e;
+		}
+		
+		return resList;
+	}
+	
+	public boolean hasIssueCreateAccess(Context context, String args[])throws Exception
+	{
+		try
+		{
+			HashMap inputMap = (HashMap)JPO.unpackArgs(args);
+			String strProjId = (String)inputMap.get("objectId");
+			if(UIUtil.isNullOrEmpty(strProjId))
+			{
+				return true;
+			}
+			DomainObject projObj = DomainObject.newInstance(context, strProjId);
+			String strSEMCarCode = projObj.getAttributeValue(context, "SEM Car Code");
+			String stFlag = (String)inputMap.get("flag");
+			String strLanguage = (String)inputMap.get("languageStr");
+			String strIssueType = i18nNow.getRangeI18NString("SEM Issue Type1", stFlag, strLanguage);
+			
+			StringList issueTypeList = getIssueTypeListInProject(context, strSEMCarCode);
+			if(issueTypeList.contains(strIssueType))
+			{
+				return true;
+			}
+			
+		}catch(Exception ex)
+		{
+			m_logger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+		return false;
+	}
+	
+	public boolean hasIssueViewAccess(Context context, String args[])throws Exception
+	{
+		try
+		{
+			HashMap inputMap = (HashMap)JPO.unpackArgs(args);
+			String strProjId = (String)inputMap.get("objectId");
+			Map settingMap = (Map)inputMap.get("SETTINGS");
+			String stFlag = (String)settingMap.get("Issue Type");
+			String strLanguage = (String)inputMap.get("languageStr");
+			String strIssueType = i18nNow.getRangeI18NString("SEM Issue Type1", stFlag, strLanguage);
+			DomainObject projObj = DomainObject.newInstance(context, strProjId);
+			
+			Person person = new Person(PersonUtil.getPersonObjectID(context));
+			String strLoginUserId = person.getId(context);
+			StringList relSelects = new StringList("attribute[Project Role]");
+			String strWhere = "id == " + strProjId;
+			MapList projList = person.getRelatedObjects(context, 
+														"Member", 
+														"Project Space", 
+														new StringList(), 
+														relSelects, 
+														true, 
+														false, 
+														(short)1, 
+														strWhere, 
+														null);
+			String strProjectRole = "";
+			for(int i = 0; i < projList.size(); i ++)
+			{
+				Map projMap = (Map)projList.get(i);
+				strProjectRole = (String)projMap.get("attribute[Project Role]");
+				if(strProjectRole.equals("SEM_StrategyProjectLeader") || strProjectRole.equals("SEM_DesignPM"))
+				{
+					return true;
+				}
+			}
+			strProjectRole = i18nNow.getRangeI18NString("Project Role", strProjectRole, strLanguage);
+			
+			StringList currentRoleList = person.getRoleAssignments(context);
+			if(currentRoleList.contains("role_SEM_Company_Leader") || currentRoleList.contains("role_ProjectAdministrator"))
+			{
+				return true;
+			}
+			
+			MapList departmentList = person.getRelatedObjects(context, 
+					"Member,Company Department", 
+					"Department", 
+					new StringList("attribute[Organization ID]"), 
+					null, 
+					true, 
+					false, 
+					(short)0, 
+					null, 
+					null);
+			
+			String strWhereClause = "attribute[LS Index Key1]==\"SEM Issue Viewer\" && " +
+									"(attribute[LS Index Key2]==\"\u9ED8\u8BA4\" || attribute[LS Index Key2]==\"" + strProjectRole + "\") && " +
+									"attribute[LS Index Key3]==\"" + strIssueType + "\"";
+			StringList busSelects = new StringList("attribute[LS Attribute1]");
+			busSelects.addElement("attribute[LS Attribute2]");
+			busSelects.addElement("attribute[LS Attribute3]");
+			busSelects.addElement("attribute[LS Attribute4]");
+			busSelects.addElement("attribute[LS Attribute5]");
+			MapList propertyKeyList = DomainObject.findObjects(context, "LS Property Key", "*", strWhereClause, busSelects);
+			for(int i = 0; i < propertyKeyList.size(); i ++)
+			{
+				Map keyMap = (Map)propertyKeyList.get(i);
+				String strAttr1 = (String)keyMap.get("attribute[LS Attribute1]");
+				String strAttr2 = (String)keyMap.get("attribute[LS Attribute2]");
+				String strAttr3 = (String)keyMap.get("attribute[LS Attribute3]");
+				String strAttr4 = (String)keyMap.get("attribute[LS Attribute4]");
+				String strAttr5 = (String)keyMap.get("attribute[LS Attribute5]");
+				for(int m = 0; m < departmentList.size(); m ++)
+				{
+					Map currDepartmentMap = (Map)departmentList.get(m);
+					String strCurrDepartmentOrgId = (String)currDepartmentMap.get("attribute[Organization ID]");
+					if(strAttr1.equals(strCurrDepartmentOrgId) || strAttr2.equals(strCurrDepartmentOrgId) || 
+							strAttr3.equals(strCurrDepartmentOrgId) || strAttr4.equals(strCurrDepartmentOrgId) || 
+							strAttr5.equals(strCurrDepartmentOrgId))
+					{
+						return true;
+					}
+				}
+			}
+			
+		}catch(Exception ex)
+		{
+			m_logger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+		return false;
+	}
+	
+	public boolean hasDrawingBomActionAccess(Context context, String args[])throws Exception
+	{
+		try
+		{
+			HashMap inputMap = (HashMap)JPO.unpackArgs(args);
+			String strProjId = (String)inputMap.get("objectId");
+			String strLanguage = (String)inputMap.get("languageStr");
+			DomainObject projObj = DomainObject.newInstance(context, strProjId);
+			
+			Person person = new Person(PersonUtil.getPersonObjectID(context));
+			String strLoginUserId = person.getId(context);
+			
+			StringList currentRoleList = person.getRoleAssignments(context);
+			if(currentRoleList.contains("role_ProjectAdministrator"))
+			{
+				return true;
+			}
+			
+			MapList departmentList = person.getRelatedObjects(context, 
+					"Member,Company Department", 
+					"Department", 
+					new StringList("attribute[Organization ID]"), 
+					null, 
+					true, 
+					false, 
+					(short)0, 
+					null, 
+					null);
+			
+			String strWhereClause = "attribute[LS Index Key1]==\"SEM DrawingBom Action\"";
+			StringList busSelects = new StringList("attribute[LS Attribute1]");
+			busSelects.addElement("attribute[LS Attribute2]");
+			busSelects.addElement("attribute[LS Attribute3]");
+			busSelects.addElement("attribute[LS Attribute4]");
+			busSelects.addElement("attribute[LS Attribute5]");
+			MapList propertyKeyList = DomainObject.findObjects(context, "LS Property Key", "*", strWhereClause, busSelects);
+			for(int i = 0; i < propertyKeyList.size(); i ++)
+			{
+				Map keyMap = (Map)propertyKeyList.get(i);
+				String strAttr1 = (String)keyMap.get("attribute[LS Attribute1]");
+				String strAttr2 = (String)keyMap.get("attribute[LS Attribute2]");
+				String strAttr3 = (String)keyMap.get("attribute[LS Attribute3]");
+				String strAttr4 = (String)keyMap.get("attribute[LS Attribute4]");
+				String strAttr5 = (String)keyMap.get("attribute[LS Attribute5]");
+				for(int m = 0; m < departmentList.size(); m ++)
+				{
+					Map currDepartmentMap = (Map)departmentList.get(m);
+					String strCurrDepartmentOrgId = (String)currDepartmentMap.get("attribute[Organization ID]");
+					if(strAttr1.equals(strCurrDepartmentOrgId) || strAttr2.equals(strCurrDepartmentOrgId) || 
+							strAttr3.equals(strCurrDepartmentOrgId) || strAttr4.equals(strCurrDepartmentOrgId) || 
+							strAttr5.equals(strCurrDepartmentOrgId))
+					{
+						return true;
+					}
+				}
+			}
+			
+		}catch(Exception ex)
+		{
+			m_logger.error(ex.getMessage(), ex);
+			throw ex;
+		}
+		return false;
+	}
+	//add end
+
+	public String getSEMIssueSolutionDealer(Context context,String[] args)throws Exception
+	 {
+    	String res="";
+		 try{
+			 HashMap param=JPO.unpackArgs(args);
+			 HashMap paramMap=(HashMap) param.get("paramMap");
+			 String objID=(String) paramMap.get("objectId");
+			 DomainObject strObj=new DomainObject(objID);
+			 StringList personIdList =strObj.getInfoList(context,"to[Assigned Issue].from.id");		
+			 if(personIdList.size()>0){
+					for(int i = 0 ; i < personIdList.size(); i++)
+					{
+						String personId = (String)personIdList.get(i);
+						DomainObject personObj = new DomainObject(personId);
+						String strPersonName = personObj.getName(context);
+						Person person = new Person(personId);
+						String fullName=person.getDisplayName(context,strPersonName);
+						String[] names=fullName.split(" ");
+						//modify get lastName
+						res+=names[1]+",";
+					}
+					res = res.substring(0,res.length()-1);
+				}
+		 }catch(Exception e){
+			 m_logger.error(e.getMessage(), e);
+		 }
+		 return res;
+	 }
+	public void updateSEMIssueSolutionDealer1(Context context,String[]args)throws Exception
+   	{
+   	   	 HashMap programMap = (HashMap)JPO.unpackArgs(args);
+   	   	 HashMap paramMap=(HashMap)programMap.get("paramMap");
+   	   	 String newValue=(String) paramMap.get("New Value");
+   	 	 String ownerId=(String)paramMap.get("New OID");
+   		 String objID=(String) paramMap.get("objectId");
+   		 DomainObject strObj=new DomainObject(objID);
+   		 try{
+   				ContextUtil.pushContext(context);
+   				MapList mapList= strObj.getRelatedObjects(context,"Assigned Issue","Person", busList, relList,true,false, (short)1, null, null);
+   				Iterator items=mapList.iterator();
+   			    while(items.hasNext()){
+   				       Map map=(Map) items.next();
+   				       String relId=(String)map.get("id[connection]");
+   				       DomainRelationship.disconnect(context,relId);
+   	            }
+   			    strObj.setAttributeValue(context,"SEM IssueSolution Dealer",newValue);
+   	 	        if(ownerId!=null&&!ownerId.equals("")){
+   			      DomainObject personId=new DomainObject(ownerId);
+   			      strObj.connectFrom(context,"Assigned Issue",personId);
+   			     }
+   			 }catch(Exception e){
+   				 m_logger.error(e.getMessage(), e);
+   			 }finally{
+   				ContextUtil.popContext(context);
+   			 }	
+   	}
+	public void updateSEMIssueHappenDate(Context context,String[]args)throws Exception{
+    	try{
+    	HashMap inputMap = (HashMap)JPO.unpackArgs(args);
+		HashMap paramMap = (HashMap) inputMap.get("paramMap");
+		String objectId = (String) paramMap.get("objectId");
+		String newValue = (String) paramMap.get("New Value");
+        DomainObject issueObj=new DomainObject(objectId);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(
+				eMatrixDateFormat.getEMatrixDateFormat(), Locale.US);
+        if(newValue.equals("")){      	
+    		java.util.Date  currentDate = new java.util.Date();
+    		newValue=formatter.format(currentDate);
+        }else{
+        	Date date=format.parse(newValue);
+        	newValue=formatter.format(date);
+        }
+        issueObj.setAttributeValue(context,"SEM Issue HappenDate",newValue);		
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    	}
+    }
+     public Vector getIssueOwner(Context context,String[]args)throws Exception{
+    	Vector res=new Vector();
+    	try{
+    		HashMap paramMap = (HashMap)JPO.unpackArgs(args);
+			MapList objectList = (MapList)paramMap.get("objectList");
+			Iterator it = objectList.iterator();
+			while(it.hasNext())
+			{
+				Map taskMap = (Map)it.next();
+				String IssueId = (String)taskMap.get("id");
+				DomainObject IssueObj = new DomainObject(IssueId);
+				String owner=IssueObj.getOwner(context).getName();
+				Person person=Person.getPerson(context);
+				String fullName=person.getDisplayName(context,owner);
+				String[] names=fullName.split(" ");
+				res.add(names[1]);
+			}
+			return res;
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    	}
+		return res;
+    }
+	//get Issue related Document
+    public Vector getIssuesDeliverables(Context context, String[] args) throws Exception {
+
+        HashMap programMap = (HashMap) JPO.unpackArgs(args);
+        MapList mlObjects = (MapList) programMap.get("objectList");
+        HashMap paramList = (HashMap) programMap.get("paramList");
+        HashMap columnMap = (HashMap) programMap.get("columnMap");
+        HashMap settings = (HashMap) columnMap.get("settings");
+        String sMaxItems = (String)settings.get("Max Items");
+        int iMaxItems = Integer.parseInt(sMaxItems);
+        
+        Vector vResult = new Vector(mlObjects.size());
+        final String SELECT_DELIVERABLE_ID = "from[Reference Document].to.id";
+        final String SELECT_DELIVERABLE_TYPE = "from[Reference Document].to.type";
+        final String SELECT_DELIVERABLE_NAME = "from[Reference Document].to.name";
+        final String SELECT_DELIVERABLE_REVISION = "from[Reference Document].to.revision";
+        final String SELECT_DELIVERABLE_MODIFIED_DATE = "from[Reference Document].to.modified";
+        
+        StringList busSelects = new StringList();
+        busSelects.add(ProgramCentralConstants.SELECT_TYPE);
+        busSelects.add(ProgramCentralConstants.SELECT_POLICY);
+        busSelects.add(SELECT_DELIVERABLE_ID);
+        busSelects.add(SELECT_DELIVERABLE_TYPE);
+        busSelects.add(SELECT_DELIVERABLE_NAME);
+        busSelects.add(SELECT_DELIVERABLE_REVISION);
+        busSelects.add(SELECT_DELIVERABLE_MODIFIED_DATE); //Document sort key
+
+        try {
+        	String[] sObjIdArr = new String[mlObjects.size()]; 
+            for (int i = 0; i < mlObjects.size(); i++) {
+    			Map objectMap = (Map) mlObjects.get(i);
+            	sObjIdArr[i] = (String) objectMap.get(ProgramCentralConstants.SELECT_ID);
+    		}
+            
+            MapList deliverablesInfoMapList = DomainObject.getInfo(context, sObjIdArr, busSelects);
+
+            for (int i = 0; i < deliverablesInfoMapList.size(); i++) {
+               
+                StringBuilder sbResult = new StringBuilder();
+                
+                Map mObject = (Map) mlObjects.get(i);
+                String sOID = (String) mObject.get(ProgramCentralConstants.SELECT_ID);
+                
+                Map taskInfoMap = (Map) deliverablesInfoMapList.get(i);
+                String sTaskType = (String) taskInfoMap.get(ProgramCentralConstants.SELECT_TYPE);
+                String sTaskPolicy = (String) taskInfoMap.get(ProgramCentralConstants.SELECT_POLICY);
+
+                	
+                	StringList slDeliverablesIdList =  ProgramCentralUtil.getAsStringList(taskInfoMap.get(SELECT_DELIVERABLE_ID));
+                    StringList slDeliverablesTypeList = ProgramCentralUtil.getAsStringList(taskInfoMap.get(SELECT_DELIVERABLE_TYPE));
+                    StringList slDeliverablesNameList = ProgramCentralUtil.getAsStringList(taskInfoMap.get(SELECT_DELIVERABLE_NAME));
+                    StringList slDeliverablesRevisionList = ProgramCentralUtil.getAsStringList(taskInfoMap.get(SELECT_DELIVERABLE_REVISION));
+                    StringList slDeliverablesModifiedDateList = ProgramCentralUtil.getAsStringList(taskInfoMap.get(SELECT_DELIVERABLE_MODIFIED_DATE));
+                    
+                    int iNoOfDeliverables = slDeliverablesIdList.size();
+                  //Convert taskInfoMap to a MapList of all the deliverables.
+                    MapList taskDeliverablesMapList = new MapList(iNoOfDeliverables);
+
+                    for (int j = 0; j < iNoOfDeliverables; j++) {
+                    
+                    	Map taskDeliverableMap = new HashMap();
+                    	
+                    	taskDeliverableMap.put(SELECT_DELIVERABLE_ID, slDeliverablesIdList.get(j));
+        				taskDeliverableMap.put(SELECT_DELIVERABLE_TYPE, slDeliverablesTypeList.get(j));
+        				taskDeliverableMap.put(SELECT_DELIVERABLE_NAME, slDeliverablesNameList.get(j));
+        				taskDeliverableMap.put(SELECT_DELIVERABLE_REVISION, slDeliverablesRevisionList.get(j));
+        				taskDeliverableMap.put(SELECT_DELIVERABLE_MODIFIED_DATE, slDeliverablesModifiedDateList.get(j));
+        				
+        				taskDeliverablesMapList.add(taskDeliverableMap);
+        			}
+                   
+                    //Sort Deliverables
+                    taskDeliverablesMapList.sort(SELECT_DELIVERABLE_MODIFIED_DATE, 
+                    							 ProgramCentralConstants.DESCENDING_SORT, 
+                    							 ProgramCentralConstants.SORTTYPE_DATE);
+                    
+                    // Apply limit
+                    int iTotalNoOfDeliverables = taskDeliverablesMapList.size();
+                    int iDeliverablesDisplayLimit = (iTotalNoOfDeliverables > iMaxItems) ? iMaxItems : iTotalNoOfDeliverables ;
+                    
+                    sbResult.append("<table");  
+                    sbResult.append("><tr>");
+
+                    //Show Counter Link   
+                    sbResult.append("<td style='vertical-align:middle;padding-right:5px;width:0px'>");                
+                    sbResult.append("<div ");            
+                    sbResult.append(" style='text-align:right;font-weight:bold;");
+                    
+                    sbResult.append("cursor: pointer;' ");
+                    sbResult.append(" onmouseover='$(this).css(\"color\",\"#04A3CF\");$(this).css(\"text-decoration\",\"underline\");' onmouseout='$(this).css(\"color\",\"#333333\");$(this).css(\"text-decoration\",\"none\");' ");
+                    
+                    sbResult.append("onClick=\"emxTableColumnLinkClick('");
+                    sbResult.append("../common/emxTree.jsp?DefaultCategory=IssueReferenceDocumentsTreeCategory&amp;objectId=").append(sOID);
+                    sbResult.append("', '', '', false, 'content', '', '', '', '')\">");
+                                    
+                    sbResult.append(iTotalNoOfDeliverables);
+                    sbResult.append("</div>"); 
+                    sbResult.append("</td>");  
+
+                    //Show Type-Icon Link         
+                    for(int j = 0; j < iDeliverablesDisplayLimit; j++) {
+                        
+                        Map mRelatedObject = (Map)taskDeliverablesMapList.get(j);
+                        String sObjectId = (String)mRelatedObject.get(SELECT_DELIVERABLE_ID);
+                        String sType = (String)mRelatedObject.get(SELECT_DELIVERABLE_TYPE);
+                        String i18Type = EnoviaResourceBundle.getTypeI18NString(context, sType, context.getSession().getLanguage());
+                        String sName = (String)mRelatedObject.get(SELECT_DELIVERABLE_NAME);
+                        sName = XSSUtil.encodeForHTMLAttribute(context, sName);
+                        String sRevision = (String)mRelatedObject.get(SELECT_DELIVERABLE_REVISION);
+                        
+                        String sIcon = UINavigatorUtil.getTypeIconProperty(context, sType);
+                        
+                        sbResult.append("<td style='vertical-align:middle;padding-left:1px;cursor:pointer;' ");
+                        sbResult.append("onClick=\"javascript:callCheckout('").append(sObjectId).append("',");
+                        sbResult.append("'download', '', '', 'null', 'null', 'structureBrowser', 'IssueReferenceDocumentsTreeCategory', 'null')\">");
+
+                        sbResult.append("<img style='vertical-align:middle;' src='../common/images/").append(sIcon).append("'");
+                        sbResult.append(" title=\"");
+                        sbResult.append(i18Type).append(" - ").append(sName).append(" - ").append(sRevision);
+                        sbResult.append("\" />");
+
+                        sbResult.append("</td>");
+                       
+                    }
+                    sbResult.append("</tr></table>");
+                    
+                    vResult.add(sbResult.toString());
+            }
+            
+        } catch(Exception ex) {
+        	m_logger.error(ex.getMessage(), ex);
+        }
+        
+        return vResult;        
+    }
+	
+	@com.matrixone.apps.framework.ui.IncludeOIDProgramCallable
+	    public StringList includeIssuePerson(Context context,String[] args)throws Exception{
+	    	StringList includeIdList = new StringList();
+	    	try{   		
+		    	HashMap programMap = (HashMap) JPO.unpackArgs(args);		
+				String objectId = (String) programMap.get("objectId");
+				DomainObject obj = new DomainObject(objectId);
+				StringList busList = new StringList("id");
+				StringList relList = new StringList(DomainRelationship.SELECT_ID);
+				MapList mapList=obj.getRelatedObjects(context, "Issue", "Project Space",busList , relList, true, false, (short) 1, null, null);
+				String projectId = null;
+				for(int i=0;i<mapList.size();i++){
+					Map projMap = (Map)mapList.get(i);
+				    projectId = (String)projMap.get("id");
+				}			
+				DomainObject objSpace = DomainObject.newInstance(context,projectId);
+				includeIdList = objSpace.getInfoList(context, ProgramCentralConstants.SELECT_MEMBER_ID);
+	    	}catch(Exception e){
+				m_logger.error(e.getMessage(), e);
+			}
+	    	return includeIdList;
+	    }
+		
+	public Vector showProjectName(Context context, String[] args) throws Exception
+	    {		 
+		 	Vector vc = new Vector();
+			try{
+				   HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		           HashMap paramMap = (HashMap) programMap.get("paramList");
+		           MapList objectList = (MapList)programMap.get("objectList");
+		          for(int i=0;i<objectList.size();i++){
+		        	  Map map = (Map)objectList.get(i);
+		        	  String issId = (String)map.get("id");
+		        	  String proName = null;
+		        	  String proId = null;
+		        	  String sRouteString = null;
+		        	  DomainObject projectObj = new DomainObject(issId);
+		      		  MapList deplist = projectObj.getRelatedObjects(context,
+		      				"Issue", "Project Space", busList, relList, true,
+		      				false, (short) 1, "", "");
+		      		  if(deplist.size()>0){
+		      			  for(int j=0;j<deplist.size();j++){
+		      				  Map mapL = (Map)deplist.get(j);
+		      				  proId = (String)mapL.get("id");
+		      				  DomainObject proObj = new DomainObject(proId);
+		      				  proName = proObj.getName(context);
+		      			  }
+		      			  String sRouteNextUrl = "./emxTree.jsp?objectId=" + XSSUtil.encodeForJavaScript(context, proId);
+		                  String sRouteUrl  = "javascript:emxTableColumnLinkClick('" + sRouteNextUrl + "','800','575',false,'popup','')";
+		                  sRouteString = "<a  href=\""+sRouteUrl+"\">"+XSSUtil.encodeForHTML(context,proName)+"</a>&#160;";
+
+		      		  }
+		      		  
+		        	  vc.add(sRouteString);
+		          }
+           
+			}catch(Exception e){
+				m_logger.error(e.getMessage(), e);
+				throw e;
+			}
+			return vc;
+	    }
+    public Vector editIssue(Context context, String[] args)
+			throws Exception {
+		Vector vector =  new Vector();
+		try{
+		String currentUser=context.getUser();
+		HashMap projectMap = (HashMap) JPO.unpackArgs(args);
+		MapList objList = (MapList) projectMap.get("objectList");
+		HashMap paramList=(HashMap) projectMap.get("paramList");
+		String portalCmdName=(String)paramList.get("portalCmdName");
+		StringList currentLink = new StringList();
+		Iterator objIterator = objList.iterator();
+			while (objIterator.hasNext()) {
+			String contentURL = "";
+			Map objDetailsMap = (Map) objIterator.next();
+			String id = (String) ((Map) objDetailsMap).get("id");
+			DomainObject issueObj=DomainObject.newInstance(context,id);
+			String owner=issueObj.getInfo(context,"owner");	
+			if(currentUser.equals(owner)){
+			 contentURL = "../common/emxForm.jsp?form=SEMEditIssueTestCarCode&mode=edit&formHeader=emxFramework.Common.Edit&HelpMarker=emxhelpissuechangetype&submitAction=refreshCaller&findMxLink=false&objectId="
+					+ id
+					+ "&windowMode=slidein&openerFrame="+portalCmdName+"&targetLocation=slidein";
+			 //contentURL = contentURL.replaceAll("&", "&amp;");
+			 // contentURL="../common/emxForm.jsp?form=type_Issue&mode=Edit&formHeader=emxComponents.Heading.Edit&HelpMarker=emxhelpissueedit&submitAction=refreshCaller&emxSuiteDirectory=components&relId=&parentOID=&suiteKey=Components&objectId="+id+"&jsTreeID=&windowMode=slidein&openerFrame=frameTable&targetLocation=slidein";
+			 String phaseIcon = "iconActionEdit.gif";
+			 StringBuffer sbDisplayPhase = new StringBuffer();
+			 sbDisplayPhase.append("<a href =\"").append("javascript:emxTableColumnLinkClick('"+ contentURL + "','600','600',false,'slidein','')");
+			 sbDisplayPhase.append("\">");
+			 sbDisplayPhase.append("<img src=\"../common/images/" + phaseIcon
+					+ "\" name=\"Edit\" border=\"0\"/>");
+			 sbDisplayPhase.append("</a>");
+			 vector.add(sbDisplayPhase.toString().replaceAll("&", "&amp;"));
+		   }else{
+			   vector.add("");
+		   }
+		 }
+		}catch(Exception e){
+			m_logger.error(e.getMessage(), e);
+		}
+		return vector;
+	}		
+}

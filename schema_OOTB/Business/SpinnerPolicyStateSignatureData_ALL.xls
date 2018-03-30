@@ -1,0 +1,158 @@
+Policy Name	State Name	Signature Name	Users for Approve (use "|" delim)	Users for Reject (use "|" delim)	Users for Ignore (use "|" delim)	Branch State	Filter
+Document Classification	Review	Approves Release	VPLMProjectAdministrator | VPLMProjectLeader | Reviewer	VPLMProjectAdministrator | VPLMProjectLeader | Reviewer	VPLMProjectAdministrator | VPLMProjectLeader | Reviewer		
+Controlled Design Release Rev2	Review	Approves Release	VPLMProjectAdministrator | VPLMProjectLeader | Reviewer	VPLMProjectAdministrator | VPLMProjectLeader | Reviewer			
+Controlled Production Release Rev2	Review	Approves Release	VPLMProjectAdministrator | VPLMProjectLeader | Reviewer	VPLMProjectAdministrator | VPLMProjectLeader | Reviewer			
+Product	Review	Design Engineer	VPLMProjectLeader | Design Engineer | Product Manager	VPLMProjectLeader | Design Engineer | Product Manager	VPLMProjectLeader | Design Engineer | Product Manager		
+Product	Review	Product Manager	VPLMProjectLeader | Product Manager	VPLMProjectLeader | Product Manager	VPLMProjectLeader | Product Manager		
+Access Request	Review	ToApproved	VPLMProjectAdministrator | VPLMProjectLeader | Request Reviewer			Approved	
+Access Request	Review	ToRejected	VPLMProjectAdministrator | VPLMProjectLeader | Request Reviewer			Rejected	
+Access Request	Rejected	ToSubmitted				Submitted	
+ECR	Create	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+ECR	Create	GoToSubmit				Submit	attribute[Branch To] == 'None'
+ECR	Submit	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+ECR	Submit	GoToEvaluate				Evaluate	attribute[Branch To] == 'None'
+ECR	Evaluate	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+ECR	Evaluate	GoToReview				Review	attribute[Branch To] == 'None'
+ECR	Review	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+ECR	Review	GoToPlanECO				Plan ECO	attribute[Branch To] == 'None'
+ECO	Create	GoToDefineComponents				Define Components	attribute[Branch To] == 'None'
+ECO	Create	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+ECO	Define Components	GoToDesignWork				Design Work	attribute[Branch To] == 'None'
+ECO	Define Components	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+ECO	Design Work	GoToReview				Review	attribute[Branch To] == 'None'
+ECO	Design Work	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+ECO	Review	GoToRelease				Release	attribute[Branch To] == 'None'
+ECO	Review	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+Part Markup	Proposed	GoToApproved				Approved	attribute[Branch To]=='None'
+Part Markup	Proposed	GoToRejected				Rejected	attribute[Branch To]=='Rejected'
+Part Markup	Approved	GoToApplied				Applied	attribute[Branch To]=='None'
+Part Markup	Approved	GoToRejected				Rejected	attribute[Branch To]=='Rejected'
+Development Part Markup	Proposed	GoToApproved				Applied	attribute[Branch To]=='None'
+Development Part Markup	Proposed	GoToRejected				Rejected	attribute[Branch To]=='Rejected'
+DCR	Evaluate	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+DCR	Evaluate	GoToReview				Review	attribute[Branch To] == 'None'
+DCR	Review	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+DCR	Review	GoToPlanDCO				Plan DCO	attribute[Branch To] == 'None'
+Product Variant	Review	Product Manager	VPLMProjectLeader | Product Manager	VPLMProjectLeader | Product Manager	VPLMProjectLeader | Product Manager		
+Product Variant	Review	Design Engineer	VPLMProjectLeader | Design Engineer | Product Manager	VPLMProjectLeader | Design Engineer | Product Manager	VPLMProjectLeader | Design Engineer | Product Manager		
+PUE ECO	Create	GoToDefineComponents				Define Components	attribute[Branch To] == 'None'
+PUE ECO	Create	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+PUE ECO	Define Components	GoToDesignWork				Design Work	attribute[Branch To] == 'None'
+PUE ECO	Define Components	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+PUE ECO	Design Work	GoToReview				Review	attribute[Branch To] == 'None'
+PUE ECO	Design Work	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+PUE ECO	Review	GoToRelease				Release	attribute[Branch To] == 'None'
+PUE ECO	Review	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+Resource Request	Requested	ToRejected	VPLMProjectLeader | Resource Manager			Rejected	
+Resource Request	Requested	ToProposed	VPLMProjectLeader | Resource Manager			Proposed	
+Resource Request	Proposed	ToRejected	VPLMProjectLeader | Resource Manager			Rejected	
+Resource Request	Proposed	ToCommitted	VPLMProjectLeader | Resource Manager			Committed	
+Resource Request	Committed	ToCommitted	VPLMProjectLeader | Resource Manager			Committed	
+Resource Request	Rejected	ToRequested	External Project Lead | VPLMProjectLeader | Project Lead			Requested	
+VPLM_SMB_Definition	PRIVATE	ShareWithinProject	VPLMCreator | VPLMProjectLeader | VPLMAdmin			IN_WORK	
+VPLM_SMB_Definition	IN_WORK	Isolate	VPLMCreator | VPLMProjectLeader | VPLMAdmin			PRIVATE	
+VPLM_SMB_Definition	IN_WORK	ToFreeze	VPLMCreator | VPLMProjectLeader | VPLMAdmin			FROZEN	
+VPLM_SMB_Definition	IN_WORK	ToRelease	VPLMReleaseManager | VPLMProjectLeader | VPLMAdmin			RELEASED	
+VPLM_SMB_Definition	REMOVED	Restore	VPLMCreator | VPLMProjectLeader | VPLMAdmin			IN_WORK	
+VPLM_SMB_Definition	FROZEN	UnFreeze	VPLMCreator | VPLMProjectLeader | VPLMAdmin	VPLMReleaseManager		IN_WORK	
+VPLM_SMB_Definition	FROZEN	ToRelease	VPLMReleaseManager | VPLMProjectLeader | VPLMAdmin			RELEASED	
+VPLM_SMB_Definition	RELEASED	OutDated	VPLMProjectLeader | VPLMAdmin			OBSOLETE	
+Qualification	In Process	Disqualify	Component Qualification Engineer	Component Qualification Engineer		Disqualified	
+Qualification	In Process	Qualify	Component Qualification Engineer	Component Qualification Engineer		Qualified	
+DECO	Create	GoToDesignWork				Design Work	attribute[Branch To] == 'None'
+DECO	Create	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+DECO	Design Work	GoToReview				Review	attribute[Branch To] == 'None'
+DECO	Design Work	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+DECO	Review	GoToRelease				Release	attribute[Branch To] == 'None'
+DECO	Review	GoToCancel				Cancelled	attribute[Branch To] == 'Cancel'
+VPLM_SMB_Definition_Document	PRIVATE	ShareWithinProject	VPLMCreator | VPLMProjectLeader | VPLMAdmin			IN_WORK	
+VPLM_SMB_Definition_Document	IN_WORK	Isolate	VPLMCreator | VPLMProjectLeader | VPLMAdmin			PRIVATE	current.signature[ToFreeze].satisfied && (!(attribute[PLMDMTDocument.V_IsCheckedOut] == true))
+VPLM_SMB_Definition_Document	IN_WORK	ToRelease	VPLMReleaseManager | VPLMProjectLeader | VPLMAdmin			RELEASED	current.signature[ToFreeze].satisfied && (!(attribute[PLMDMTDocument.V_IsCheckedOut] == true))
+VPLM_SMB_Definition_Document	IN_WORK	ToFreeze	VPLMCreator | VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			FROZEN	current.signature[ToFreeze].satisfied && (!(attribute[PLMDMTDocument.V_IsCheckedOut] == true))
+VPLM_SMB_Definition_Document	REMOVED	Restore	VPLMCreator | VPLMProjectLeader | VPLMAdmin			IN_WORK	
+VPLM_SMB_Definition_Document	FROZEN	UnFreeze	VPLMCreator | VPLMProjectLeader | VPLMAdmin	VPLMReleaseManager		IN_WORK	
+VPLM_SMB_Definition_Document	FROZEN	ToRelease	VPLMReleaseManager | VPLMProjectLeader | VPLMAdmin			RELEASED	
+VPLM_SMB_Definition_Document	RELEASED	OutDated	VPLMProjectLeader | VPLMAdmin			OBSOLETE	
+Deliverable Intent	Plan	ToDeliver	Project Lead	Project Lead		Deliver	
+Deliverable Intent	Plan	ToCancel	Project Lead	Project Lead		Cancel	
+Deliverable Planning	Private	Cancelled	VPLMCreator			Cancelled	current.signature[Cancelled].signed==TRUE
+Deliverable Planning	Private	Private	VPLMCreator				current.signature[Cancelled].signed==FALSE
+Deliverable Planning	In Work	Cancelled	VPLMCreator			Cancelled	current.signature[Cancelled].signed==TRUE
+Deliverable Planning	In Work	In Work	VPLMCreator				current.signature[Cancelled].signed==FALSE
+Deliverable Planning	Validated	Cancelled	VPLMCreator			Cancelled	current.signature[Cancelled].signed==TRUE
+Deliverable Planning	Validated	Validated	VPLMCreator				current.signature[Cancelled].signed==FALSE
+Deliverable Planning	Deployed	Terminated	VPLMCreator			Terminated	current.signature[Terminated].signed==TRUE
+Deliverable Planning	Deployed	Deployed	VPLMCreator				current.signature[Terminated].signed==FALSE
+VPLM_SMB_Evaluation	PRIVATE	ShareWithinProject	VPLMCreator | VPLMExperimenter | VPLMProjectLeader | VPLMAdmin			IN_WORK	
+VPLM_SMB_Evaluation	IN_WORK	Isolate	VPLMCreator | VPLMExperimenter | VPLMProjectLeader | VPLMAdmin			PRIVATE	
+VPLM_SMB_Evaluation	IN_WORK	ToRelease	VPLMReleaseManager | VPLMProjectLeader | VPLMAdmin			RELEASED	
+VPLM_SMB_Evaluation	IN_WORK	ToFreeze	VPLMCreator | VPLMExperimenter | VPLMProjectLeader | VPLMAdmin			FROZEN	
+VPLM_SMB_Evaluation	REMOVED	Restore	VPLMCreator | VPLMExperimenter | VPLMProjectLeader | VPLMAdmin			IN_WORK	
+VPLM_SMB_Evaluation	FROZEN	UnFreeze	VPLMCreator | VPLMExperimenter | VPLMProjectLeader | VPLMAdmin	VPLMReleaseManager		IN_WORK	
+VPLM_SMB_Evaluation	FROZEN	ToRelease	VPLMReleaseManager | VPLMProjectLeader | VPLMAdmin			RELEASED	
+VPLM_SMB_Evaluation	RELEASED	OutDated	VPLMProjectLeader | VPLMAdmin			OBSOLETE	
+VPLM_SMB_Resource	PRIVATE	ShareWithinProject	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			IN_WORK	
+VPLM_SMB_Resource	IN_WORK	ToRelease	VPLMProjectAdministrator | VPLMReleaseManager | VPLMProjectLeader | VPLMAdmin			RELEASED	
+VPLM_SMB_Resource	IN_WORK	ToFreeze	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			FROZEN	
+VPLM_SMB_Resource	IN_WORK	Isolate	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			PRIVATE	
+VPLM_SMB_Resource	REMOVED	Restore	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			IN_WORK	
+VPLM_SMB_Resource	FROZEN	UnFreeze	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin	VPLMReleaseManager		IN_WORK	
+VPLM_SMB_Resource	FROZEN	ToRelease	VPLMProjectAdministrator | VPLMReleaseManager | VPLMProjectLeader | VPLMAdmin			RELEASED	
+VPLM_SMB_Resource	RELEASED	OutDated	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			OBSOLETE	
+VPLM_SMB_Task_Management	Unspecified	Launch	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			WIP_Active	
+VPLM_SMB_Task_Management	WIP_Active	Approve	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			Completed	
+VPLM_SMB_Task_Management	WIP_Active	Refuse	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			Unspecified	
+VPLM_SMB_Task_Management	WIP_Active	Start	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			WIP_Run	
+VPLM_SMB_Task_Management	Completed	Reject	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			Obsolete	
+VPLM_SMB_Task_Management	WIP_Suspended	Cancel	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			Unspecified	
+VPLM_SMB_Task_Management	WIP_Suspended	Continue	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			WIP_Run	
+VPLM_SMB_Task_Management	WIP_Run	Suspend	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			WIP_Suspended	
+VPLM_SMB_Task_Management	WIP_Run	Done	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			WaitApproval	
+VPLM_SMB_Task_Management	WaitApproval	Refuse	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			WIP_Active	
+VPLM_SMB_Task_Management	WaitApproval	Approve	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			Completed	
+VPLM_SMB_Task_Management	WaitApproval	Reject	VPLMProjectAdministrator | VPLMProjectLeader | VPLMAdmin			Obsolete	
+VPLM_SMB_PostIt_Management	Unspec	Start	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			In_work	
+VPLM_SMB_PostIt_Management	In_work	Stop	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			Unspec	
+VPLM_SMB_PostIt_Management	In_work	Complete	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			Completed	
+VPLM_SMB_PostIt_Management	Completed	Refuse	VPLMCreator | VPLMExperimenter | VPLMProjectAdministrator | VPLMProjectLeader | VPLMViewer | VPLMAdmin			In_work	
+VPLM_SMB_Action	Create	Start	VPLMCreator			DesignWork	
+VPLM_SMB_Action	DesignWork	Propose	VPLMCreator			Review	
+VPLM_SMB_Action	DesignWork	Stop	VPLMProjectLeader			Create	
+VPLM_SMB_Action	DesignWork	Reject	VPLMProjectLeader			Rejected	
+VPLM_SMB_Action	Review	Refuse	VPLMProjectLeader			DesignWork	
+VPLM_SMB_Action	Review	Complete	VPLMProjectLeader			Completed	
+VPLM_SMB_Action	Review	Reject	VPLMProjectLeader			Rejected	
+Workflow	Started	Started To Suspended				Suspended	attribute[Branch To] == 'Suspended'
+Workflow	Started	Started To Completed				Completed	attribute[Branch To] == 'Completed'
+Workflow Task	Started	Started To Overridden				Overridden	attribute[Branch To] == 'Overridden'
+Workflow Task	Started	Started To Assigned				Assigned	attribute[Branch To] == 'Assigned'
+Workflow Task	Started	Started To Suspended				Suspended	attribute[Branch To] == 'Suspended'
+Workflow Task	Assigned	Task Assigned To Suspended				Suspended	attribute[Branch To] == 'Suspended'
+Workflow Task	Assigned	Task Assigned To Completed				Completed	attribute[Branch To] == 'Completed'
+Workflow Task	Assigned	Task Assigned To Overridden				Overridden	attribute[Branch To] == 'Overridden'
+Material Declaration (Active)	Created	Comment	Compliance Engineer | VPLMCreator | VPLMProjectAdministrator				
+Material Declaration (Active)	Requested	Comment	Compliance Engineer | VPLMCreator | VPLMProjectAdministrator | Supplier Representative				
+Material Declaration (Active)	Submitted	Comment	Compliance Engineer | VPLMCreator | VPLMProjectAdministrator				
+Material Declaration (Active)	Received	Comment-Accepted	Compliance Engineer | VPLMCreator | VPLMProjectAdministrator			Rejected	
+Material Declaration (Active)	Received	Comment-Rejected	Compliance Engineer | VPLMCreator | VPLMProjectAdministrator			Rejected	
+Material Declaration (Active)	Accepted	GoToSuperseded	VPLMCreator | VPLMProjectAdministrator			Superseded	attribute[Branch To] == 'Superseded'
+Material Declaration (Active)	Superseded	GoToSuperseded				Superseded	attribute[Branch To] == 'Superseded'
+Internal Material	Review	GoToRejected	Senior Compliance Engineer | VPLMProjectAdministrator | VPLMProjectLeader			Rejected	attribute[Branch To]=='Rejected'
+Internal Material	Review	GoToApproved	Senior Compliance Engineer | VPLMProjectAdministrator | VPLMProjectLeader			Approved	attribute[Branch To]=='None'
+Internal Material	Rejected	GoToDevelopment	Senior Compliance Engineer | VPLMProjectAdministrator | VPLMProjectLeader			Development	attribute[Branch To]=='None'
+Conflict Mineral Declaration	Created	Comment	Compliance Engineer | VPLMCreator			Requested	
+Conflict Mineral Declaration	Created	Comment-Canceled	Compliance Engineer | VPLMCreator			Canceled	
+Conflict Mineral Declaration	Requested	Comment	Compliance Engineer | VPLMCreator			Approved	
+Conflict Mineral Declaration	Requested	Comment-Canceled	Compliance Engineer | VPLMCreator			Canceled	
+Conflict Mineral Declaration	Requested	Comment-Rejected	Compliance Engineer | VPLMCreator			Rejected	
+Conflict Mineral Declaration	Approved	Comment	Compliance Engineer | VPLMCreator			Superseded	
+Conflict Mineral Declaration	Approved	Comment-Canceled	Compliance Engineer | VPLMCreator			Canceled	
+Conflict Mineral Declaration	Superseded	Comment	Compliance Engineer | VPLMCreator			Superseded	
+Conflict Mineral Declaration	Rejected	Comment	Compliance Engineer | VPLMCreator			Rejected	
+Design Policy	Review	Integration Reviewer	Design Reviewer	Design Reviewer	Design Reviewer		
+Design Policy	Review	Design Reviewer	Design Reviewer	Design Reviewer	Design Reviewer		
+DSCMessagePolicy	Completed	ReSubmit	Integration User	Integration User	Integration User	Created	
+DSCMessagePolicy	Completed	Archive	Integration User	Integration User	Integration User		
+Product Documentation	Review	Software Project Manager	Software Project Manager	Software Project Manager			
+Container	REVIEW	Approves Release	Reviewer	Reviewer			
+

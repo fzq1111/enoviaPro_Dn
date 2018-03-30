@@ -1,0 +1,620 @@
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.util.CellRangeAddress;
+
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.State;
+import matrix.util.StringList;
+import matrix.util.Pattern;
+import org.apache.log4j.Logger;
+
+public class ${CLASSNAME} 
+{
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	static StringList busList = new StringList("id");
+	static StringList relList = new StringList(DomainRelationship.SELECT_ID);
+    public ${CLASSNAME}(Context context, String[] args)throws Exception
+    {
+    }
+    public StringList getGateSortstrFininshDate(Context context,DomainObject projectSpaceObj,String attr){
+		   StringList dataList=new StringList();
+		   StringList busList1 = new StringList("id");
+		   busList1.add("name");
+		   busList1.add("type");
+		   busList1.add("current");
+		   busList1.add("attribute[Task Estimated Finish Date]");
+		   busList1.add("attribute[Task Actual Finish Date]");
+		   try{
+		   MapList mapList = projectSpaceObj.getRelatedObjects(context,
+					"Subtask", "Task,Milestone,Gate,Phase", busList1, relList,
+					false, true, (short)0, "", null);
+			mapList.addSortKey(attr, "ascending", "date");
+			mapList.sortStructure();
+			Iterator items=mapList.iterator();
+	        while(items.hasNext()){
+	        	Map map=(Map) items.next();
+	        	String type=(String) map.get("type");
+	        	if(type.equals("Gate")){
+	        		String strFininshDate=(String)map.get(attr);
+	        		if(strFininshDate!=null&&!strFininshDate.equals("")){
+	        			dataList.add(strFininshDate);
+	        		}
+              }
+	        }
+		   }catch(Exception e){
+			   m_logger.error(e.getMessage(), e);
+		   }
+	       return dataList;
+    }
+
+	public StringList getGateIdSortstrActualFininshDate(Context context,
+			DomainObject projectSpaceObj) {
+		StringList dataList = new StringList();
+		StringList busList1 = new StringList("id");
+		busList1.add("name");
+		busList1.add("type");
+		busList1.add("current");
+		busList1.add("attribute[Task Actual Finish Date]");
+		try {
+			MapList mapList = projectSpaceObj.getRelatedObjects(context,
+					"Subtask", "Task,Milestone,Gate,Phase", busList1, relList,
+					false, true, (short) 0, "", null);
+			mapList.addSortKey("attribute[Task Actual Finish Date]",
+					"ascending", "date");
+			mapList.sortStructure();
+			Iterator items = mapList.iterator();
+			while (items.hasNext()) {
+				Map map = (Map) items.next();
+				String type = (String) map.get("type");
+				if (type.equals("Gate")) {
+					String id = (String) map.get("id");
+					String strFininshDate=(String)map.get("attribute[Task Actual Finish Date]");
+	        		if(strFininshDate!=null&&!strFininshDate.equals("")){
+					    dataList.add(id);
+					}
+				}
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return dataList;
+	}
+    
+    public MapList getGateScheduleCompareReport(Context context, String[] args)throws Exception	
+	{
+        MapList resList=new MapList();
+        String titles[] = new String[] {"Gate\u5BF9\u6BD4","Gate F","Gate E","Gate D","Gate C","Gate B","Gate A"};
+        Map titleMap = new HashMap();
+		for (int i = 0; i < titles.length; i++) {
+			titleMap.put(i + "", titles[i]);
+		}
+		resList.add(titleMap);
+        try{
+		   HashMap programMap         = (HashMap) JPO.unpackArgs(args);
+		   StringList projectList=(StringList)programMap.get("groupIdList");
+		   for(int i=0;i<projectList.size();i++){
+			   Map mapDate = new HashMap();
+			   String projectId=(String)projectList.get(i);
+			   DomainObject projectSpaceObj = DomainObject.newInstance(context,projectId);
+			   String projectName=projectSpaceObj.getName(context);
+			   mapDate.put("0",projectName);
+			   String attributeSort="attribute[Task Estimated Finish Date]";
+			   StringList dataList=getGateSortstrFininshDate(context,projectSpaceObj,attributeSort);
+		       for(int j=0;j<dataList.size()-1&&j<titles.length-1;j++){
+		        	 long escalationTime1= 0,escalationTime2=0;
+		        	  Date escalationDate1=eMatrixDateFormat.getJavaDate((String)dataList.get(j));
+  	                  escalationTime1= escalationDate1.getTime();
+  	            	  Date escalationDate2=eMatrixDateFormat.getJavaDate((String)dataList.get(j+1));
+    	              escalationTime2= escalationDate2.getTime();
+  	                  long days=( escalationTime2- escalationTime1)/86400000;
+  	                  mapDate.put(j+1+"",days+"");
+		        }
+		        resList.add(mapDate);
+		   }
+		
+        }catch(Exception e){
+        	m_logger.error(e.getMessage(), e);
+        }
+        return resList;
+	}
+    
+    public MapList getPhaseScheduleCompareReport(Context context, String[] args)throws Exception	
+   	{
+           MapList resList=new MapList();
+           String titles[] = new String[]{"\u9636\u6BB5\u5BF9\u6BD4","\u6982\u5FF5\u9636\u6BB5","\u9020\u578B\u9636\u6BB5","\u5DE5\u7A0B\u8BBE\u8BA1\u9636\u6BB5"
+        		                            ,"\u6A21\u5177\u5F00\u53D1\u9636\u6BB5","\u8BBE\u5907\u5236\u4F5C\u9636\u6BB5","\u8BD5\u9A8C\u9636\u6BB5",
+        		                            "F\u8BD5\u8BD5\u88C5\u9636\u6BB5","PJ\u8BD5\u8BD5\u88C5\u9636\u6BB5","PL\u8BD5\u8BD5\u88C5\u9636\u6BB5",
+        		                            "PT\u8BD5\u8BD5\u88C5\u9636\u6BB5","PP\u8BD5\u8BD5\u88C5\u9636\u6BB5"};
+           Map titleMap = new HashMap();
+   		   for (int i = 0; i < titles.length; i++) {
+   			titleMap.put(i + "", titles[i]);
+   		   }
+   		   resList.add(titleMap);
+           try{
+   		   HashMap programMap         = (HashMap) JPO.unpackArgs(args);
+   		   StringList projectList=(StringList)programMap.get("groupIdList");
+   		   for(int i=0;i<projectList.size();i++){
+   			   Map mapDate = new HashMap();
+   			   String projectId=(String)projectList.get(i);
+   			   DomainObject projectSpaceObj = DomainObject.newInstance(context,projectId);
+   			   String projectName=projectSpaceObj.getName(context);
+   			   mapDate.put("0",projectName);
+   			   StringList busList2= new StringList("id");
+   			   busList2.add("name");
+   			   busList2.add("type");
+   			   busList2.add("attribute[Task Estimated Duration]");
+   			   Pattern filTypePattern=new Pattern("Phase");
+   		       for(int j=1;j< titles.length;j++){ 
+   		    	     Map includeMap=new HashMap();
+   		    	     includeMap.put("name", titles[j]);
+   		             MapList mapList = projectSpaceObj.getRelatedObjects(context,
+   						"Subtask", "Task,Milestone,Gate,Phase", busList2, relList,
+   						false, true, (short)0, "", null,filTypePattern,null,includeMap); 
+   		             if(mapList.size()>0){
+   		            	 Map phaseMap=(Map)mapList.get(0);
+   		            	 String  duration=(String)phaseMap.get("attribute[Task Estimated Duration]");
+   		                 mapDate.put(j+"",duration);
+   		             }else{
+   		            	 mapDate.put(j+"","");
+   		             }
+   		       }
+   		       resList.add(mapDate);
+   		   }
+         }catch(Exception e){
+           m_logger.error(e.getMessage(), e);
+         }
+         return resList;
+   	}
+    
+    public MapList getProjectSEMCostRequest(Context context,DomainObject projectSpaceObj){
+    	MapList res=new MapList();
+    	StringList busList3= new StringList("id");
+		busList3.add("name");
+		busList3.add("type");
+		busList3.add("current");
+		busList3.add("originated");
+		busList3.add("attribute[SEM Request Amount]");
+		busList3.add("attribute[SEM Contract Amount]");
+    	Pattern filTypePattern=new Pattern("SEM Cost Request");
+    	Map includeMap=new HashMap();
+   	    includeMap.put("current","Exist");
+    	try{
+    	res=projectSpaceObj.getRelatedObjects(context,
+					"Project Financial Item,SEM Sub Budget,Financial Items,SEM CostRequest Budget", "Budget,Cost Item,SEM Cost Request", busList3, relList,
+					false, true, (short)0, "", null,filTypePattern,null,includeMap);
+    	}catch(Exception e){
+    		m_logger.error(e.getMessage(), e);
+    	}
+    	return res;
+    }
+    
+    public MapList getGateInvestmentCompareReport(Context context, String[] args)throws Exception	
+	{
+        MapList resList=new MapList();
+        String titles[] = new String[] {"Gate\u5BF9\u6BD4","Gate F","Gate E","Gate D","Gate C","Gate B","Gate A"};
+        Map titleMap = new HashMap();
+		for (int i = 0; i < titles.length; i++) {
+			titleMap.put(i + "", titles[i]);
+		}
+		resList.add(titleMap);
+        try{
+		   HashMap programMap         = (HashMap) JPO.unpackArgs(args);
+		   StringList projectList=(StringList)programMap.get("groupIdList");
+		   for(int i=0;i<projectList.size();i++){
+			   Map mapDate = new HashMap();
+			   String projectId=(String)projectList.get(i);
+			   DomainObject projectSpaceObj = DomainObject.newInstance(context,projectId);
+			   String projectName=projectSpaceObj.getName(context);
+			   mapDate.put("0",projectName);
+			   MapList SEMCostRequestList=getProjectSEMCostRequest(context,projectSpaceObj);
+			   String attributeSort="attribute[Task Actual Finish Date]";
+			   StringList dataList=getGateSortstrFininshDate(context,projectSpaceObj,attributeSort);
+			   for(int j=0;j<dataList.size()-1&&j<titles.length-1;j++){
+		        	  Date escalationDate1=eMatrixDateFormat.getJavaDate((String)dataList.get(j));
+	            	  Date escalationDate2=eMatrixDateFormat.getJavaDate((String)dataList.get(j+1)); 
+	            	  double hj=0.0;
+	            	  for(int k=0;k<SEMCostRequestList.size();k++){
+	            		  Map scrMap=(Map)SEMCostRequestList.get(k);
+	            		  String originated=(String)scrMap.get("originated");
+	            		  Date originatedDate=eMatrixDateFormat.getJavaDate(originated);
+	            		  int m=originatedDate.compareTo(escalationDate1);
+	                  	  int n=originatedDate.compareTo(escalationDate2);
+	                  	  if(m>=0&&n<=0){
+	                  		double SCA=Double.parseDouble((String)scrMap.get("attribute[SEM Contract Amount]"));
+	                  		double SRA=Double.parseDouble((String)scrMap.get("attribute[SEM Request Amount]"));
+	                  		if(SCA==0){
+	                  			hj+=SRA;
+	                  		}else{
+	                  			hj+=SCA;
+	                  		}	
+	                  	  }	
+	            	  }
+	            	  hj=hj/10000;
+	            	  mapDate.put(j+1+"",String.format("%.2f", hj)); 
+		       }
+		       resList.add(mapDate);
+		   }
+		
+        }catch(Exception e){
+        	m_logger.error(e.getMessage(), e);
+        }
+        return resList;
+	}  
+    public MapList getPhaseInvestmentCompareReport(Context context, String[] args)throws Exception	
+	{
+        MapList resList=new MapList();
+        String titles[] = new String[] {"\u9636\u6BB5\u5BF9\u6BD4","\u6982\u5FF5\u9636\u6BB5","\u9020\u578B\u9636\u6BB5","\u5DE5\u7A0B\u8BBE\u8BA1\u9636\u6BB5","\u6A21\u5177\u5F00\u53D1\u9636\u6BB5",
+        		"\u8BBE\u5907\u5236\u4F5C\u9636\u6BB5","\u8BD5\u88C5\u9636\u6BB5","\u8BD5\u9A8C\u9636\u6BB5"};
+        Map titleMap = new HashMap();
+		for (int i = 0; i < titles.length; i++) {
+			titleMap.put(i + "", titles[i]);
+		}
+		resList.add(titleMap);
+        try{
+		   HashMap programMap         = (HashMap) JPO.unpackArgs(args);
+		   StringList projectList=(StringList)programMap.get("groupIdList");
+		   for(int i=0;i<projectList.size();i++){
+			   Map mapDate = new HashMap();
+			   String projectId=(String)projectList.get(i);
+			   DomainObject projectSpaceObj = DomainObject.newInstance(context,projectId);
+			   String projectName=projectSpaceObj.getName(context);
+			   mapDate.put("0",projectName);
+			   MapList SEMCostRequestList=getProjectSEMCostRequest(context,projectSpaceObj);
+			   StringList busList4= new StringList("id");
+   			   busList4.add("name");
+   			   busList4.add("type");
+   			   busList4.add("attribute[Task Actual Start Date]");
+   			   busList4.add("attribute[Task Actual Finish Date]");
+   			   Pattern filTypePattern=new Pattern("Phase");
+			   for(int j=1;j<titles.length;j++){
+				     Map includeMap=new HashMap();
+ 		    	     includeMap.put("name", titles[j]);
+ 		             MapList mapList = projectSpaceObj.getRelatedObjects(context,
+ 						"Subtask", "Task,Milestone,Gate,Phase", busList4, relList,
+ 						false, true, (short)0, "", null,filTypePattern,null,includeMap); 
+ 		             if(mapList.size()>0){
+ 		            	 Map phaseMap=(Map)mapList.get(0);
+ 		            	 String  strASD=(String)phaseMap.get("attribute[Task Actual Start Date]");
+ 		            	 String  strAFD=(String)phaseMap.get("attribute[Task Actual Finish Date]");
+ 		            	 double hj=0.0;
+ 		            	 if(!strASD.equals("")&&!strAFD.equals("")){
+ 		            	   Date escalationDate1=eMatrixDateFormat.getJavaDate(strASD);
+ 		            	   Date escalationDate2=eMatrixDateFormat.getJavaDate(strAFD); 
+ 		            	   for(int k=0;k<SEMCostRequestList.size();k++){
+ 		            		  Map scrMap=(Map)SEMCostRequestList.get(k);
+ 		            		  String originated=(String)scrMap.get("originated");
+ 		            		  Date originatedDate=eMatrixDateFormat.getJavaDate(originated);
+ 		            		  int m=originatedDate.compareTo(escalationDate1);
+ 		                  	  int n=originatedDate.compareTo(escalationDate2);
+ 		                  	  if(m>=0&&n<=0){
+ 		                  		double SCA=Double.parseDouble((String)scrMap.get("attribute[SEM Contract Amount]"));
+ 		                  		double SRA=Double.parseDouble((String)scrMap.get("attribute[SEM Request Amount]"));
+ 		                  		if(SCA==0){
+ 		                  			hj+=SRA;
+ 		                  		}else{
+ 		                  			hj+=SCA;
+ 		                  		}	
+ 		                  	  }	
+ 		            	   }
+ 		            	   hj=hj/10000;
+ 		            	  }
+ 		            	  mapDate.put(j+"",String.format("%.2f", hj)); 
+ 		             }else{
+ 		            	 mapDate.put(j+"","");
+ 		             }
+		       }
+		       resList.add(mapDate);
+		   }
+		
+        }catch(Exception e){
+        	m_logger.error(e.getMessage(), e);
+        }
+        return resList;
+	}  
+
+	public MapList getDepartmentInvestmentCompareReport(Context context,
+			String[] args) throws Exception {
+		MapList resList = new MapList();
+		String titles[] = new String[] { "\u90E8\u95E8\u5BF9\u6BD4",
+				"\u5546\u54C1\u4F01\u5212\u90E8",
+				"\u6C7D\u8F66\u7814\u7A76\u9662", "\u5F00\u53D1\u90E8",
+				"\u54C1\u8D28\u7BA1\u7406\u90E8", "\u751F\u6280\u90E8",
+				"\u751F\u7BA1\u90E8", "\u751F\u4EA7\u90E8",
+				"\u91C7\u8D2D\u90E8", "\u9500\u552E\u90E8",
+				"\u670D\u52A1\u90E8", "\u603B\u7ECF\u7406\u5BA4" };
+		Map titleMap = new HashMap();
+		for (int i = 0; i < titles.length; i++) {
+			titleMap.put(i + "", titles[i]);
+		}
+		resList.add(titleMap);
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			StringList projectList = (StringList) programMap.get("groupIdList");
+			busList.add("name");
+			StringList busList4 = new StringList("id");
+			busList4.add("name");
+			busList4.add("type");
+			busList4.add("current");
+			busList4.add("attribute[SEM Request Amount]");
+			busList4.add("attribute[SEM Contract Amount]");
+			for (int i = 0; i < projectList.size(); i++) {
+				Map mapDate = new HashMap();
+				String projectId = (String) projectList.get(i);
+				DomainObject projectSpaceObj = DomainObject.newInstance(
+						context, projectId);
+				String projectName = projectSpaceObj.getName(context);
+				mapDate.put("0", projectName);
+				for (int j = 1; j < titles.length; j++) {
+					String where = "name=='" + titles[j] + "'";
+					MapList departmentList =projectSpaceObj.getRelatedObjects(
+							context, "Project Financial Item", "Budget",
+							busList, relList, false, true, (short) 1, where,
+							null);
+					if (departmentList.size() > 0) {
+						double hj = 0.0;
+						Map departmentMap = (Map) departmentList.get(0);
+						String departmentId = (String) departmentMap.get("id");
+						DomainObject departmentObj = DomainObject.newInstance(
+								context, departmentId);
+
+						Pattern filTypePattern = new Pattern("SEM Cost Request");
+						Map includeMap = new HashMap();
+						includeMap.put("current", "Exist");
+						MapList SEMCostRequestList =departmentObj 
+								.getRelatedObjects(
+										context,
+										"SEM Sub Budget,Financial Items,SEM CostRequest Budget",
+										"Budget,Cost Item,SEM Cost Request",
+										busList4, relList, false, true,
+										(short) 0, "", null, filTypePattern,
+										null, includeMap);
+						for (int k = 0; k < SEMCostRequestList.size(); k++) {
+							Map scrMap = (Map) SEMCostRequestList.get(k);
+							double SCA = Double.parseDouble((String) scrMap
+									.get("attribute[SEM Contract Amount]"));
+							double SRA = Double.parseDouble((String) scrMap
+									.get("attribute[SEM Request Amount]"));
+							if (SCA == 0) {
+								hj += SRA;
+							} else {
+								hj += SCA;
+							}
+						}
+						hj = hj / 10000;
+						mapDate.put(j + "", String.format("%.2f", hj));
+					} else {
+						mapDate.put(j + "", "");
+					}	
+				}
+				resList.add(mapDate);
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return resList;
+	}
+	public MapList getGateJudgetCompareReport(Context context,
+			String[] args) throws Exception {
+		MapList resList = new MapList();
+		String titles[] = new String[] {"Gate\u5BF9\u6BD4","Gate F","Gate E","Gate D","Gate C","Gate B","Gate A","Gate Z"};
+		Map titleMap = new HashMap();
+		for (int i = 0; i < titles.length; i++) {
+			titleMap.put(i + "", titles[i]);
+		}
+		resList.add(titleMap);
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			busList.add("description");
+			StringList projectList = (StringList) programMap.get("groupIdList");
+			for (int i = 0; i < projectList.size(); i++) {
+				Map mapDate = new HashMap();
+				String projectId = (String) projectList.get(i);
+				DomainObject projectSpaceObj = DomainObject.newInstance(
+						context, projectId);
+				String projectName = projectSpaceObj.getName(context);
+				mapDate.put("0", projectName);
+				StringList gateIds=getGateIdSortstrActualFininshDate(context,projectSpaceObj);
+				for(int j=0;j<gateIds.size()&&j<titles.length-1;j++){
+					String description="";
+					DomainObject gateObj = DomainObject.newInstance(context,(String)gateIds.get(j));
+					MapList mapList=gateObj.getRelatedObjects(
+							context,"Decision","Decision",
+							busList, relList,true,false, (short) 1,"",
+							null);
+					if(mapList.size()>0){
+						Map map=(Map)mapList.get(0);
+						description=(String)map.get("description");
+					}
+					mapDate.put(j+1+"",description);
+				}
+				resList.add(mapDate);
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+		return resList;
+	}
+    public void exportExcel(Context context, String[] args) {
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList0 = (MapList) programMap.get("dataList0");
+			MapList dataList1 = (MapList) programMap.get("dataList1");
+			MapList dataList2 = (MapList) programMap.get("dataList2");
+			MapList dataList3 = (MapList) programMap.get("dataList3");
+			MapList dataList4 = (MapList) programMap.get("dataList4");
+			MapList dataList5 = (MapList) programMap.get("dataList5");
+			if (dataList0== null || dataList0.size() == 0) {
+				return;
+			}
+			String sheetName = "\u65E5\u7A0B\uFF08\u591A\u9879\u76EE\u5BF9\u6BD4\uFF09";
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			String head0= "Gate\u65E5\u7A0B\u5BF9\u6BD4\uFF08\u5355\u4F4D\uFF1A\u5929\u6570\uFF09";
+			String[] keys0=getKeys(dataList0);
+			fillSheetInfo(context, head0, 0, keys0, dataList0, workbook, sheet);
+			if (dataList1== null || dataList1.size() == 0) {
+				return;
+			}
+			String head1 = "\u5173\u952E\u91CC\u7A0B\u7891\uFF08\u9636\u6BB5\uFF09\u65E5\u7A0B\u5BF9\u6BD4\uFF08\u5355\u4F4D\uFF1A\u5929\u6570\uFF09";
+			String[] keys1=getKeys(dataList1);
+			fillSheetInfo(context, head1, dataList0.size()+ 3, keys1,
+					dataList1, workbook, sheet);
+			if (dataList2== null || dataList2.size() == 0) {
+				return;
+			}
+			
+			String sheetName1="\u6295\u8D44.\u635F\u76CA\uFF08\u591A\u9879\u76EE\u5BF9\u6BD4\uFF09";
+			HSSFSheet sheet1= workbook.createSheet(sheetName1);
+			String head2="Gate\u6295\u8D44\u8D39\u7528/\u635F\u76CA\u5BF9\u6BD4\uFF08\u5355\u4F4D\uFF1A\u4E07\u5143\uFF09";
+			String[] keys2=getKeys(dataList2);
+			fillSheetInfo(context, head2,0, keys2, dataList2, workbook, sheet1);
+			if (dataList3== null || dataList3.size() == 0) {
+				return;
+			}
+			String head3= "\u5173\u952E\u91CC\u7A0B\u7891\uFF08\u9636\u6BB5\uFF09\u6295\u8D44\u8D39\u7528\u5BF9\u6BD4\uFF08\u5355\u4F4D\uFF1A\u4E07\u5143\uFF09";
+			String[] keys3=getKeys(dataList3);
+			fillSheetInfo(context, head3, dataList2.size()+3, keys3, dataList3, workbook, sheet1);
+			
+			if (dataList4== null || dataList4.size() == 0) {
+				return;
+			}
+			String head4="\u90E8\u95E8\u6295\u8D44\u8D39\u7528\u5BF9\u6BD4\uFF08\u5355\u4F4D\uFF1A\u4E07\u5143\uFF09";
+			String[] keys4=getKeys(dataList4);
+			fillSheetInfo(context, head4, dataList2.size()+dataList3.size()+5, keys4, dataList4, workbook, sheet1);
+			
+			if (dataList5== null || dataList5.size() == 0) {
+				return;
+			}
+			String sheetName2="\u5224\u5B9A\uFF08\u591A\u9879\u76EE\u5BF9\u6BD4\uFF09";
+			HSSFSheet sheet2= workbook.createSheet(sheetName2);
+			String head5="Gate\u8BC4\u5BA1\u5224\u5B9A\u5BF9\u6BD4";
+			String[] keys5=getKeys(dataList5);
+			fillSheetInfo(context, head5,0,keys5,dataList5, workbook, sheet2);
+			System.out.println("....exportExcel......end..");
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}// end method
+
+	public void fillSheetInfo(Context context, String head, int beginPosion,
+			String[] keys, MapList dataList, HSSFWorkbook workbook,
+			HSSFSheet sheet) throws Exception {
+		try {
+			int curRowIndex = beginPosion;
+			int curDataIndex = 0;
+			int maxRowCount = dataList.size();
+			int maxcolumnCount = ((Map) dataList.get(0)).size();
+			int maxSheetRow = 60000;
+			HSSFCell cell_dep;
+			HSSFRow row;
+
+			HSSFFont font = workbook.createFont();
+			font.setFontName("\u9ED1\u4F53");
+			font.setFontHeightInPoints((short) 16);// Set the font size
+			
+			HSSFFont font1 = workbook.createFont();
+			font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+			font1.setFontHeightInPoints((short)14);
+
+			HSSFCellStyle headStyle = workbook.createCellStyle();
+			headStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			headStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			headStyle.setFont(font);
+
+			HSSFCellStyle sheetStyle = workbook.createCellStyle();
+			sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			sheetStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+
+			HSSFFont columnHeadFont = workbook.createFont();
+			columnHeadFont.setColor(HSSFColor.BLUE.index);
+			columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+					.createCellStyle();
+			columnHeadStyle.setFont(font1);
+			columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA.getIndex());
+			columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+            //Set the table header
+			sheet.addMergedRegion(new CellRangeAddress(curRowIndex,
+					curRowIndex + 1, 0,6));
+			row = sheet.createRow(curRowIndex);
+			HSSFCell begincell = row.createCell(0);
+			begincell.setCellValue(head);
+			begincell.setCellStyle(headStyle);
+			curRowIndex = curRowIndex + 2;//
+			
+			for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+				row = sheet.createRow(curRowIndex);
+				if (i == 0) {
+					row.setHeight((short) 600);
+				}
+				Map map = (Map) dataList.get(curDataIndex);
+				for (int j = 0; j < map.size(); j++) {
+					if (i == 0) {
+						HSSFCell cell = row.createCell(j);
+						cell.setCellValue((String) map.get(keys[j]));
+						cell.setCellStyle(columnHeadStyle);
+					} else {
+						cell_dep = row.createCell(j);
+						cell_dep.setCellType(HSSFCell.CELL_TYPE_STRING);
+						cell_dep.setCellValue((String) map.get(keys[j]));
+						cell_dep.setCellStyle(sheetStyle);
+					}
+
+				}
+				curRowIndex = curRowIndex + 1;
+			}// for sheet
+			
+			//Set the column size to auto-fit
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.autoSizeColumn(i);
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw new FrameworkException(e);
+		}
+	}
+	public String[] getKeys(MapList mapList){
+		Map map=(Map)mapList.get(0);
+		int n=map.size();
+		String[] res=new String[n];
+		for(int i=0;i<n;i++){
+			res[i]=i+"";
+		}
+		return res;
+	}
+
+}

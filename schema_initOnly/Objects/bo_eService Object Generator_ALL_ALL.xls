@@ -1,0 +1,10 @@
+Type	Name	Rev	New Name	New Rev	Policy	State	Vault	Owner	description	eService Name Prefix	eService Name Suffix	eService Processing Time Limit	eService Retry Count	eService Retry Delay	eService Safety Policy	eService Safety Vault
+eService Object Generator	type_SEMApproveOrder		type_SEMApproveOrder		eService Object Generator	Exists	eService Administration	creator		PAO-		60	1	1000	policy_FinancialItems	vault_eServiceProduction
+eService Object Generator	type_SEMPrjChangeRequest		type_SEMPrjChangeRequest		eService Object Generator	Exists	eService Administration	creator		PCR-		60	1	1000	policy_FinancialItems	vault_eServiceProduction
+eService Object Generator	type_SEMBudgetChangeRequest		type_SEMBudgetChangeRequest		eService Object Generator	Exists	eService Administration	creator		BCR-		60	1	1000	policy_FinancialItems	vault_eServiceProduction
+eService Object Generator	type_LSPropertyKey		type_LSPropertyKey		eService Object Generator	Exists	eService Administration	creator		PK-		60	5	1000	policy_LSPropertyKey	vault_eService Administrator
+eService Object Generator	type_Issue		type_Issue		eService Object Generator	Exists	eService Administration	creator				60	5	60	policy_Issue	vault_eServiceAdministration
+eService Object Generator	type_SEMTestCarNumbers		type_SEMTestCarNumbers		eService Object Generator	Exists	eService Administration	creator		TCN-		60	1	1000	policy_FinancialItems	vault_eServiceProduction
+eService Object Generator	type_LSNotificationRequest		type_LSNotificationRequest		eService Object Generator	Exists	eService Administration	creator		NR_		60	5	1000	policy_LSNotificationRequest	vault_eServiceAdministration
+eService Object Generator	type_SEMTaskItem		type_SEMTaskItem		eService Object Generator	Exists	eService Administration	creator				60	1	1000	policy_FinancialItems	vault_eServiceProduction
+eService Object Generator	type_SEMContactOrder		type_SEMContactOrder		eService Object Generator	Exists	eService Administration	creator		CCO-		60	1	1000	policy_SEMContactOrder	vault_eServiceProduction

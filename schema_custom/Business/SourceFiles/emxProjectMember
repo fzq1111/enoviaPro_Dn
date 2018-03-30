@@ -1,0 +1,854 @@
+/*
+ *  emxProjectMember.java
+ *
+ * Copyright (c) 1992-2015 Dassault Systemes.
+ *
+ * All Rights Reserved.
+ * This program contains proprietary and trade secret information of
+ * MatrixOne, Inc.  Copyright notice is precautionary only and does
+ * not evidence any actual or intended publication of such program.
+ *
+ * static const char RCSID[] = $Id: ${CLASSNAME}.java.rca 1.7.2.2 Thu Dec  4 07:56:10 2008 ds-ss Experimental ${CLASSNAME}.java.rca 1.7.2.1 Thu Dec  4 01:55:00 2008 ds-ss Experimental ${CLASSNAME}.java.rca 1.7 Wed Oct 22 15:49:55 2008 przemek Experimental przemek $
+ */
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Vector;
+
+import org.apache.log4j.Logger;
+
+import matrix.db.AccessConstants;
+import matrix.db.AttributeType;
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.RelationshipType;
+import matrix.util.MatrixException;
+import matrix.util.StringItr;
+import matrix.util.StringList;
+
+import com.matrixone.apps.common.MemberRelationship;
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.common.Task;
+import com.matrixone.apps.common.WorkspaceVault;
+import com.matrixone.apps.common.util.ComponentsUtil;
+import com.matrixone.apps.domain.DomainAccess;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.MqlUtil;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.StringUtil;
+import com.matrixone.apps.domain.util.XSSUtil;
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.domain.util.mxAttr;
+import com.matrixone.apps.framework.ui.UITable;
+import com.matrixone.apps.framework.ui.UIUtil;
+import com.matrixone.apps.program.ProgramCentralConstants;
+import com.matrixone.apps.program.ProgramCentralUtil;
+import com.matrixone.apps.program.ProjectRoleVaultAccess;
+import com.matrixone.apps.program.ProjectSpace;
+import com.matrixone.apps.program.WeeklyTimesheet;
+import com.matrixone.apps.program.fiscal.CalendarType;
+import com.matrixone.apps.program.fiscal.Helper;
+import com.matrixone.apps.program.fiscal.Interval;
+import com.matrixone.apps.program.fiscal.IntervalType;
+import com.matrixone.apps.domain.util.PersonUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+
+
+/**
+ * The <code>emxProjectMember</code> class represents the Project Member JPO
+ * functionality for the PMC type.
+ *
+ * @version PMC 10-6 - Copyright (c) 2002, MatrixOne, Inc.
+ */
+public class ${CLASSNAME} extends ${CLASS:emxProjectMemberBase}
+{
+	private static Logger m_rootLogger = Logger.getLogger(${CLASSNAME}.class);
+	
+    /**
+     * Constructor.
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since PMC 10-6
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+      super(context, args);
+    }
+    
+    /**
+     * This method returns MapList of the project members.
+     * 
+     * @param context
+     *        context object which is used while fetching data related application.
+     *        
+     * @param args
+     *        Holds input argument.
+     *        
+     * @throws Exception
+     *         Exception can be thrown in case of method fails to execute.
+     */
+   
+	static MapList returnMapList = new MapList();
+	@com.matrixone.apps.framework.ui.ProgramCallable
+	static public MapList getObjectAccessList(Context context, String[] args) throws Exception {
+
+		Map programMap = (Map) JPO.unpackArgs(args);
+		MapList resultList = new MapList();			
+
+		MapList results  = (MapList) JPO.invoke(context,
+				"emxDomainAccess", 
+				null,
+				"getObjectAccessList", 
+				args,
+				MapList.class);
+
+		Iterator resultsItr = results.iterator();
+		while(resultsItr.hasNext()){
+			Map mapObjects = (Map) resultsItr.next();
+			mapObjects.put("disableSelection","false");
+		}
+		
+		String id = (String) programMap.get("objectId");
+		StringList busSelect = new StringList(2);
+		busSelect.add("altowner1");
+		busSelect.add("altowner2");
+		String organization = ProgramCentralConstants.EMPTY_STRING;
+		String project = ProgramCentralConstants.EMPTY_STRING;
+
+		if(ProgramCentralUtil.isNotNullString(id))
+		{
+			ProjectSpace projectSpace = (ProjectSpace) DomainObject.newInstance(context,DomainConstants.TYPE_PROJECT_SPACE,DomainConstants.PROGRAM); 
+			projectSpace.setId(id);
+			Map<String,String> projectInfo = projectSpace.getInfo(context, busSelect);
+			organization = projectInfo.get("altowner1");
+			project = projectInfo.get("altowner2");
+
+			Iterator resultsIterator = results.iterator();
+			
+			//modify by wangyitao
+			StringList busList = new StringList("id");
+			busList.add("name");
+			StringList relList = new StringList("id[connection]");
+			relList.add("attribute[SEM PrjMemberStruct]");
+			DomainObject strProjectObj = new DomainObject(id);
+			MapList memberList = strProjectObj.getRelatedObjects(context,"Member","*",busList,relList,false,true,(short)1,null,null);
+			
+			while(resultsIterator.hasNext())
+			{
+				Map<String,String> mapObjects = (Map) resultsIterator.next();
+				mapObjects.put("hasChildren","true");
+				String org = mapObjects.get("org");
+				String strProject = mapObjects.get("project");
+				if((organization.equals(org) && ProgramCentralUtil.isNullString(strProject)) || (organization.equals(org) && project.equals(strProject)))
+				{
+					mapObjects.put("disableSelection","true");
+				} 
+				String getName = mapObjects.get("name");
+				//String[] splitName = getName.split("_");
+				String splitName = getName.substring(0,getName.length()-4);
+				Iterator it = memberList.iterator();
+				while(it.hasNext())
+				{
+					Map map = (Map)it.next();
+					String memberName = (String)map.get("name");
+					String memberId = (String)map.get("id");
+					String relId = (String)map.get("id[connection]");
+					DomainRelationship relObj = new DomainRelationship(relId);
+					String attrValue = relObj.getAttributeValue(context,"SEM PrjMemberStruct");
+					//if(memberName.equals(splitName[0]))
+					if(memberName.equals(splitName))
+					{
+						if((attrValue.length()>0))
+						{
+							if(attrValue.indexOf(".") == -1){
+							mapObjects.put("relId",relId);
+							
+							resultList.add(mapObjects);
+							}
+						}else{
+							mapObjects.put("hasChildren","true");
+
+							resultList.add(mapObjects);
+						}
+					}else{
+						continue;
+					}
+				}	    	
+				//end
+		}
+			returnMapList = results;			
+			return resultList;
+		}else {
+			return resultList;
+		}
+
+	}
+
+	
+	public MapList expandProjectMembers(Context context,String[] args)throws Exception
+	{
+		MapList resultList = new MapList();
+		Map programMap = (Map) JPO.unpackArgs(args);
+		String objectId = (String)programMap.get("objectId");
+		String clickName = getNameFromId(context,objectId,"Name");
+		String clickParentId = getNameFromId(context,objectId,"Id");
+		
+		String parentLevel ="";
+		if(ProgramCentralUtil.isNotNullString(clickParentId))
+		{
+			parentLevel = getSEMStructValue(context,clickParentId,clickName);
+		}
+		StringList busList = new StringList("id");
+		busList.add("name");
+		StringList relList = new StringList("id[connection]");
+		relList.add("attribute[SEM PrjMemberStruct]");
+		DomainObject strObj = new DomainObject(clickParentId);
+		MapList memberList = strObj.getRelatedObjects(context,"Member","*",busList,relList,false,true,(short)1,null,null);
+		Iterator reultsIt = memberList.iterator();
+		StringList memberNameList = new StringList();
+		while(reultsIt.hasNext())
+		{
+			Map resultMap = (Map) reultsIt.next();
+			String memberName = (String)resultMap.get("name");
+			String attrValue = (String)resultMap.get("attribute[SEM PrjMemberStruct]");
+			if(attrValue.indexOf(".") != -1)
+			{
+				/**attrValue = attrValue.substring(0,attrValue.length()-2);
+				if(attrValue.equals(parentLevel))
+				{
+					memberNameList.add(memberName);
+				}*/
+				String[] splitNewValue = attrValue.split("\\.");
+
+				if(splitNewValue.length==3)
+				{
+					String checkNewValue=splitNewValue[0]+"."+splitNewValue[1];
+					if(parentLevel.equals(checkNewValue))
+					{
+						memberNameList.add(memberName);
+					}
+				}else if(splitNewValue.length==2){
+					String checkNewValue=splitNewValue[0];
+					if(parentLevel.equals(checkNewValue))
+					{
+						memberNameList.add(memberName);
+					}
+				}
+			}
+		}
+		Iterator it = returnMapList.iterator();
+		while(it.hasNext())
+		{
+			Map map = (Map) it.next();
+			String accessName = (String)map.get("name");
+			//String[] sName = accessName.split("_");
+			String sName = accessName.substring(0,accessName.length()-4);
+			if(memberNameList.contains(sName))
+			{
+				resultList.add(map);
+			}else{
+				continue;
+			}
+		}	
+		return resultList;
+	}
+	public String getNameFromId(Context context,String objectId,String returnType)throws Exception
+	{
+		String[] splitId = objectId.split("::");
+		if("Id".equals(returnType)){
+			return splitId[0];
+		}else if("Name".equals(returnType)){
+			String[] splitName = splitId[1].split(":");
+			//String[] splitStrName = splitName[0].split("_");
+			//return splitStrName[0];
+			String splitStrName = splitName[0].substring(0,splitName[0].length()-4);
+			return splitStrName;
+		}else{
+			return "";
+		}
+	}
+	
+	public Vector getSEMStructure(Context context,String[] args)throws Exception
+	{
+		
+		Vector vector = new Vector();
+		try{
+						
+			Map programMap = (Map) JPO.unpackArgs(args);
+			MapList objectList = (MapList)programMap.get("objectList");
+			Iterator reultsIt = objectList.iterator();
+			while(reultsIt.hasNext())
+			{
+				Map resultMap = (Map) reultsIt.next();
+				String objectId = (String)resultMap.get("id");
+				String clickName = getNameFromId(context,objectId,"Name");
+				String clickParentId = getNameFromId(context,objectId,"Id");
+				String value =  getSEMStructValue(context,clickParentId,clickName);
+				vector.add(value);
+			}	
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		
+		return vector;
+	}
+	
+	
+	public Vector getSEMDepartment(Context context,String[] args)throws Exception
+	{
+		
+		Vector vector = new Vector();
+		try{
+			Map programMap = (Map) JPO.unpackArgs(args);
+			MapList objectList = (MapList)programMap.get("objectList");
+			Iterator reultsIt = objectList.iterator();
+			while(reultsIt.hasNext())
+			{
+				Map resultMap = (Map) reultsIt.next();
+				String objectId = (String)resultMap.get("id");
+				String clickName = getNameFromId(context,objectId,"Name");
+				String clickParentId = getNameFromId(context,objectId,"Id");
+				String strObjId = getSEMObjectId(context,clickParentId,clickName);
+				StringList busList = new StringList("id");
+				busList.add("name");
+				StringList relList = new StringList("id[connection]");
+				DomainObject strObj = new DomainObject(strObjId);
+				MapList memberList = strObj.getRelatedObjects(context,"Member","Department",busList,relList,true,false,(short)1,null,null);
+				if(memberList!=null && memberList.size()>0){
+					Iterator it = memberList.iterator();			
+					while(it.hasNext())
+					{
+						Map map = (Map)it.next();
+						
+						String projectRelName = (String)map.get("name");
+						vector.add(projectRelName);
+					}	
+				}else{
+					vector.add("");
+				}
+				
+			}	
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		
+		return vector;
+	}
+	
+	public Vector getSEMSearchDepartment(Context context,String[] args)throws Exception
+	{
+		Vector vector = new Vector();
+		try{
+			Map programMap = (Map) JPO.unpackArgs(args);
+			MapList objectList = (MapList)programMap.get("objectList");
+			Iterator reultsIt = objectList.iterator();
+			while(reultsIt.hasNext())
+			{
+				Map resultMap = (Map) reultsIt.next();
+				String objectId = (String)resultMap.get("id");
+				StringList busList = new StringList("id");
+				busList.add("name");
+				StringList relList = new StringList("id[connection]");
+				DomainObject strObj = new DomainObject(objectId);
+				MapList memberList = strObj.getRelatedObjects(context,"Member","Department",busList,relList,true,false,(short)1,null,null);
+				if(memberList!=null && memberList.size()>0){
+					Iterator it = memberList.iterator();			
+					while(it.hasNext())
+					{
+						Map map = (Map)it.next();
+						
+						String projectRelName = (String)map.get("name");
+						vector.add(projectRelName);
+					}	
+				}else{
+					vector.add("");
+				}
+			
+			}
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		
+		return vector;
+	}
+	
+	public String getSEMStructValue(Context context,String parentId,String memberName)throws Exception
+	{
+		String SEMStructValue="";
+		try{
+			StringList busList = new StringList("id");
+			busList.add("name");
+			StringList relList = new StringList("id[connection]");
+			String where = "name=='"+memberName+"'";
+			DomainObject parentObj = new DomainObject(parentId);
+			MapList memberList = parentObj.getRelatedObjects(context,"Member","*",busList,relList,false,true,(short)1,where,null);
+			Iterator it = memberList.iterator();
+			while(it.hasNext())
+			{
+				Map map = (Map)it.next();				
+				String relId = (String)map.get("id[connection]");
+				DomainRelationship relObj = new DomainRelationship(relId);
+				SEMStructValue = relObj.getAttributeValue(context,"SEM PrjMemberStruct");
+				
+			}	
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return SEMStructValue;
+	}
+	
+	public String getSEMRelId(Context context,String parentId,String memberName)throws Exception
+	{
+		String getSEMRelId="";
+		try{
+			StringList busList = new StringList("id");
+			busList.add("name");
+			StringList relList = new StringList("id[connection]");
+			String where = "name=='"+memberName+"'";
+			DomainObject parentObj = new DomainObject(parentId);
+			MapList memberList = parentObj.getRelatedObjects(context,"Member","*",busList,relList,false,true,(short)1,where,null);
+			Iterator it = memberList.iterator();
+			while(it.hasNext())
+			{
+				Map map = (Map)it.next();				
+				getSEMRelId = (String)map.get("id[connection]");
+				
+			}	
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return getSEMRelId;
+	}
+	
+	
+	public String getSEMObjectId(Context context,String parentId,String memberName)throws Exception
+	{
+		String getSEMObjectId="";
+		try{
+			StringList busList = new StringList("id");
+			busList.add("name");
+			StringList relList = new StringList("id[connection]");
+			String where = "name=='"+memberName+"'";
+			DomainObject parentObj = new DomainObject(parentId);
+			MapList memberList = parentObj.getRelatedObjects(context,"Member","*",busList,relList,false,true,(short)1,where,null);
+			Iterator it = memberList.iterator();
+			while(it.hasNext())
+			{
+				Map map = (Map)it.next();				
+				getSEMObjectId = (String)map.get("id");
+				
+			}	
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return getSEMObjectId;
+	}
+	
+	public void updateSEMStructure(Context context,String[] args)throws Exception
+	{
+		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+	     HashMap paramMap = (HashMap)programMap.get("paramMap");
+	     String objectId = (String)paramMap.get("objectId");
+		 String clickName = getNameFromId(context,objectId,"Name");
+		 String clickParentId = getNameFromId(context,objectId,"Id");		 
+	     String relId = getSEMRelId(context,clickParentId,clickName);    
+		 DomainRelationship relObj = new DomainRelationship(relId);
+		 String newDay = (String)paramMap.get("New Value");
+		 boolean checkValue = checkUpdateValue(context,clickParentId,newDay);
+		 if(checkValue){
+			 relObj.setAttributeValue(context,"SEM PrjMemberStruct",newDay);
+		 }else{
+			${CLASS:emxContextUtilBase}.mqlNotice(context,"\u7ED3\u6784\u7801\u8F93\u5165\u9519\u8BEF\uFF0C\u8BF7\u91CD\u65B0\u68C0\u67E5\u540E\u8F93\u5165\u3002");
+
+		 }
+		 	
+ 
+	}
+	
+	public boolean checkUpdateValue(Context context,String parentId,String newValue)throws Exception
+	{
+		boolean checkValue = false;
+		try{
+			
+			
+			StringList busList = new StringList("id");
+			busList.add("name");
+			StringList relList = new StringList("id[connection]");			
+			DomainObject parentObj = new DomainObject(parentId);
+			MapList memberList = parentObj.getRelatedObjects(context,"Member","*",busList,relList,false,true,(short)1,"",null);
+			Iterator it = memberList.iterator();
+			while(it.hasNext())
+			{
+				Map map = (Map)it.next();				
+				String getSEMRelId = (String)map.get("id[connection]");
+				DomainRelationship relObj = new DomainRelationship(getSEMRelId);
+				String SEMStructValue = relObj.getAttributeValue(context,"SEM PrjMemberStruct");		
+				String newValueT=newValue;
+				if(newValue.length()>=3)
+				{
+					//check newValue has father;
+					/**newValueT = newValueT.substring(0,newValueT.length()-2);
+					if(SEMStructValue.equals(newValueT))
+					{
+						checkValue=true;
+						break;
+					}**/
+					
+					String[] splitNewValue = newValueT.split("\\.");
+
+					if(splitNewValue.length==3)
+					{
+						String checkNewValue=splitNewValue[0]+"."+splitNewValue[1];
+						if(SEMStructValue.equals(checkNewValue))
+						{
+							checkValue=true;
+							break;
+						}
+					}else if(splitNewValue.length==2){
+						String checkNewValue=splitNewValue[0];
+						if(SEMStructValue.equals(checkNewValue))
+						{
+							checkValue=true;
+							break;
+						}
+					}
+					
+				}else if(newValue.length()==1){
+						checkValue=true;
+						break;
+				}
+			}	
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return checkValue;
+	}
+	
+	
+	
+    /**
+     * This method renders PMCProjectMemberSummary table columns dynamically
+     * @param context
+     *        context object which is used while fetching data related application.
+     *        
+     * @param args
+     *        Holds input argument.
+     *        
+     * @throws Exception
+     *         Exception can be thrown in case of method fails to execute.
+     */
+    
+    
+    public MapList getMembersDynamicColumns(Context context, String[] args) throws Exception{
+
+    	MapList returnList = new MapList();
+    	final String SOV_TABLE = "DomainAccess";
+    	String[] columsToBeIncluded = {
+    			"Comments", 
+    			"Project", 
+    			"Organization",
+    			"Access"
+    	};
+    	List slColumnsToBeIncluded = Arrays.asList(columsToBeIncluded);
+    	MapList mlUpdatedColumns = new MapList();
+    	try{
+    		StringList assignments = new StringList();
+    		assignments.add("all");
+    		UITable table = new UITable();
+    		MapList mlColumns = UITable.getColumns(context, SOV_TABLE, assignments);
+
+    		Map column = new HashMap();
+
+    		for (Iterator itrDomainAccessCols = mlColumns.iterator(); itrDomainAccessCols.hasNext();) {
+
+    			Map mCol = (Map) itrDomainAccessCols.next();
+    			String sColName = (String)mCol.get("name");
+    			if(!slColumnsToBeIncluded.contains(sColName)){
+    				continue;
+    			}
+    			if("Project".equals(sColName)){
+    				mCol.put("label", "emxFramework.Command.Member");
+    			}
+
+    			if("Access".equals(sColName)){
+    				((Map)(mCol.get("settings"))).remove("Edit Access Program");
+    				((Map)(mCol.get("settings"))).remove("Edit Access Function");
+
+    				((Map)(mCol.get("settings"))).put("Edit Access Program", "emxProjectMember");
+    				((Map)(mCol.get("settings"))).put("Edit Access Function", "getCellLevelEditAccess");
+
+    				((Map)(mCol.get("settings"))).put("Mass Update", "false");
+    				((Map)(mCol.get("settings"))).put("Update Program", "emxProjectMember");
+    			}
+    			column.put(sColName,mCol);
+    			mlUpdatedColumns.add(column);
+    		}
+
+    		Map mapColumn = new HashMap();
+    		mapColumn.put("name", "ProjectRole");
+    		mapColumn.put("label", "emxProgramCentral.Common.ProjectRole");
+    		mapColumn.put("expression_relationship", "attribute[Project Role].value");
+    		Map mapSettings = new HashMap();
+
+    		mapSettings.put("RMB Menu","false");
+    		mapSettings.put("Editable","true");
+    		mapSettings.put("Range Program","emxTask"); 
+    		mapSettings.put("Range Function","getProjectRoleRange"); 
+    		mapSettings.put("Edit Access Function","getProjectMemberRoleColumnEditAccess"); 
+    		mapSettings.put("Registered Suite","ProgramCentral");
+    		mapSettings.put("Update Function","updateProjectMemberRole"); 
+    		mapSettings.put("Edit Access Program","emxProjectMember"); 
+    		mapSettings.put("Admin Type", PropertyUtil.getAliasForAdmin(context, "attribute", "Project Role", true));
+    		mapSettings.put("Input Type","combobox");
+    		mapSettings.put("Update Program","emxProjectMember");
+    		mapSettings.put("Column Type","program");
+    		mapSettings.put("program","emxProjectMember");
+    		mapSettings.put("function","getProjectRoleColumn");
+
+    		mapColumn.put("settings", mapSettings);
+    		mlUpdatedColumns.add(mapColumn);
+    		column.put("ProjectRole",mapColumn);
+
+    		returnList.add(0,(Map)column.get("Project"));
+    	//	returnList.add(1,(Map)column.get("Organization"));
+    		returnList.add(1,(Map)column.get("ProjectRole"));
+
+    		returnList.add(2,(Map)column.get("Access"));
+    		returnList.add(3,(Map)column.get("Comments"));
+
+    	} catch(Exception e) {
+    		m_rootLogger.error(e.getMessage(), e);
+    		throw new MatrixException(e);        
+    	}
+    	return returnList;
+    }
+    
+	public MapList getExpandPerson(Context context,String[] args)throws Exception
+	{
+		MapList includeIdList = new MapList();
+		MapList returnList =  new MapList();
+		try{
+			
+			HashMap hashMap = (HashMap)JPO.unpackArgs(args);
+
+	 		String projectId = (String)hashMap.get("objectId");
+	 		DomainObject projectObj = new DomainObject(projectId);
+	 		StringList busList = new StringList("id");
+	 		String strExpandLevel = (String) hashMap.get("expandLevel");
+			short recurseToLevel = ProgramCentralUtil.getExpandLevel(strExpandLevel);
+	 		busList.add("name");
+	 		busList.add("type");
+	 		busList.add("current");
+	 		StringList relList = new StringList(DomainRelationship.SELECT_ID);
+	 		relList.add("from.type");
+	 		String strType = projectObj.getType(context);
+	 		
+	 				//mod by zhangshuai 3/21/2017
+//	 		if(strType.equals("Company"))
+//	 		{
+	 			includeIdList = projectObj.getRelatedObjects(context, "Company Department,Member", "*", busList, relList, false, true, (short)recurseToLevel, null, null);
+//
+//	 		}else if(strType.equals("Department")){
+//	 			includeIdList = projectObj.getRelatedObjects(context, "Member,Company Department", "*", busList, relList, false, true, (short)recurseToLevel, null, null);
+	 				//end mod
+	 		
+         for(int i=0;i<includeIdList.size();i++){
+        	 Map map = (Map)includeIdList.get(i);
+        	 String strCurrType = (String)map.get("type");
+        	 String strFromType = (String)map.get("from.type");
+        	 if(!strCurrType.equals("Person")){
+        		 map.put("disableSelection" , "true");
+        	 }
+        	 if(strCurrType.equals("Person") && strFromType.equals("Company")){
+        		continue;
+        	 }
+             returnList.add(map);
+        	 
+         }
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		returnList.add(0, returnList.size() - 1); 
+		return returnList;
+	}
+    
+	
+    /**To update the access value for Add Ownership
+     * @param context
+     * @param args
+     * @throws Exception
+     */
+	public void updateAccessValue(Context context, String[] args) throws Exception 
+	{
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		HashMap paramMap = (HashMap) programMap.get("paramMap");
+		String objectId = (String) paramMap.get("objectId");
+		StringList valueList = StringUtil.split(objectId, ":");
+		
+		String projectSpaceId = ProgramCentralConstants.EMPTY_STRING;
+		String memberName = ProgramCentralConstants.EMPTY_STRING;
+		String connectionId = ProgramCentralConstants.EMPTY_STRING;
+		String projectRole = ProgramCentralConstants.EMPTY_STRING;
+
+		if (valueList.size() >= 4 && ((String) valueList.get(2)).contains("_PRJ")) {
+			projectSpaceId = (String) valueList.get(0);
+			memberName = (String) valueList.get(2);
+			memberName = memberName.substring(0, memberName.indexOf("_PRJ"));
+
+			DomainObject project = DomainObject.newInstance(context, projectSpaceId);
+			connectionId = getConnectionId(context, project, memberName);
+
+			DomainRelationship domainRelationship = DomainRelationship.newInstance(context, connectionId);
+			projectRole = domainRelationship.getAttributeValue(context,ProgramCentralConstants.ATTRIBUTE_PROJECT_ROLE);
+			String strValue = domainRelationship.getAttributeValue(context,"SEM PrjMemberStruct");
+			JPO.invoke(context, "emxDomainAccess", null, "updateAccessValue",args, MapList.class);
+			connectionId = getConnectionId(context, project, memberName);
+			domainRelationship = DomainRelationship.newInstance(context,connectionId);
+
+			domainRelationship.setAttributeValue(context, "SEM PrjMemberStruct", strValue);
+			//NOTE: This "if" block seems redundant, but actually it is not.With above call emxDomainAccess:updateAccessValue, 
+			//when new ownership is created by kernel, they delete the existing relationship between project->Member 
+			//and recreate the same relationship with new access bit. Hence the "project role" attribute value in 
+			//relationship before edit operation get lost which is restored in below if block by the help of new relId.
+
+			if(ProgramCentralUtil.isNotNullString(projectRole)){
+				connectionId = getConnectionId(context, project, memberName);
+				domainRelationship = DomainRelationship.newInstance(context,connectionId);
+				domainRelationship.setAttributeValue(context,ProgramCentralConstants.ATTRIBUTE_PROJECT_ROLE, projectRole);
+			}
+		}else{
+
+			JPO.invoke(context, "emxDomainAccess", null, "updateAccessValue",args, MapList.class);
+		}
+	}
+	
+	
+	/**
+	 * Returns the relID between the project and a specific member.
+	 * @param context
+	 * @param project
+	 * @param memberName
+	 * @return
+	 * @throws FrameworkException
+	 */
+	private String getConnectionId(Context context, DomainObject project , String memberName) throws FrameworkException
+	{
+		StringList busSelect = new StringList();
+
+		StringList relSelect = new StringList(ProgramCentralConstants.SELECT_ID);
+		relSelect.addElement("to.name");
+
+		StringBuilder whereClause = new StringBuilder();
+		whereClause.append("to.name ==\"").append(memberName).append("\"");
+
+		MapList projectInfoList = project.getRelatedObjects(context,
+				ProgramCentralConstants.RELATIONSHIP_MEMBER,
+				ProgramCentralConstants.TYPE_PERSON,
+				false,
+				true,
+				1,
+				busSelect,
+				relSelect,
+				"",
+				whereClause.toString(),
+				0,
+				null,
+				null,
+				null);
+
+		Map projectInfoMap = (Map)projectInfoList.get(0);
+		String connectionId = (String)projectInfoMap.get(DomainConstants.SELECT_RELATIONSHIP_ID);
+
+		return connectionId;
+	}
+    
+	public void updateBudgetAccess(Context context,String[] args)throws Exception{
+    	try{
+    		 HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		     HashMap paramMap = (HashMap)programMap.get("paramMap");
+		     String objectId = (String)paramMap.get("objectId");
+			 String clickName = getNameFromId(context,objectId,"Name");
+			 String clickParentId = getNameFromId(context,objectId,"Id");		 
+		     String relId = getSEMRelId(context,clickParentId,clickName);  
+		     System.out.println("relId==="+relId);
+			 DomainRelationship relObj = new DomainRelationship(relId);
+	         String newBudgetAccess	= (String)paramMap.get("New Value");
+	        
+	         relObj.setAttributeValue(context,"SEM Budget Access",newBudgetAccess);
+		
+    	}catch(Exception e){
+    		m_rootLogger.error(e.getMessage(), e);
+		}
+		
+    }
+	
+	public String getSEMBudgetAccessValue(Context context,String parentId,String memberName)throws Exception
+	{
+		String SEMBudgetAccessValue="";
+		try{
+			StringList busList = new StringList("id");
+			busList.add("name");
+			StringList relList = new StringList("id[connection]");
+			String where = "name=='"+memberName+"'";
+			DomainObject parentObj = new DomainObject(parentId);
+			MapList memberList = parentObj.getRelatedObjects(context,"Member","*",busList,relList,false,true,(short)1,where,null);
+			Iterator it = memberList.iterator();
+			while(it.hasNext())
+			{
+				Map map = (Map)it.next();				
+				String relId = (String)map.get("id[connection]");
+				DomainRelationship relObj = new DomainRelationship(relId);
+				SEMBudgetAccessValue = relObj.getAttributeValue(context,"SEM Budget Access");
+				
+			}	
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		return SEMBudgetAccessValue;
+	}
+	
+	public Vector getBudgetAccess(Context context,String[] args)throws Exception
+	{
+		
+		Vector vector = new Vector();
+		try{
+						
+			Map programMap = (Map) JPO.unpackArgs(args);
+			MapList objectList = (MapList)programMap.get("objectList");
+			Iterator reultsIt = objectList.iterator();
+			while(reultsIt.hasNext())
+			{
+				Map resultMap = (Map) reultsIt.next();
+				String objectId = (String)resultMap.get("id");
+				String clickName = getNameFromId(context,objectId,"Name");
+				String clickParentId = getNameFromId(context,objectId,"Id");
+				String value =  getSEMBudgetAccessValue(context,clickParentId,clickName);
+				vector.add(value);
+			}	
+		}catch(Exception e){
+			m_rootLogger.error(e.getMessage(), e);
+		}
+		
+		return vector;
+	}
+}
+
+

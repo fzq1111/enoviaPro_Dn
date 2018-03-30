@@ -1,0 +1,3 @@
+Name	Registry Name	Description	Unit Names (in order-use "|" delim)	Hidden (boolean)
+SEM_Currency		This will define required conversion units for currency.	Dollar | Won | Yen | Yuan Renminbi | Pound | Euro | Unassigned	FALSE
+

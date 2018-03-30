@@ -1,0 +1,461 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.db.Policy;
+import matrix.db.Relationship;
+import matrix.db.RelationshipType;
+import matrix.db.State;
+import matrix.db.StateList;
+import matrix.util.SelectList;
+import matrix.util.StringList;
+
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.common.Route;
+import com.matrixone.apps.common.RouteTemplate;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import com.matrixone.apps.domain.util.FrameworkUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.PropertyUtil;
+
+import java.util.*;
+import com.matrixone.apps.domain.*;
+import com.matrixone.apps.domain.util.*;
+import com.matrixone.apps.domain.util.PersonUtil;
+
+public class ${CLASSNAME} {
+	static final String AEF_ROUTE_ACCESS_GRANTOR_USERNAME = "Route Access Grantor";
+	public ${CLASSNAME}(Context context, String[] args)
+			throws Exception {
+	}
+	
+	public ${CLASSNAME}(){
+		
+	}
+	
+    /** returns true if data is null, else it returns false.
+     * @param data any string
+     * @return boolean
+    */
+     
+    private boolean isNullOrBlank(String data) {
+  	  return ((data == null || "null".equals(data)) ? 0 : data.trim().length()) == 0;
+    }
+     
+
+	/**
+	 * Create Object connect routeTemplate 
+	 * @param context
+	 * @param args
+	 * @throws Exception
+	 */
+	public void updateRouteTemplateObject(Context context,String[]args) throws Exception{
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+        HashMap paramMap   = (HashMap) programMap.get("paramMap");
+        HashMap fieldMap = (HashMap)programMap.get("fieldMap");
+        HashMap settingMap = (HashMap)fieldMap.get("settings");
+        String strRouteState = (String)settingMap.get("Add Route State");
+        String objectId = (String)paramMap.get("objectId");
+        DomainObject doChangeObj = DomainObject.newInstance(context);
+        doChangeObj.setId(objectId);
+        StateList stateList = doChangeObj.getStates(context);
+        StringList stateNameList = new StringList();
+        Iterator itrState = stateList.iterator();
+        while(itrState.hasNext()){
+        	State state = (State)itrState.next();
+        	stateNameList.add(state.getName());
+        }
+        strRouteState = strRouteState.trim();
+        if(!stateNameList.contains(strRouteState)){
+        	return;
+        }
+        String symbolicState ="";
+        String policystr = doChangeObj.getInfo(context,DomainObject.SELECT_POLICY);
+        symbolicState =  FrameworkUtil.reverseLookupStateName(context,policystr,strRouteState);
+       // System.out.println("---Test----pmap--"+paramMap);
+		DomainRelationship newRelationship = connect(context, paramMap, DomainConstants.RELATIONSHIP_OBJECT_ROUTE, true);
+          if (newRelationship != null) {
+       	      String strNewObjId = (String) paramMap.get("New OID"); // While creating/editing	   
+             // System.out.println("strNewObjId  late:"+strNewObjId+"\n");
+              newRelationship.setAttributeValue(context, 
+               		 DomainConstants.ATTRIBUTE_ROUTE_BASE_PURPOSE, 
+               		 DomainObject.newInstance(context, strNewObjId).getAttributeValue(context, DomainConstants.ATTRIBUTE_ROUTE_BASE_PURPOSE));
+              newRelationship.setAttributeValue(context, 
+                		 DomainConstants.ATTRIBUTE_ROUTE_BASE_STATE, 
+                		 symbolicState);              
+          }
+          String routeTempId = (String) paramMap.get("New OID");
+          if(routeTempId != null && !routeTempId.equals("") && !routeTempId.equals("null"))
+          {
+        	String args1[] = new String[3];
+			args1[0] = objectId;
+			args1[1] = symbolicState;
+			args1[2] = routeTempId;
+			CreateRoutes(context,args1);
+          }
+        
+	}
+	
+	/**
+	 * Create Object connect routeTemplate 
+	 * @param context
+	 * @param args
+	 * @throws Exception
+	 */
+	public void CreateObjectConnectRouteTemplate(Context context,String[]args) throws Exception{
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+        HashMap paramMap   = (HashMap) programMap.get("paramMap");
+        HashMap fieldMap = (HashMap)programMap.get("fieldMap");
+        HashMap settingMap = (HashMap)fieldMap.get("settings");
+        String strRouteState = (String)settingMap.get("Add Route State");
+        String objectId = (String)paramMap.get("objectId");
+        DomainObject doChangeObj = DomainObject.newInstance(context);
+        doChangeObj.setId(objectId);
+        StateList stateList = doChangeObj.getStates(context);
+        StringList stateNameList = new StringList();
+        Iterator itrState = stateList.iterator();
+        while(itrState.hasNext()){
+        	State state = (State)itrState.next();
+        	stateNameList.add(state.getName());
+        }
+        strRouteState = strRouteState.trim();
+        if(!stateNameList.contains(strRouteState)){
+        	return;
+        }
+        String symbolicState ="";
+        String policystr = doChangeObj.getInfo(context,DomainObject.SELECT_POLICY);
+        symbolicState =  FrameworkUtil.reverseLookupStateName(context,policystr,strRouteState);
+        String strNewOID = (String)paramMap.get("New OID");
+        String strOldOID = (String)paramMap.get("Old OID");
+        if(strNewOID == null || strNewOID.equals("") || strNewOID.equals("null") || strNewOID.equals("Unassigned")){
+        	String strNewValue = (String)paramMap.get("New Value");
+        	if(strNewValue != null && !strNewValue.equals("") && !strNewValue.equals("null")){
+        		StringList selectStms = new StringList();
+				selectStms.add(DomainObject.SELECT_ID);
+				selectStms.add(DomainObject.SELECT_TYPE);
+				selectStms.add(DomainObject.SELECT_CURRENT);
+				selectStms.add(DomainObject.SELECT_REVISION);
+				String whereCus = "name == '"+strNewValue.trim()+"'";
+				MapList tempRouteTemp = DomainObject.findObjects(context,DomainObject.TYPE_ROUTE_TEMPLATE,"*",whereCus,selectStms);
+				Map routeTempMap = null;
+			   if(tempRouteTemp != null && tempRouteTemp.size()>0) {
+				   tempRouteTemp.sort(DomainObject.SELECT_REVISION, "ascending", "String");
+					routeTempMap = (Map)tempRouteTemp.get(tempRouteTemp.size()-1);
+					String currentTemp =(String) routeTempMap.get(DomainObject.SELECT_CURRENT);
+					if(currentTemp.trim().equals("Active")){
+						paramMap.remove("New OID");
+	        			paramMap.put("New OID", (String)routeTempMap.get(DomainObject.SELECT_ID));
+					}else{
+						return;
+					}
+				}else {
+					return;
+				}
+        	}else if(strOldOID == null || strOldOID.equals("") || strOldOID.equals("null")){
+        		return;
+        	}
+        }
+        DomainRelationship newDoRel = connect(context,paramMap, DomainConstants.RELATIONSHIP_OBJECT_ROUTE, true);
+        if(newDoRel != null){
+        	String strNewObjIdTow = (String) paramMap.get("New OID"); // While creating/editing
+            if (strNewObjIdTow == null || strNewObjIdTow.equals("") || strNewObjIdTow.equals("null")) {
+            	strNewObjIdTow = (String) paramMap.get("New Value"); // if there is only one object data will come in this variable
+            }
+            newDoRel.setAttributeValue(context, 
+             		 DomainConstants.ATTRIBUTE_ROUTE_BASE_PURPOSE, 
+             		 DomainObject.newInstance(context, strNewObjIdTow).getAttributeValue(context, DomainConstants.ATTRIBUTE_ROUTE_BASE_PURPOSE));
+            newDoRel.setAttributeValue(context,DomainConstants.ATTRIBUTE_ROUTE_BASE_STATE,symbolicState);
+        }
+	}
+
+	/**
+	 * @param context
+	 * @param args args[0]ObjectId 
+	 * args[1] changeObject symbolic State
+	 * args[2]routeTemplate Id
+	 * @return
+	 * @throws Exception
+	 */
+	public int CreateRoutes(Context context,String args[])throws Exception{
+		try{
+			String objectId = args[0];
+			//DomainObject domObj = new DomainObject(objectId);
+			String routeTemplate = args[2];
+			DomainObject domRouteTemplate = new DomainObject(routeTemplate);
+			String strCurrent = domRouteTemplate.getInfo(context, DomainObject.SELECT_CURRENT);
+			com.matrixone.apps.common.Person person = (com.matrixone.apps.common.Person)DomainObject.newInstance(context,DomainConstants.TYPE_PERSON);
+			DomainObject personObject = person.getPerson(context);
+			
+			 Route routeObj = null; // object route
+			 String strObjOwner = null;
+			if(strCurrent.equals(DomainConstants.STATE_ROUTE_TEMPLATE_ACTIVE)){
+				DomainObject changeObject = new DomainObject(objectId);
+				strObjOwner = changeObject.getOwner(context).getName();
+				String strState = args[1];
+				String strPolicy = changeObject.getInfo(context, DomainObject.SELECT_POLICY);
+				String tempDesc = domRouteTemplate.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+				String strAutoStopOnRejection=""; //IR-118894
+		        // get Alias Names
+		        String RoutePolicyAdminAlias = FrameworkUtil.getAliasForAdmin(context,
+		                DomainObject.SELECT_POLICY, DomainObject.POLICY_ROUTE, true);
+		        String RouteTypeAdminAlias = FrameworkUtil.getAliasForAdmin(context,
+		                DomainObject.SELECT_TYPE, DomainObject.TYPE_ROUTE, true);
+	
+		        String sAttrRouteBasePurpose = PropertyUtil.getSchemaProperty(context,
+		                "attribute_RouteBasePurpose");
+		     //IR-118894 starts
+		        
+		        String sAttrRestartUponTaskRejection = PropertyUtil.getSchemaProperty(context, "attribute_AutoStopOnRejection" ); 
+		        String SELECT_ATTRIBUTE_AUTO_STOP_REJECTION  = "attribute[" + sAttrRestartUponTaskRejection + "]"; 
+		        
+		      //IR-118894 ends
+		        String sAttrRouteCompletionAction  =PropertyUtil.getSchemaProperty(context,
+		        "attribute_RouteCompletionAction");
+		        String sProductionVault = PropertyUtil
+	                    .getSchemaProperty(context,"vault_eServiceProduction");
+	            // get Route Object id
+	            String sRouteId = FrameworkUtil.autoName(context,
+	                    RouteTypeAdminAlias, "", RoutePolicyAdminAlias,
+	                    sProductionVault);
+	            routeObj = (Route) DomainObject.newInstance(context,
+	                    DomainObject.TYPE_ROUTE);
+	            // create ROute object
+	            routeObj.setId(sRouteId);
+	            // HashMap to carry all the attribute values to be set
+	            HashMap attrMap = new HashMap();
+	            // rename change object object name
+	            String changeObjectName = changeObject.getInfo(context,
+	                    DomainConstants.SELECT_NAME);
+	            String strRouteName = routeObj.getInfo(context,
+	                    DomainConstants.SELECT_NAME);
+	            strRouteName = "Route_"+ strRouteName + "_" + changeObjectName + "_"+ strState;
+	            // set new name to Route object
+	            routeObj.setName(context, strRouteName);
+	            String symbolicPolicy = FrameworkUtil.getAliasForAdmin(context, "policy", strPolicy, true);
+	            attrMap.put(DomainConstants.ATTRIBUTE_ROUTE_BASE_STATE,strState);
+	            attrMap.put(DomainConstants.ATTRIBUTE_ROUTE_BASE_POLICY,symbolicPolicy);
+	            attrMap.put(sAttrRouteBasePurpose, "Standard");
+	            routeObj.open(context);
+	            routeObj.setDescription(context, tempDesc);
+	            routeObj.connect(context,new RelationshipType(DomainObject.RELATIONSHIP_PROJECT_ROUTE),true, personObject);
+	            //set Route Completion Action
+	            strAutoStopOnRejection = domRouteTemplate.getInfo(context, SELECT_ATTRIBUTE_AUTO_STOP_REJECTION);
+
+
+		    String notifyRouteOwner = "";
+	            try{
+	            	notifyRouteOwner = FrameworkProperties.getProperty(context, "ENVISION.emxComponents.NoPromoteRelatedItems.State");
+	            }catch(Exception e){
+	            	notifyRouteOwner = "";
+	            }
+	            StringList policyStateList = null;
+	            if(notifyRouteOwner != null && !notifyRouteOwner.trim().equals("") && !notifyRouteOwner.equals("null")){
+	            	policyStateList = FrameworkUtil.split(notifyRouteOwner.trim(), ",");
+	            }
+	            String symbolicPolicyState = symbolicPolicy+"|"+strState;
+	            
+	            if(policyStateList != null && policyStateList.size() > 0 && policyStateList.contains(symbolicPolicyState))
+	            {
+	            	routeObj.setAttributeValue(context,sAttrRouteCompletionAction,"Notify Route Owner");
+	            }else{
+	            	routeObj.setAttributeValue(context,sAttrRouteCompletionAction,"Promote Connected Object");
+	            }	      
+	            
+	            //add by heyanbo 2015-11-20 for set cr CCB Review route 
+	            if("state_CCBReview".equals(strState))
+	            {
+	            	strAutoStopOnRejection = "Deferred";
+	            }
+	            
+	            routeObj.setAttributeValue(context,sAttrRestartUponTaskRejection,strAutoStopOnRejection); //IR-118894 
+	            // Add contents to the Route i.e. ECO
+	            RelationshipType relationshipType = new RelationshipType(
+	                    DomainConstants.RELATIONSHIP_OBJECT_ROUTE);
+	            DomainRelationship newRel = routeObj.addFromObject(context,
+	                    relationshipType, objectId);
+	            
+	            // connect to Route Template
+	            routeObj.connectTemplate(context, routeTemplate);
+	            // add member list from template to route
+	            routeObj.addMembersFromTemplate(context, routeTemplate);
+	            // UPDATE OBJECT ROUTE ATTRIBUTES.
+	            newRel.setAttributeValues(context, attrMap);
+	            // Change Route Action Attribute to Approve
+	            SelectList relProductSelects = new SelectList(1);
+	            relProductSelects
+	                    .add(DomainConstants.SELECT_RELATIONSHIP_ID);
+	            // 369474
+	            String nodeTypePattern = DomainConstants.TYPE_PERSON + "," + DomainConstants.TYPE_ROUTE_TASK_USER;
+	            MapList routeNodeList = null;
+	            DomainObject Domobj = (DomainObject) DomainObject
+	                    .newInstance(context);
+	            Domobj.setId(sRouteId);
+	            // get all the tasks in the route
+	            routeNodeList = Domobj.getRelatedObjects(context,
+	                    DomainConstants.RELATIONSHIP_ROUTE_NODE,
+	                    //DomainConstants.TYPE_PERSON,   // 369474
+	                    nodeTypePattern, null,
+	                    relProductSelects, false, true, (short) 1, null,
+	                    null);
+	            Iterator itrRouteNodeList = routeNodeList.iterator();
+	            while(itrRouteNodeList.hasNext()){
+	            	  Map currentMap = (Map) itrRouteNodeList.next();
+	                  DomainRelationship routeNodeId = new DomainRelationship(
+	                          (String) currentMap
+	                                  .get(DomainConstants.SELECT_RELATIONSHIP_ID));
+	                  //attribute map for Route node relationship
+	                  HashMap attributeMap = new HashMap();
+	                 // attributeMap.put(
+	                   //       DomainConstants.ATTRIBUTE_ROUTE_ACTION,
+	                     //     "Approve");
+	                  routeNodeId.setAttributeValues(context, attributeMap);
+	            }
+	         // auto start route
+	            /*if(args.length == 3){
+	            	new ${CLASS:emxChange}(context,args).startRoute(context, sRouteId);
+	            }*/
+				if ("User Agent".equals(Domobj.getOwner(context).getName()))
+				{
+					if (strObjOwner != null)
+					{
+						Domobj.changeOwner(context, strObjOwner);
+					}
+				}
+				StringList selectTypeStmts = new StringList();
+				selectTypeStmts.addElement("id");
+				selectTypeStmts.addElement(DomainObject.SELECT_TYPE);
+				selectTypeStmts.addElement("name");
+				StringList selectRelStmts = new StringList();
+				selectRelStmts.addElement(DomainRelationship.SELECT_RELATIONSHIP_ID);
+				selectRelStmts.addElement("attribute["+DomainObject.ATTRIBUTE_ROUTE_SEQUENCE+"]");
+				selectRelStmts.addElement("attribute["+DomainObject.ATTRIBUTE_ROUTE_ACTION+"]");
+				
+				routeObj.setId(sRouteId);
+				MapList	tskMapList = routeObj.getRelatedObjects(context,
+								                        DomainRelationship.RELATIONSHIP_ROUTE_NODE,  //String relPattern
+								                        DomainObject.TYPE_PERSON+","+DomainObject.TYPE_ROUTE_TASK_USER, //String typePattern
+								                        selectTypeStmts,          //StringList objectSelects,
+								                        selectRelStmts,                     //StringList relationshipSelects,
+								                        false,                    //boolean getTo,
+								                        true,                     //boolean getFrom,
+								                        (short)1,                 //short recurseToLevel,
+								                        "",                       //String objectWhere,
+								                        "",                       //String relationshipWhere,
+								                        null,                     //Pattern includeType,
+								                        null,                     //Pattern includeRelationship,
+								                        null);                    //Map includeMap
+				
+				
+				if(tskMapList != null && tskMapList.size()>0){
+					StringList personIdList = new StringList();
+					List  personList = new ArrayList();
+					tskMapList.sort("attribute["+DomainObject.ATTRIBUTE_ROUTE_SEQUENCE+"]","ascending","integer");
+					Map tempMap = null;
+					for(int i = 0;i<tskMapList.size();i++)
+					{
+						tempMap = (Map)tskMapList.get(i);
+						String strPersonId = (String)tempMap.get("id");
+						String strType = (String)tempMap.get(DomainObject.SELECT_TYPE);
+						String relRouteNodeId = (String) tempMap.get(DomainObject.SELECT_RELATIONSHIP_ID);
+						if(strType.equals(DomainObject.TYPE_PERSON) && !personIdList.contains(strPersonId)){
+							personIdList.add(strPersonId);
+							personList.add((String)tempMap.get("name"));
+						}
+						String attrRouteAction = (String) tempMap.get("attribute["+DomainObject.ATTRIBUTE_ROUTE_ACTION+"]");
+						if(attrRouteAction.equals("Notify Only") && strType.equals(DomainObject.TYPE_ROUTE_TASK_USER))
+						{
+							Person notifyOnlyPerson = Person.getPerson(context, routeObj.getOwner(context).getName());  
+							DomainRelationship.modifyTo(context, relRouteNodeId, notifyOnlyPerson);
+							
+						}
+					}
+					if(personList.size()>0){
+						ContextUtil.pushContext(context, AEF_ROUTE_ACCESS_GRANTOR_USERNAME, null, null);
+						try{
+							routeObj.grantAccessOnContent(context,(String[])personList.toArray(new String[]{}));
+						}catch(Exception e){
+							ContextUtil.popContext(context);
+							throw e;
+						}
+						ContextUtil.popContext(context);
+					}
+				}
+			}
+		}catch(Exception e){
+			System.out.println("Exception ::"+e.toString());
+			throw e;
+		}
+		return 0;
+	}
+		 public DomainRelationship connect(Context context , HashMap paramMap ,String strRelationship, boolean isToSide) throws Exception {
+	         try {
+	            DomainRelationship drship=null;
+	            //Relationship name
+	            DomainObject oldListObject = null;
+	            DomainObject newListObject = null;
+	            //Getting the ECR Object id and the new MemberList object id
+	            String strChangeobjectId = (String)paramMap.get("objectId");
+	            DomainObject changeObj =  new DomainObject(strChangeobjectId);
+	            //for bug 343816 and 343817 starts
+	            String strNewValue=(String)paramMap.get("New Value");
+	            String strNewToTypeObjId = (String)paramMap.get("New OID");
+	            if (strNewToTypeObjId == null || "null".equals(strNewToTypeObjId) || strNewToTypeObjId.length() <= 0 
+	                      || "Unassigned".equals(strNewToTypeObjId)) {
+	            	if(strNewValue != null && !strNewValue.equals("") && !strNewValue.equals("null")){
+	            		StringList selectStms = new StringList();
+	    				selectStms.add(DomainObject.SELECT_ID);
+	    				selectStms.add(DomainObject.SELECT_TYPE);
+	    				selectStms.add(DomainObject.SELECT_CURRENT);
+	    				selectStms.add(DomainObject.SELECT_REVISION);
+	    				String whereCus = "name == '"+strNewValue.trim()+"'";
+	    				MapList tempRouteTemp = DomainObject.findObjects(context,DomainObject.TYPE_ROUTE_TEMPLATE,"*",whereCus,selectStms);
+	    				Map routeTempMap = null;
+	    			   if(tempRouteTemp != null && tempRouteTemp.size()>0) {
+	    				   tempRouteTemp.sort(DomainObject.SELECT_REVISION, "ascending", "String");
+	    					routeTempMap = (Map)tempRouteTemp.get(tempRouteTemp.size()-1);
+	    					String currentTemp =(String) routeTempMap.get(DomainObject.SELECT_CURRENT);
+	    					if(currentTemp.trim().equals("Active")){
+	    						paramMap.remove("New OID");
+	    	        			paramMap.put("New OID", (String)routeTempMap.get(DomainObject.SELECT_ID));
+	    					}
+	    				}
+	            	}
+	                strNewToTypeObjId = (String)paramMap.get("New OID");
+	            }
+	            String strOldToTypeObjId = (String)paramMap.get("Old OID");
+
+	            RelationshipType relType = new RelationshipType(strRelationship);
+	            if (strOldToTypeObjId != null && !"null".equals(strOldToTypeObjId) && strOldToTypeObjId.length() > 0 
+	                      && !"Unassigned".equals(strOldToTypeObjId)) {
+	                    oldListObject = new DomainObject(strOldToTypeObjId);
+	                    changeObj.disconnect(context, relType, isToSide, oldListObject);
+	            }
+	            
+	            if(strNewToTypeObjId != null && !"null".equals(strNewToTypeObjId) && strNewToTypeObjId.length() > 0 
+	                    && !"Unassigned".equals(strNewToTypeObjId)) {
+	                newListObject = new DomainObject(strNewToTypeObjId);
+	      
+	                drship = new DomainRelationship(isToSide ? DomainRelationship.connect(context,changeObj,relType,newListObject)
+	                              : DomainRelationship.connect(context, newListObject, relType, changeObj)) ;
+	            }
+	            
+	              return drship;
+	         } catch(Exception ex) {
+	             throw  new FrameworkException((String)ex.getMessage());
+	         }
+
+	      }
+	    
+}
+	
+    
+	

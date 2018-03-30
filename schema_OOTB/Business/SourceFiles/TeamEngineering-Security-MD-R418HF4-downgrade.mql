@@ -1,0 +1,38 @@
+# File: TeamEngineering-Security-MD-R418HF4-downgrade.mql
+# Description: This file downgrades VPLM security data from R418 HF4 to R418 GA for One-Click
+#
+# MBH 16:04:28 Created file
+# MBH 16:04:28 IR-439181-3DEXPERIENCER2016x : Leader is able to cut inst under Frozen Ass.
+
+# IR-439181-3DEXPERIENCER2016x
+modify rule VPLM_SMB_INSTANCE
+   user Grant key ExtendedTeamWkpCreate create,delete,modify,lock,reserve filter "(from.current.access[modify] == TRUE)";
+
+modify policy VPLM_SMB_PORT_Definition
+  state DEFAULT
+    user Grant key ExtendedSecuredAccess modify,delete,todisconnect,freeze filter "(to[VPLMrel/PLMPort/V_Owner].from.current.access[modify] == TRUE)";
+
+modify policy VPLM_SMB_CX_Definition
+  state DEFAULT
+    user Grant key ExtendedSecuredAccess modify,delete,todisconnect,freeze filter "(to[VPLMrel/PLMConnection/V_Owner].from.current.access[modify] == TRUE)";
+
+modify policy VPLM_SMB_PORT_Evaluation
+  state DEFAULT
+    user Grant key ExtendedSecuredAccess modify,delete,todisconnect,freeze filter "(to[VPLMrel/PLMPort/V_Owner].from.current.access[modify] == TRUE)";
+
+modify policy VPLM_SMB_CX_Evaluation
+  state DEFAULT
+    user Grant key ExtendedSecuredAccess modify,delete,todisconnect,freeze filter "(to[VPLMrel/PLMConnection/V_Owner].from.current.access[modify] == TRUE)";
+
+modify policy VPLM_SMB_PORT_Resource
+  state DEFAULT
+    user Grant key ExtendedSecuredAccess modify,delete,todisconnect,freeze filter "(to[VPLMrel/PLMPort/V_Owner].from.current.access[modify] == TRUE)";
+
+modify policy VPLM_SMB_CX_Resource
+  state DEFAULT
+    user Grant key ExtendedSecuredAccess modify,delete,todisconnect,freeze filter "(to[VPLMrel/PLMConnection/V_Owner].from.current.access[modify] == TRUE)";
+
+modify policy VPLM_SMB_CX_Management
+  state DEFAULT
+    user Grant key ExtendedSecuredAccess modify,delete,todisconnect,freeze filter "(to[VPLMrel/PLMConnection/V_Owner].from.current.access[modify] == TRUE)";
+

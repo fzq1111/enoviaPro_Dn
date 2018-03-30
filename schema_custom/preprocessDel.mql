@@ -1,0 +1,68 @@
+verbose on;
+delete form "PMCCreateBlankProjectForm";
+delete form "PMCProjectDetailsViewForm";
+delete form "type_CreateSEMPartTask";
+delete form "type_CreateSEMTaskItem";
+delete form "type_EditSEMTaskItem";
+delete form "type_CreateSEMBudgetChangeRequest";
+delete form "EditSEMBudgetChangeRequest";
+delete form "type_CreateSEMTestCarNumbers";
+delete form "type_CreateSEMApproveOrder";
+delete form "type_CreateSEMPrjChangeRequest";
+delete form "SEMContactOrderPropertyEditForm";
+delete form "SEMIssueEditForm";
+delete form "PMCProjectTaskViewForm";
+delete form "PMCProjectTaskCreateForm";
+delete form "PMCCreateRiskForm";
+delete form "EditIssueDetails";
+delete form "type_CreateVehicleCheckIssue";
+delete form "type_CreateSEGModelIssue";
+delete form "type_CreateTestDriveIssue";
+delete form "type_CreateVehicleTestIssue";
+delete form "type_CreateTryStampingIssue";
+delete form "type_CreateTryWeldingIssue";
+delete form "type_CreateTryCoatingIssue";
+delete form "type_CreateTryAssemblyIssue";
+delete form "type_CreateAssessIssue";
+
+delete table "PMCAssignedWBSTaskSummary" system;
+delete table "PMCProjectMemberSummary" system;
+delete table "SEMIssueSummary" system;
+delete table "SEMIssueInfo2" system;
+delete table "SEMIssueInfo1" system;
+delete table "SEMIssueInfo" system;
+delete table "SEMPMCWBSAssignmentViewTable" system;
+delete table "SEMTaskItemViewTable" system;
+delete table "PMCWBSViewTable" system;
+delete table "SEMBCRAffectedItemView" system;
+delete table "PMCRisksSummary" system;
+delete table "SEMIssueSummary9" system;
+
+delete menu "SEMAOAffectedItemToolbar";
+delete menu "SEMIssueSummaryActionToolbar";
+delete menu "IssueInMeetingToolbar";
+delete menu "IssueInMeetingActionToolbar";
+delete menu "SEMIssueSummaryActionToolbar";
+
+
+delete bus "eService Trigger Program Parameters"  "PolicyIssueStateCreatePromoteAction"  "NotifyAssignedMembers";
+delete bus "eService Trigger Program Parameters"  "PolicyIssueStateActivePromoteAction"  "NotifyOwnerMembers";
+delete bus "eService Trigger Program Parameters"  "TypeDOCUMENTSCreateAction"  "setOwnerDepartment";
+delete bus "eService Trigger Program Parameters"  "TypeDocumentCreateAction"   "setOwnerDepartment";
+
+delete command "SEMBCRAddAffectedItems";
+delete command "ReviewIssue";
+delete command "SEMCOAddAffectedItems";
+delete command "SEMCancelMeeting";
+delete command "VehicleTestingIssue";
+delete command "VehicleInspectIssue";
+delete command "PerformanceTestIssue";
+delete command "EvaluatingIssue";
+delete command "TestGeneralAssemblyIssue";
+delete command "TestPaintingIssue";
+delete command "TestStampingIssue";
+delete command "TestWeldingIssue";
+
+delete channel "IssueChannel1";
+
+

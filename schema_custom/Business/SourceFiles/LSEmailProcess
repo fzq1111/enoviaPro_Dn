@@ -1,0 +1,530 @@
+/*
+ **   LSEmailProcess
+ **
+ **   Copyright (c) 1992-2011 Dassault Systemes.
+ **   All Rights Reserved.
+ **   This program contains proprietary and trade secret information of MatrixOne,
+ **   Inc.  Copyright notice is precautionary only
+ **   and does not evidence any actual or intended publication of such program
+ **
+ */
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+
+import javax.activation.DataHandler;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
+import org.apache.log4j.Logger;
+
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkProperties;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.util.MxMessage;
+
+import matrix.db.Context;
+import javax.mail.internet.InternetAddress;
+import matrix.util.MatrixException;
+import matrix.util.StringList;
+
+/**
+ * The <code>emxNotificationUtil</code> class contains static methods for sending email.
+ * 
+ * @version AEF 10.0.0.0 - Copyright (c) 2005, MatrixOne, Inc.
+ */
+
+public class ${CLASSNAME} extends MxMessage
+{
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param context
+	 *            the eMatrix <code>Context</code> object
+	 * @param args
+	 *            holds no arguments
+	 * @throws Exception
+	 *             if the operation fails
+	 * @since EC 10.0.0.0
+	 */
+
+	public ${CLASSNAME}(Context context, String[] args) throws Exception
+	{
+	}
+
+	protected int sendJavaMailWorker(Context context, String s) throws Exception
+	{
+		m_logger.debug("Begin sendJavaMailWorker");
+		Properties properties = new Properties();
+		properties.setProperty("mail.transport.protocol", "smtp");
+		properties.setProperty("mail.smtp.auth", "true");
+		Session session = Session.getInstance(properties, null);
+		session.setDebug(_debug);
+		String s1 = "utf-8";
+		MimeMessage mimemessage = new MimeMessage(session);
+		// modi by ryan 2012-12-08 for use specified fromagent user and fromagent address
+		/*if (_fromEmailAddress.length > 0)
+			mimemessage.setFrom(_fromEmailAddress[0]);
+		mimemessage.setReplyTo(_replyToEmailAddress);*/
+		String fromAgentUser = getProperty(context, "LScustom.Notice.DefaultSMTP.FromAgentUser");
+		if(fromAgentUser.equals(""))
+		{
+			throw new MatrixException("value of LScustom.Notice.DefaultSMTP.FromAgentUser must be set");
+		}
+		String fromAgentEmailAddress = getProperty(context, "LScustom.Notice.DefaultSMTP.FromAgentEmailAddress");
+		if(fromAgentEmailAddress.equals(""))
+		{
+			throw new MatrixException("value of LScustom.Notice.DefaultSMTP.FromAgentEmailAddress must be set");
+		}
+		
+		InternetAddress specifiedEmailAddress = new InternetAddress();
+		specifiedEmailAddress.setAddress(fromAgentEmailAddress);
+		specifiedEmailAddress.setPersonal(fromAgentUser);
+		mimemessage.setFrom(specifiedEmailAddress);
+		InternetAddress[] specifiedReplyEmailAddress = new InternetAddress[1];
+		specifiedReplyEmailAddress[0] = specifiedEmailAddress;
+		mimemessage.setReplyTo(specifiedReplyEmailAddress);
+		//end modi
+		// add by ryan 2012-10-23 for log info to file
+		m_logger.debug("toEmailAddress[0] is " + _toEmailAddress[0].getAddress());
+		//add end
+		//System.out.println("_toEmailAddress======"+_toEmailAddress[0].getAddress());
+		mimemessage.setRecipients(javax.mail.Message.RecipientType.TO, _toEmailAddress);
+		mimemessage.setRecipients(javax.mail.Message.RecipientType.CC, _ccEmailAddress);
+		mimemessage.setRecipients(javax.mail.Message.RecipientType.BCC, _bccEmailAddress);
+		mimemessage.setSubject(_subject, s1);
+		mimemessage.setSentDate(new Date());
+		if (_htmlMessage == null || _htmlMessage.length() == 0)
+			mimemessage.setText(_message, s1);
+		else if (_message == null || _message.length() == 0)
+		{
+			mimemessage.setDataHandler(new DataHandler(_htmlMessage, (new StringBuilder()).append("text/html; charset=").append(s1).toString()));
+		}
+		else
+		{
+			/*MimeBodyPart mimebodypart = new MimeBodyPart();
+			mimebodypart.setText(_message, s1);
+			MimeMultipart mimemultipart = new MimeMultipart("alternative");
+			mimemultipart.addBodyPart(mimebodypart);
+			mimebodypart = new MimeBodyPart();
+			mimebodypart.setDataHandler(new DataHandler(_htmlMessage, (new StringBuilder()).append("text/html; charset=").append(s1).toString()));
+			mimemultipart.addBodyPart(mimebodypart);
+			mimemessage.setContent(mimemultipart);*/
+			mimemessage.setDataHandler(new DataHandler(_htmlMessage, (new StringBuilder()).append("text/html; charset=").append(s1).toString()));
+
+		}
+		String authrequired = "";
+		try
+		{
+			authrequired = FrameworkProperties.getProperty(context, "LScustom.smtp.authrequired").trim();
+		}
+		catch (Exception e)
+		{
+		}
+		if (null != authrequired)
+		{
+			if (!"".equals(authrequired) && Boolean.valueOf(authrequired))
+			{
+				sendMail(context, session, mimemessage, s);
+			}
+			else
+			{
+				Transport.send(mimemessage);
+			}
+		}
+		else
+		{
+			Transport.send(mimemessage);
+		}
+		m_logger.debug("End sendJavaMailWorker");
+		return 0;
+	}
+
+	public void sendMail(Context context, Session session, MimeMessage msg, String smtpServer) throws Exception
+	{
+		 
+		File file = new File("D:/PLM_Log/sendEmail.log");
+		FileOutputStream out=new FileOutputStream(file,true);   
+		try
+		{
+			Date date = new Date();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			String currentTime = dateFormat.format( date ); 
+			
+			StringBuffer sb=new StringBuffer();
+			List sendEmailList = getToList();
+			sb.append("user : "+ sendEmailList.toString() +"-------send mail success----------"+currentTime+"\r\n");
+
+			out.write(sb.toString().getBytes("utf-8"));
+			out.close();
+			
+			String user = FrameworkProperties.getProperty(context, "LScustom.DefaultSMTP.LoginUser").trim();
+			String pwd = FrameworkProperties.getProperty(context, "LScustom.DefaultSMTP.LoginPassword").trim();
+			Transport transport = session.getTransport();
+			transport.connect(smtpServer, user, pwd);
+			transport.sendMessage(msg, msg.getRecipients(Message.RecipientType.TO));
+			transport.close();	
+			
+		
+			
+		}
+		catch (Exception e)
+		{
+			out.close();
+			m_logger.error("Email process error: " + e.getMessage());
+		}
+	}
+	
+	public String getContentTextHtml(Context context, String htmlName) throws Exception
+	{
+		m_logger.info("Enter in function getContentTextHtml");
+		StringBuffer textHtml = new StringBuffer();
+		try
+		{
+			File file = new File(htmlName);
+			InputStreamReader InputS = new InputStreamReader(new FileInputStream(file), "UTF-8");
+			BufferedReader br = new BufferedReader(InputS);
+			String str = "";
+			while ((str = br.readLine()) != null)
+			{
+				textHtml.append(str);
+			}
+			br.close();
+		}
+		catch (Exception ex)
+		{
+			String strExceptionMsg = ex.getMessage();
+			m_logger.error(strExceptionMsg);
+			ex.printStackTrace();
+			throw ex;
+		}
+		m_logger.info("End function getContentTextHtml");
+		return textHtml.toString();
+	}
+	
+	//rewrite by ryan for multi-smtp server
+	public int sendJavaMail(Context context, String strSMTPHost, String strToEmail, String strCcEmail, String strBccEmail, String strFromEmail, String strReplyToEmail) throws MatrixException
+	{
+		try 
+		{
+			int i = processRecipients(strToEmail, strCcEmail, strBccEmail);
+			if(_toEmailAddress != null)
+				m_logger.debug("toEmailAddress length =  " + _toEmailAddress.length);
+			if(_ccEmailAddress != null)
+				m_logger.debug("_ccEmailAddress length =  " + _ccEmailAddress.length);
+			if(_bccEmailAddress != null)
+				m_logger.debug("_bccEmailAddress length =  " + _bccEmailAddress.length);
+			if (i != 0)
+			{
+				return i;
+			}
+
+			
+			strSMTPHost = getProperty(context, "LScustom.DefaultSMTP.Host");
+			if("".equals(strSMTPHost))
+			{
+				throw new MatrixException("value of LScustom.DefaultSMTP.Host must be set");
+			}
+			
+
+			strFromEmail = fixupAddress(strFromEmail, strSMTPHost);
+			processFromAndReplyTo(strFromEmail, strReplyToEmail);
+
+			String[] extendSMTMHostList = new String[0];
+			String strExtendSMTPHosts = "";
+			strExtendSMTPHosts = getProperty(context, "LScustom.ExtendSMTP.Host");
+			if(strExtendSMTPHosts.equals(""))
+			{
+				m_logger.info("value of LScustom.ExtendSMTP.Host is not set");
+			}
+			else
+			{
+				extendSMTMHostList = strExtendSMTPHosts.split(",");
+			}
+			if(extendSMTMHostList.length <= 0)
+			{
+				return sendJavaMailWorker(context, strSMTPHost);
+			}
+			
+			String fromAgentUser = getProperty(context, "LScustom.Notice.DefaultSMTP.FromAgentUser");
+			if(fromAgentUser.equals(""))
+			{
+				throw new MatrixException("value of LScustom.Notice.DefaultSMTP.FromAgentUser must be set");
+			}
+			String fromAgentEmailAddress = getProperty(context, "LScustom.Notice.DefaultSMTP.FromAgentEmailAddress");
+			if(fromAgentEmailAddress.equals(""))
+			{
+				throw new MatrixException("value of LScustom.Notice.DefaultSMTP.FromAgentEmailAddress must be set");
+			}
+			String loginUser = getProperty(context, "LScustom.DefaultSMTP.LoginUser");
+			String loginPassword = getProperty(context, "LScustom.DefaultSMTP.LoginPassword");
+			if(loginUser.equals("") || loginPassword.equals(""))
+			{
+				throw new MatrixException("value of LScustom.DefaultSMTP.LoginUser and LScustom.DefaultSMTP.LoginPassword must be set");
+			}
+			MapList messageInfoList = new MapList();
+			ArrayList toEmailAddressList = new ArrayList();
+			ArrayList ccEmailAddressList = new ArrayList();
+			ArrayList bccEmailAddressList = new ArrayList();
+			Map infoMap = new HashMap();
+			infoMap.put("SMTPHost", strSMTPHost);
+			infoMap.put("fromAgentUser", fromAgentUser);
+			infoMap.put("fromAgentEmailAddress", fromAgentEmailAddress);
+			infoMap.put("loginUser", loginUser);
+			infoMap.put("loginPassword", loginPassword);
+			infoMap.put("toEmailAddressList", toEmailAddressList);
+			infoMap.put("ccEmailAddressList", ccEmailAddressList);
+			infoMap.put("bccEmailAddressList", bccEmailAddressList);
+			
+			messageInfoList.add(infoMap);
+			
+			for(int m = 0; m < extendSMTMHostList.length; m ++)
+			{
+				infoMap = new HashMap();
+				String strExtendSMTPHost = extendSMTMHostList[i];
+				
+
+				infoMap.put("SMTPHost", strExtendSMTPHost);
+				
+				String strKey = "LScustom.Notice." + strExtendSMTPHost + ".FromAgentUser";
+				String strExtendFromAgentUser = getProperty(context, strKey);
+				if(strExtendFromAgentUser.equals(""))
+				{
+					m_logger.warn("value of " + strKey + " is not set, use value of LScustom.Notice.DefaultSMTP.FromAgentUser");
+					strExtendFromAgentUser = fromAgentUser;
+				}
+				infoMap.put("fromAgentUser", strExtendFromAgentUser);
+				
+				strKey = "LScustom.Notice." + strExtendSMTPHost + ".FromAgentEmailAddress";
+				String strFromAgentEmailAddress = getProperty(context, strKey);
+				if(strFromAgentEmailAddress.equals(""))
+				{
+					m_logger.warn("value of " + strKey + " is not set, use value of LScustom.Notice.DefaultSMTP.FromAgentEmailAddress");
+					strFromAgentEmailAddress = fromAgentEmailAddress;
+				}
+				infoMap.put("fromAgentEmailAddress", strFromAgentEmailAddress);
+				
+				strKey = "LScustom." + strExtendSMTPHost + ".LoginUser";
+				String strLoginUser = getProperty(context, strKey);
+				if(strLoginUser.equals(""))
+				{
+					throw new MatrixException("value of " + strKey + " must be set");
+				}
+				infoMap.put("loginUser", strLoginUser);
+				
+				strKey = "LScustom." + strExtendSMTPHost + ".LoginPassword";
+				String strLoginPassword = getProperty(context, strKey);
+				if(strLoginPassword.equals(""))
+				{
+					throw new MatrixException("value of " + strKey + " must be set");
+				}
+				infoMap.put("loginPassword", strLoginPassword);
+				
+				toEmailAddressList = new ArrayList();
+				ccEmailAddressList = new ArrayList();
+				bccEmailAddressList = new ArrayList();
+				infoMap.put("toEmailAddressList", toEmailAddressList);
+				infoMap.put("ccEmailAddressList", ccEmailAddressList);
+				infoMap.put("bccEmailAddressList", bccEmailAddressList);
+				
+				messageInfoList.add(infoMap);
+			}
+			matchEmailAddressForSMTPServer(_toEmailAddress, "toEmailAddressList", messageInfoList);
+			matchEmailAddressForSMTPServer(_ccEmailAddress, "ccEmailAddressList", messageInfoList);
+			matchEmailAddressForSMTPServer(_bccEmailAddress, "bccEmailAddressList", messageInfoList);
+			
+			for(int m = 0; m < messageInfoList.size(); m ++)
+			{
+				infoMap = (Map)messageInfoList.get(m);
+				ArrayList toEmailList = (ArrayList)infoMap.get("toEmailAddressList");
+				if(toEmailList.size() > 0)
+				{
+					sendJavaMailWorker(context, infoMap);
+				}
+			}
+		} catch (Exception ex)
+		{
+			if ((ex instanceof MatrixException))
+			{
+				throw ((MatrixException) ex);
+			}
+			ex.printStackTrace();
+			throw new MatrixException(ex.toString());
+		}
+		return 0;
+	}
+	
+	public void matchEmailAddressForSMTPServer(InternetAddress[] emailAddress, String strType, MapList messageInfoList) throws Exception
+	{
+		for(int i = 0; i < emailAddress.length; i ++)
+		{
+			String strAddress = emailAddress[i].getAddress();
+			int index = strAddress.indexOf('@');
+			String strMatchString = strAddress.substring(index + 1);
+			
+			Map defaultMap = (Map)messageInfoList.get(0);
+			ArrayList defaultEmailAddressList = (ArrayList)defaultMap.get(strType);
+			boolean bMatched = false;
+			for(int m = 0; m < messageInfoList.size(); m ++)
+			{
+				Map infoMap = (Map)messageInfoList.get(m);
+				String strSMTPHost = (String)infoMap.get("SMTPHost");
+				if(strSMTPHost.contains(strMatchString))
+				{
+					ArrayList emailAddressList = (ArrayList)infoMap.get(strType);
+					emailAddressList.add(emailAddress[i]);
+					bMatched = true;
+					break;
+				}
+			}
+			if(!bMatched)
+			{
+				//defaultEmailAddressList.add(emailAddress[i]);
+				m_logger.warn("the emailAddress \"" + emailAddress[i] + "\" is not matched all SMTP Hosts defined in emxFrameworkDBC.properties");
+			}
+		}
+	}
+	
+	String getProperty(Context context, String strKey)
+	{
+		String strValue = "";
+		try
+		{
+			strValue = FrameworkProperties.getProperty(context, strKey).trim();
+		} catch(Exception ex)
+		{
+			strValue = "";
+		}
+		return strValue;
+	}
+	
+	protected int sendJavaMailWorker(Context context, Map messageInfoMap) throws Exception
+	{
+		m_logger.debug("Begin sendJavaMailWorker");		
+		Properties properties = new Properties();
+		properties.setProperty("mail.transport.protocol", "smtp");
+		properties.setProperty("mail.smtp.auth", "true");
+		Session session = Session.getInstance(properties, null);
+		session.setDebug(_debug);
+		String s1 = "utf-8";
+		MimeMessage mimemessage = new MimeMessage(session);
+		String fromAgentUser = (String)messageInfoMap.get("fromAgentUser");
+		String fromAgentEmailAddress = (String)messageInfoMap.get("fromAgentEmailAddress");;
+		
+		InternetAddress specifiedEmailAddress = new InternetAddress();
+		specifiedEmailAddress.setAddress(fromAgentEmailAddress);
+		specifiedEmailAddress.setPersonal(fromAgentUser);
+		mimemessage.setFrom(specifiedEmailAddress);
+		InternetAddress[] specifiedReplyEmailAddress = new InternetAddress[1];
+		specifiedReplyEmailAddress[0] = specifiedEmailAddress;
+		mimemessage.setReplyTo(specifiedReplyEmailAddress);
+
+		ArrayList emailAddressList = (ArrayList)messageInfoMap.get("toEmailAddressList");
+		InternetAddress[] matchedToEmailAddress = new InternetAddress[emailAddressList.size()];
+		m_logger.debug("toEmailAddressList length = " + emailAddressList.size());
+		for(int i = 0; i < emailAddressList.size(); i ++)
+		{
+			matchedToEmailAddress[i] = (InternetAddress)emailAddressList.get(i);
+		}
+		mimemessage.setRecipients(javax.mail.Message.RecipientType.TO, matchedToEmailAddress);
+		
+		emailAddressList = (ArrayList)messageInfoMap.get("ccEmailAddressList");
+		InternetAddress[] matchedCcEmailAddress = new InternetAddress[emailAddressList.size()];
+		for(int i = 0; i < emailAddressList.size(); i ++)
+		{
+			matchedCcEmailAddress[i] = (InternetAddress)emailAddressList.get(i);
+		}
+		mimemessage.setRecipients(javax.mail.Message.RecipientType.CC, matchedCcEmailAddress);
+		
+		emailAddressList = (ArrayList)messageInfoMap.get("bccEmailAddressList");
+		InternetAddress[] matchedBccEmailAddress = new InternetAddress[emailAddressList.size()];
+		for(int i = 0; i < emailAddressList.size(); i ++)
+		{
+			matchedCcEmailAddress[i] = (InternetAddress)emailAddressList.get(i);
+		}
+		mimemessage.setRecipients(javax.mail.Message.RecipientType.BCC, matchedBccEmailAddress);
+		
+		mimemessage.setSubject(_subject, s1);
+		mimemessage.setSentDate(new Date());
+		if (_htmlMessage == null || _htmlMessage.length() == 0)
+			mimemessage.setText(_message, s1);
+		else if (_message == null || _message.length() == 0)
+		{
+			mimemessage.setDataHandler(new DataHandler(_htmlMessage, (new StringBuilder()).append("text/html; charset=").append(s1).toString()));
+		}
+		else
+		{
+			MimeBodyPart mimebodypart = new MimeBodyPart();
+			mimebodypart.setText(_message, s1);
+			MimeMultipart mimemultipart = new MimeMultipart("alternative");
+			mimemultipart.addBodyPart(mimebodypart);
+			mimebodypart = new MimeBodyPart();
+			mimebodypart.setDataHandler(new DataHandler(_htmlMessage, (new StringBuilder()).append("text/html; charset=").append(s1).toString()));
+			mimemultipart.addBodyPart(mimebodypart);
+			mimemessage.setContent(mimemultipart);
+		}
+		String authrequired = "";
+		try
+		{
+			authrequired = FrameworkProperties.getProperty(context, "LScustom.smtp.authrequired").trim();
+		}
+		catch (Exception e)
+		{
+		}
+		if (null != authrequired)
+		{
+			if (!"".equals(authrequired) && Boolean.valueOf(authrequired))
+			{
+				String strSMTPHost = (String)messageInfoMap.get("SMTPHost");
+				String strLoginUser = (String)messageInfoMap.get("loginUser");
+				String strLoginPassword = (String)messageInfoMap.get("loginPassword");
+				sendMail(context, session, mimemessage, strSMTPHost, strLoginUser, strLoginPassword);
+			}
+			else
+			{
+				Transport.send(mimemessage);
+			}
+		}
+		else
+		{
+			Transport.send(mimemessage);
+		}
+		m_logger.debug("End sendJavaMailWorker");
+		return 0;
+	}
+
+	public void sendMail(Context context, Session session, MimeMessage msg, String smtpServer, String loginUser, String loginPassword) throws Exception
+	{
+		try
+		{
+
+			Transport transport = session.getTransport();
+			transport.connect(smtpServer, loginUser, loginPassword);
+			transport.sendMessage(msg, msg.getRecipients(Message.RecipientType.TO));
+			transport.close();
+			
+		}
+		catch (Exception e)
+		{
+			m_logger.error("Email process error: " + e.getMessage());
+		}
+	}
+	
+}

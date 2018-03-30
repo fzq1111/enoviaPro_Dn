@@ -1,0 +1,31 @@
+#################################################################################
+#                 .          	Page Object					#
+#                                                                               #
+# Description :  Creating and inserting file in Page Object                     #
+#                                                                               #
+# Dependencies:                                                                 #
+#                                                                               #
+#################################################################################
+
+#################################################################################
+#                                                                               #
+#    Copyright (c) 2002-2013 Dassault Systemes.  All Rights Reserved.                  #
+#    This program contains proprietary and trade secret information of          #
+#    Matrix One, Inc.  Copyright notice is precautionary only and does not      #
+#    evidence any actual or intended publication of such program.               #
+#                                                                               #
+#################################################################################
+
+# Call the TCL Prompt
+
+tcl ;
+
+eval {
+	set page_exists [mql list page 3DSpaceControlCenter]
+	if {$page_exists != ""} {
+		delete page 3DSpaceControlCenter;
+	}
+
+}
+
+

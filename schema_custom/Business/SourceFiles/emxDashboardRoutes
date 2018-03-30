@@ -1,0 +1,114 @@
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.Map;
+
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.PropertyUtil;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+
+
+public class ${CLASSNAME} extends ${CLASS:emxDashboardRoutesBase} {
+	   private static final String sAttrRouteAction = PropertyUtil.getSchemaProperty("attribute_RouteAction");
+	   private static final String sAttrScheduledCompletionDate = PropertyUtil.getSchemaProperty("attribute_ScheduledCompletionDate");
+	   private static final String sAttrTitle = PropertyUtil.getSchemaProperty("attribute_Title");
+	   private static final String selTaskCompletedDate = PropertyUtil.getSchemaProperty("attribute_ActualCompletionDate");
+
+	   
+	   private static final String strAttrRouteAction = "attribute["+sAttrRouteAction +"]";
+	   private static final String strAttrCompletionDate ="attribute["+sAttrScheduledCompletionDate+"]";
+	   private static final String strAttrTitle="attribute["+sAttrTitle+"]";
+	   private static final String strAttrTaskCompletionDate ="attribute["+selTaskCompletedDate+"]";
+    /**
+     * @param context
+     * @param args
+     * @throws Exception
+     */
+    public ${CLASSNAME}(Context context, String[] args) throws Exception {
+    	super(context, args);
+    } 
+    @com.matrixone.apps.framework.ui.ProgramCallable
+    public MapList getRouteTasksAssignedPending(Context context, String[] args) throws Exception {
+        Map programMap          = (Map) JPO.unpackArgs(args);
+        String sMode            = (String) programMap.get("mode");
+        StringBuilder sbWhere   = new StringBuilder();
+
+        if(null == sMode) { sMode = ""; }
+        com.matrixone.apps.common.Person pUser = com.matrixone.apps.common.Person.getPerson( context );
+
+        String attrScheduledCompletionDate = DomainConstants.ATTRIBUTE_SCHEDULED_COMPLETION_DATE;
+        StringList busSelects = new StringList();
+        busSelects.add(DomainConstants.SELECT_ID);
+        busSelects.add(DomainConstants.SELECT_TYPE);
+        busSelects.add("attribute["+ DomainConstants.ATTRIBUTE_SCHEDULED_COMPLETION_DATE +"]");
+        //add by fzq
+        busSelects.add(DomainConstants.SELECT_CURRENT);
+        busSelects.add(strAttrRouteAction);
+        busSelects.add(strAttrCompletionDate);
+        busSelects.add(strAttrTaskCompletionDate);
+        busSelects.add(strAttrTitle);
+        busSelects.add("from["+ DomainConstants.RELATIONSHIP_ROUTE_TASK+"].to.id");
+        busSelects.add("from["+ DomainConstants.RELATIONSHIP_ROUTE_TASK+"].to.name");
+        //
+        sbWhere.append("(current != 'Complete')");
+
+        if(sMode.equals("MRU")) {
+
+            Calendar cal = Calendar.getInstance();
+            cal.add(java.util.GregorianCalendar.DAY_OF_YEAR, -1);
+
+            String sMinute = String.valueOf(cal.get(Calendar.MINUTE));
+            String sSecond = String.valueOf(cal.get(Calendar.SECOND));
+            String sAMPM = (cal.get(Calendar.AM_PM) == 0 ) ? "AM" : "PM";
+
+            if(sSecond.length() == 1) { sSecond = "0" + sSecond; }
+            if(sMinute.length() == 1) { sMinute = "0" + sMinute; }
+
+
+            sbWhere.append(" && (modified >= \"");
+            sbWhere.append(cal.get(Calendar.MONTH) + 1).append("/").append(cal.get(Calendar.DAY_OF_MONTH)).append("/").append(cal.get(Calendar.YEAR));
+            sbWhere.append(" ").append(cal.get(Calendar.HOUR) + 1).append(":").append(sMinute).append(":").append(sSecond).append(" ").append(sAMPM);
+            sbWhere.append("\")");
+
+        } else if(sMode.equals("Week")) {
+
+            Calendar cStart = Calendar.getInstance();
+            Calendar cEnd = Calendar.getInstance();
+
+            cStart.set(Calendar.DAY_OF_WEEK, cStart.getFirstDayOfWeek());
+            cEnd.set(Calendar.DAY_OF_WEEK, cEnd.getFirstDayOfWeek());
+            cEnd.add(java.util.GregorianCalendar.DAY_OF_YEAR, +7);
+
+            sbWhere.append(" && ");
+            sbWhere.append("(attribute["+ attrScheduledCompletionDate +"] >= '").append(cStart.get(Calendar.MONTH) + 1).append("/").append(cStart.get(Calendar.DAY_OF_MONTH)).append("/").append(cStart.get(Calendar.YEAR)).append("')");
+            sbWhere.append(" && ");
+            sbWhere.append("(attribute["+ attrScheduledCompletionDate +"] < '").append(cEnd.get(Calendar.MONTH) + 1).append("/").append(cEnd.get(Calendar.DAY_OF_MONTH)).append("/").append(cEnd.get(Calendar.YEAR)).append("')");
+
+        } else if(sMode.equals("Month")) {
+
+            Calendar cStart = Calendar.getInstance();
+            Calendar cEnd = Calendar.getInstance();
+
+            cEnd.add(java.util.GregorianCalendar.MONTH, +1);
+
+            sbWhere.append(" && ");
+            sbWhere.append("(attribute["+ attrScheduledCompletionDate +"] >= '").append(cStart.get(Calendar.MONTH) + 1).append("/1/").append(cStart.get(Calendar.YEAR)).append("')");
+            sbWhere.append(" && ");
+            sbWhere.append("(attribute["+ attrScheduledCompletionDate +"] < '").append(cEnd.get(Calendar.MONTH) + 1).append("/1/").append(cEnd.get(Calendar.YEAR)).append("')");
+
+        } else if(sMode.equals("Overdue")) {
+
+            Calendar cNow = Calendar.getInstance();
+
+            sbWhere.append(" && ");
+            sbWhere.append("(attribute["+ attrScheduledCompletionDate +"] <= '").append(cNow.get(Calendar.MONTH) + 1).append("/").append(cNow.get(Calendar.DAY_OF_MONTH)).append("/").append(cNow.get(Calendar.YEAR)).append("')");
+
+        }
+        return pUser.getRelatedObjects(context, DomainConstants.RELATIONSHIP_PROJECT_TASK , DomainConstants.TYPE_INBOX_TASK, busSelects, null, true, false, (short)1, sbWhere.toString(), "", 0);
+    }
+}
+

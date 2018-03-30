@@ -1,0 +1,4 @@
+name	Registry Name	description	type	filename	permission	protocol	port	host	path	user	password	location	fcs	hidden	multipledirectories	lock	icon
+CONFIDENTIAL_STORE	CONFIDENTIAL_STORE	this store is created for confidential file storage purposes	captured	hashed	RW,RW,RW	file		localhost	C:\DassaultSystemes\3DSpaceData\Confidential_STORE				http://vm2012-sem:8080/internal	nothidden	N/A	unlocked
+TopSECRET_STORE	TopSECRET_STORE	this store is created for top secret file storage purposes	captured	hashed	RW,RW,RW	file		localhost	C:\DassaultSystemes\3DSpaceData\TopSECRET_STORE				http://vm2012-sem:8080/internal	nothidden	N/A	unlocked
+

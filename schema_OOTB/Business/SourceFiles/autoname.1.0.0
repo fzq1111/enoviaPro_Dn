@@ -1,0 +1,203 @@
+//2016-04-13 BPJ N3G  fix lock.
+function logCmd(c, p, r) {
+	proc.log("debug", "Autoname log:\n\tmql: " + c + 
+		"\n\tparams: [" + ((p != null) ? p.toString() : null) + "]" +
+		"\n\tsuccess:[" + r.success + "], result:[" + ((r.result != null) ? r.result.trim() : null) + "], error:[" + ((r.error != null) ? r.error.trim() : null) + "]");
+}  
+  
+var params = proc.declareParameters(["type"], ["package", "discipline", "usage", "quantity"]);
+
+var pkg = params.get("package"); // package is a reserved keyword, can't use it as a regular variable
+
+// Set default values
+if (!pkg) 			{ pkg = ""; }
+if (!discipline) 	{ discipline = ""; }
+if (!usage) 		{ usage = ""; }
+if (!quantity) 		{ quantity = "1"; }
+
+// Set counter properties (name, vault, policy)
+var counterName = pkg + "/" + type + "#" + discipline + "#" + usage;
+var vault = "vplm";
+var policy = "VPLMAutoNaming_Policy";
+
+// Define temporary values
+var physicalidValue;
+var cestampValue;
+var counterValue;
+var quantityValue = parseInt(quantity);
+
+// Define output result
+var globalResult = new Object();
+globalResult["package"] = pkg;
+globalResult.type = type;
+globalResult.discipline = discipline;
+globalResult.usage = usage;
+
+var globalError = null;
+
+try {
+	if (quantityValue < 1) {
+		globalError = {
+			errorcode: "INPUT_ERROR",
+			errormsg: "Wrong input argument - quantity: [" + quantityValue + "]"
+		};
+	}
+	else {
+		mql.startTransaction(true, mql.SILENT);
+		
+		// Find the counter
+		var cmd = "print bus" + params.addVar("VPLMCounter") + params.addVar(counterName) + params.addVar("---");
+		cmd += " select" + params.addVar("exists");
+		cmd += " dump"
+	
+		var mqlResult = mql.execute(null, cmd, params, mql.RETURN_RESULT | mql.SILENT);
+		logCmd(cmd, params, mqlResult);
+		params.clear();
+	
+		if (mqlResult.success) {
+			if (mqlResult.result.trim() == "FALSE") {
+				// Counter does not exist
+				cmd = "add bus" + params.addVar("VPLMCounter") + params.addVar(counterName) + params.addVar("---");
+				cmd += " vault" + params.addVar(vault);
+				cmd += " policy" + params.addVar(policy);
+				cmd += params.addVar("VPLMsys/AutoNamingValue") + params.addVar(quantity);
+				cmd += " select" + params.addVar("physicalid") + params.addVar("cestamp");
+				cmd += " dump" + params.addVar(",");
+	
+				mqlResult = mql.execute(null, cmd, params, mql.RETURN_RESULT | mql.SILENT);
+				logCmd(cmd, params, mqlResult);
+				params.clear();
+				
+				if (mqlResult.success) {
+					var mqlResultArray = mqlResult.result.trim().split(",");
+					physicalidValue = mqlResultArray[0];
+					cestampValue = mqlResultArray[1];
+					counterValue = 0;
+					
+					mql.commitTransaction(mql.SILENT);
+					
+					globalResult.suffix = new Array(); 
+					for (var i = 1; i <= quantityValue; i++) {
+						globalResult.suffix.push( (i + counterValue) );
+					}
+				}
+				else {
+					// Cannot create the counter
+					globalError = { 
+						errorcode: "OPERATION_ERROR1",
+						errormsg: mqlResult.error
+					};
+					mql.abortTransaction(mql.SILENT);
+				}
+			}
+			else {
+				// Counter already exists
+				//  retrive BO id (for lock) 
+				var cmd = "print bus" + params.addVar("VPLMCounter") + params.addVar(counterName) + params.addVar("---");
+				cmd += " select" + params.addVar("id");
+				cmd += " dump" + params.addVar(",");
+		
+				var mqlResult = mql.execute(null, cmd, params, mql.RETURN_RESULT | mql.SILENT);
+				logCmd(cmd, params, mqlResult);
+				params.clear();
+			
+	
+				if (mqlResult.success) {
+					var mqlResultArray = mqlResult.result.trim().split(",");
+					var id=mqlResultArray[0];
+					
+					//lock counter bo
+					cmd = "mod bus" +  params.addVar(id) ;
+					mqlResult = mql.execute(null, cmd, params, mql.RETURN_RESULT | mql.SILENT);
+					logCmd(cmd, params, mqlResult);
+					params.clear();
+					
+					if (mqlResult.success) {
+						cmd = "print bus" + params.addVar("VPLMCounter") + params.addVar(counterName) + params.addVar("---");
+						cmd += " select"  + params.addVar("attribute[VPLMsys/AutoNamingValue]");
+						cmd += " dump" + params.addVar(",");
+						
+						mqlResult = mql.execute(null, cmd, params, mql.RETURN_RESULT | mql.SILENT);
+						logCmd(cmd, params, mqlResult);
+						params.clear();
+						
+						if (mqlResult.success) {
+							mqlResultArray = mqlResult.result.trim().split(",");
+							
+							counterValue = parseInt(mqlResultArray[0]);
+
+							// Set the new counter's value
+							var newQuantity = quantityValue + counterValue;
+							cmd = "mod bus" + params.addVar("VPLMCounter") + params.addVar(counterName) + params.addVar("---");
+							cmd += params.addVar("VPLMsys/AutoNamingValue") + params.addVar(newQuantity);
+							
+							mqlResult = mql.execute(null, cmd, params, mql.RETURN_RESULT | mql.SILENT);
+							logCmd(cmd, params, mqlResult);
+							params.clear();
+								
+							if (mqlResult.success) {
+								// Everything goes well...
+								mql.commitTransaction(mql.SILENT);
+									
+								globalResult.suffix = new Array(); 
+								for (var i = 1; i <= quantityValue; i++) {
+									globalResult.suffix.push( (i + counterValue) );
+								}
+							}						
+							else {
+								globalError = { 
+									errorcode: "OPERATION_ERROR2",
+									errormsg: mqlResult.error
+								};
+								mql.abortTransaction(mql.SILENT);
+							}				
+		
+						}
+						else {
+							globalError = { 
+								errorcode: "OPERATION_ERROR3",
+								errormsg: mqlResult.error
+							};
+							mql.abortTransaction(mql.SILENT);
+						}
+						
+					} else {
+						globalError = { 
+							errorcode: "OPERATION_ERROR6",
+							errormsg: mqlResult.error
+						};
+						mql.abortTransaction(mql.SILENT);
+					}
+				} else {
+					globalError = { 
+						errorcode: "OPERATION_ERROR7",
+						errormsg: mqlResult.error
+					};
+					mql.abortTransaction(mql.SILENT);
+				}
+			}
+		}
+		else {
+			globalError = { 
+				errorcode: "OPERATION_ERROR4",
+				errormsg: mqlResult.error
+			};
+			mql.abortTransaction(mql.SILENT);
+		}
+	}
+}
+catch (exception) {
+	globalError = { 
+		errorcode: "OPERATION_ERROR5",
+		errormsg: exception
+	};
+	mql.abortTransaction(mql.SILENT);
+}
+
+if (null == globalError) {
+	proc.write(null, JSON.stringify(globalResult), null);
+}
+else {
+	proc.write(null, null, JSON.stringify(globalError));
+}
+

@@ -1,0 +1,429 @@
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
+import matrix.db.Context;
+import matrix.db.JPO;
+import matrix.util.StringList;
+
+import com.matrixone.apps.domain.util.eMatrixDateFormat;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+
+import com.matrixone.apps.domain.util.mxAttr;
+import com.matrixone.apps.common.Person;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.FrameworkException;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.util.i18nNow;
+import com.matrixone.apps.framework.ui.UINavigatorUtil;
+import org.apache.poi.ss.util.CellRangeAddress;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.log4j.Logger;
+
+public class ${CLASSNAME} {
+
+	private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+	public ${CLASSNAME}(Context context, String[] args)
+	{
+		
+	}
+	public static MapList searchIssueProgress(Context context, String[] args)throws Exception	
+	{
+
+		HashMap programMap         = (HashMap) JPO.unpackArgs(args);
+		MapList Issuelist=(MapList)programMap.get("Issuelist");
+		HashMap SolutionProgressMap=new HashMap();
+		SolutionProgressMap.put("-1","\u8FDB\u5EA6");
+		SolutionProgressMap.put("0","A");
+		SolutionProgressMap.put("1","B");
+		SolutionProgressMap.put("2","C");
+		SolutionProgressMap.put("3","D");
+		
+		int cntA=0;
+		int cntB=0;
+		int cntC=0;
+		int cntD=0;		
+		MapList SolutionProgressList=new MapList();
+		SolutionProgressList.add(SolutionProgressMap);
+		HashMap SolutionProgressMap1=new HashMap();
+	
+		if(Issuelist.size()>0)
+		{
+			Iterator it = Issuelist.iterator();
+			while(it.hasNext()){
+				Map map = (Map)it.next();
+				
+				String id = (String)map.get("id");
+				DomainObject IssueObj = new DomainObject(id);
+				String SolutionProgress=IssueObj.getAttributeValue(context,"SEM Issue SolutionProgress");
+				if(SolutionProgress.equals("A"))
+				{
+					cntA++;
+				}else if(SolutionProgress.equals("B"))
+				{
+					cntB++;
+				}else if(SolutionProgress.equals("C"))
+				{
+					cntC++;
+				}else if(SolutionProgress.equals("D"))
+				{
+					cntD++;
+				}
+			}
+			SolutionProgressMap1.put("-1","\u6570\u91CF");
+			SolutionProgressMap1.put("0",cntA+"");
+			SolutionProgressMap1.put("1",cntB+"");
+			SolutionProgressMap1.put("2",cntC+"");
+			SolutionProgressMap1.put("3",cntD+"");
+		}
+		SolutionProgressList.add(SolutionProgressMap1);
+		
+		return SolutionProgressList;
+	}
+	public static MapList searchDepIssue(Context context, String[] args)throws Exception	
+	{
+
+		HashMap programMap         = (HashMap) JPO.unpackArgs(args);
+		MapList Issuelist=(MapList)programMap.get("Issuelist");
+		String objectId = (String) programMap.get("objectId");
+
+		String issueType = (String) programMap.get("issueType");
+		StringList busList = new StringList(DomainConstants.SELECT_ID);
+		StringList relList = new StringList("id[connection]");	
+		DomainObject projectObj=new DomainObject(objectId);
+		StringList SEMIssueDepartmentList=new StringList();
+		MapList dataList=new MapList();
+		
+		
+		if (Issuelist.size() > 0)
+		{
+			Iterator it = Issuelist.iterator();
+			while (it.hasNext())
+			{
+				Map map = (Map) it.next();
+				String id = (String)map.get("id");
+				DomainObject IssueObj = new DomainObject(id);
+				String SEMIssueSolutionDealerDepartment=IssueObj.getAttributeValue(context,"SEM IssueSolution Dealer Department");
+				if(!SEMIssueDepartmentList.contains(SEMIssueSolutionDealerDepartment))
+				{
+					SEMIssueDepartmentList.addElement(SEMIssueSolutionDealerDepartment);
+				}else
+				{
+					continue;
+				}
+			}
+		}
+		  String[] SEMIssueDepartment = new String[SEMIssueDepartmentList.size()];
+		  SEMIssueDepartment = (String[])SEMIssueDepartmentList.toArray(SEMIssueDepartment);
+		  String[] SEMIssueSolutionProgress=new String[]{"A","B","C","D"};
+		  HashMap datamap=new HashMap();
+		  datamap.put("-1","\u5355\u4F4D");
+		  for(int i=0;i<SEMIssueDepartmentList.size();i++)
+		  {
+			  datamap.put(i+"",SEMIssueDepartment[i]);
+			  
+		  }
+		  dataList.add(datamap);
+		  for(int j=0;j<4;j++)
+		  {
+			  HashMap datamap1=new HashMap();
+			  datamap1.put("-1",SEMIssueSolutionProgress[j]);
+
+			  for(int i=0;i<SEMIssueDepartmentList.size();i++)
+			  {
+				  String where2="attribute[SEM IssueSolution Dealer Department]=='"+SEMIssueDepartment[i]+"'&&attribute[SEM Issue SolutionProgress]=='"+SEMIssueSolutionProgress[j]+"'&&attribute[SEM Issue Type]=='"+issueType+"'";
+				  MapList Issuelist1 = projectObj.getRelatedObjects(context,
+							"Issue", "Issue", busList, relList, false,
+							true, (short) 1, where2, "");
+				  datamap1.put(i+"",Issuelist1.size()+"");
+			  }
+			  dataList.add(datamap1);
+			  		
+		  }
+		  return dataList;
+	}
+	public static MapList searchClassifiedIssue(Context context, String[] args)throws Exception	
+	{
+		HashMap programMap         = (HashMap) JPO.unpackArgs(args);
+		MapList Issuelist=(MapList)programMap.get("Issuelist");
+		String objectId = (String) programMap.get("objectId");
+
+		String issueType = (String) programMap.get("issueType");
+		StringList busList = new StringList(DomainConstants.SELECT_ID);
+		StringList relList = new StringList("id[connection]");	
+		DomainObject projectObj=new DomainObject(objectId);
+		StringList SEMIssueMajorList=new StringList();
+		MapList dataList=new MapList();
+	
+		if (Issuelist.size() > 0)
+		{
+			Iterator it = Issuelist.iterator();
+			while (it.hasNext())
+			{
+				Map map = (Map) it.next();
+				String id = (String)map.get("id");
+				DomainObject IssueObj = new DomainObject(id);
+				String SEMIssueMajor=IssueObj.getAttributeValue(context,"SEM Issue Major");
+				if(!SEMIssueMajorList.contains(SEMIssueMajor))
+				{
+					SEMIssueMajorList.addElement(SEMIssueMajor);
+				}else
+				{
+					continue;
+				}
+			}
+		}
+		  String[] SEMIssueMajorArray = new String[SEMIssueMajorList.size()];
+		  SEMIssueMajorArray = (String[])SEMIssueMajorList.toArray(SEMIssueMajorArray);
+		  String[] SEMIssueSolutionProgress=new String[]{"A","B","C","D"};
+		  HashMap datamap=new HashMap();
+		  datamap.put("-1","\u95EE\u9898\u7C7B\u522B");
+		  for(int i=0;i<SEMIssueMajorList.size();i++)
+		  {
+			  datamap.put(i+"",SEMIssueMajorArray[i]);
+		  }
+		  dataList.add(datamap);
+		 
+		  for(int j=0;j<4;j++)
+		  {
+				HashMap datamap1=new HashMap();
+			  datamap1.put("-1",SEMIssueSolutionProgress[j]);
+			  for(int i=0;i<SEMIssueMajorList.size();i++)
+			  {
+				  String where2="attribute[SEM Issue Major]=='"+SEMIssueMajorArray[i]+"'&&attribute[SEM Issue SolutionProgress]=='"+SEMIssueSolutionProgress[j]+"'&&attribute[SEM Issue Type]=='"+issueType+"'";
+				  MapList Issuelist1 = projectObj.getRelatedObjects(context,
+							"Issue", "Issue", busList, relList, false,
+							true, (short) 1, where2, "");
+				  datamap1.put(i+"",Issuelist1.size()+"");
+			  }
+			  dataList.add(datamap1);
+		  }
+		  return dataList;
+	}
+
+	public static MapList searchMajorIssue(Context context, String[] args)
+			throws Exception {
+		StringList busList = new StringList(DomainConstants.SELECT_ID);
+		busList.add(DomainObject.SELECT_DESCRIPTION);
+		busList.add("attribute[Resolution Recommendation]");
+		busList.add("attribute[SEM Issue SolutionProgress]");
+		busList.add("attribute[SEM IssueSolution Dealer Department]");
+		busList.add("attribute[Wait On Date]");
+		HashMap programMap = (HashMap) JPO.unpackArgs(args);
+		String issueType = (String) programMap.get("issueType");
+		String objectId = (String) programMap.get("objectId");
+		String flag = (String) programMap.get("flag");
+		String language = (String) programMap.get("language");
+
+		StringList relList = new StringList("id[connection]");
+
+		String where = "attribute[SEM Issue Type]=='" + issueType
+				+ "'&&attribute[SEM IssueImportance ID]=='\u2605'";
+		DomainObject projectObj = new DomainObject(objectId);
+		MapList Issuelist = projectObj.getRelatedObjects(context, "Issue",
+				"Issue", busList, relList, false, true, (short) 1, where, "");
+		HashMap ImportanceIDIssue = new HashMap();
+		ImportanceIDIssue.put("0", "\u95EE\u9898\u8BF4\u660E");
+		ImportanceIDIssue.put("1", "\u5BF9\u7B56");
+		ImportanceIDIssue.put("2",
+				"\u8FDB\u5EA6");
+		ImportanceIDIssue.put("3",
+				"\u5355\u4F4D");
+		ImportanceIDIssue.put("4",
+				"\u671F\u9650");
+		ImportanceIDIssue.put("-1","NO.");
+	
+		MapList ImportanceIDIssueList = new MapList();
+		ImportanceIDIssueList.add(ImportanceIDIssue);
+		int i=1;
+		if (Issuelist.size() > 0) {
+			Iterator it = Issuelist.iterator();
+			while (it.hasNext()) {
+				HashMap ImportanceIDIssue1 = new HashMap();
+				Map map = (Map) it.next();
+				ImportanceIDIssue1.put("-1",i+++"");
+				String EstimatedEndDate = (String) map
+						.get("attribute[Wait On Date]");
+				String ResolutionRecommendation = (String) map
+						.get("attribute[Resolution Recommendation]");
+				String SEMIssueSolutionProgress = (String) map
+						.get("attribute[SEM Issue SolutionProgress]");
+				String SEMIssueSolutionDealerDepartment = (String) map
+						.get("attribute[SEM IssueSolution Dealer Department]");
+				String SEMIssueDes=(String)map.get("description");
+				ImportanceIDIssue1.put("0", SEMIssueDes+"");
+				ImportanceIDIssue1.put("12", ResolutionRecommendation+"");
+				ImportanceIDIssue1.put("2",
+						SEMIssueSolutionProgress+"");
+				ImportanceIDIssue1.put("3",
+						SEMIssueSolutionDealerDepartment+"");
+				ImportanceIDIssue1.put("4",
+						EstimatedEndDate+"");
+				ImportanceIDIssueList.add(ImportanceIDIssue1);
+			}
+		}
+		return ImportanceIDIssueList;
+	}
+	
+	public String[] getKeys(MapList mapList){
+		Map map=(Map)mapList.get(0);
+		int n=map.size();
+		String[] res=new String[n];
+		if(n>0){
+		  res[0]="-1";
+		}
+		for(int i=0;i<n-1;i++){
+			res[i+1]=i+"";
+		}
+		return res;
+	}
+	public void exportExcel(Context context, String[] args) {
+		try {
+			String errMsg = "";
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			MapList dataList0 = (MapList) programMap.get("dataList0");
+			MapList dataList1 = (MapList) programMap.get("dataList1");
+			MapList dataList2 = (MapList) programMap.get("dataList2");
+			MapList dataList3 = (MapList) programMap.get("dataList3");
+			
+			System.out.println("dataList2----"+dataList2);
+			if (dataList0== null || dataList0.size() == 0) {
+				return;
+			}
+			String sheetName = "\u95EE\u9898\u62A5\u8868";
+			HSSFWorkbook workbook = (HSSFWorkbook) programMap.get("workbook");
+			HSSFSheet sheet = workbook.createSheet(sheetName);
+			String head0= "\u95EE\u9898\u8FDB\u5EA6";
+			String[] keys0=getKeys(dataList0);
+			fillSheetInfo(context, head0, 0, keys0, dataList0, workbook, sheet);
+			String head1 = "\u5404\u90E8\u95E8\u95EE\u9898\u5206\u5E03\uFF1A";
+			String[] keys1=getKeys(dataList1);
+			fillSheetInfo(context, head1, dataList0.size()+ 3, keys1,
+					dataList1, workbook, sheet);
+			String head2= "\u95EE\u9898\u5206\u7C7B";
+			String[] keys2=getKeys(dataList2);
+			
+			fillSheetInfo(context, head2, dataList0.size()+dataList1.size()+6, keys2, dataList2, workbook, sheet);
+			String head3= "\u91CD\u5927\u95EE\u9898\u8BF4\u660E";
+			String[] keys3=getKeys(dataList3);
+			fillSheetInfo(context, head3, dataList0.size()+dataList1.size()+dataList2.size()+9, keys3, dataList3, workbook, sheet);
+			System.out.println("....exportExcel......end..");
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
+	}// end method
+
+	public void fillSheetInfo(Context context, String head, int beginPosion,
+			String[] keys, MapList dataList, HSSFWorkbook workbook,
+			HSSFSheet sheet) throws Exception {
+		try {
+			int curRowIndex = beginPosion;
+			int curDataIndex = 0;
+			int maxRowCount = dataList.size();
+			int maxcolumnCount = ((Map) dataList.get(0)).size();
+			int maxSheetRow = 60000;
+			HSSFCell cell_dep;
+			HSSFRow row;
+
+			HSSFFont font = workbook.createFont();
+			font.setFontName("\u9ED1\u4F53");
+			font.setFontHeightInPoints((short) 16);// Set the font size
+			
+			HSSFFont font1 = workbook.createFont();
+			font1.setFontName("\u5FAE\u8F6F\u96C5\u9ED1");
+			font1.setFontHeightInPoints((short)14);
+
+			HSSFCellStyle headStyle = workbook.createCellStyle();
+			headStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			headStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			headStyle.setFont(font);
+
+			HSSFCellStyle sheetStyle = workbook.createCellStyle();
+			sheetStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			sheetStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			sheetStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			sheetStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+
+			HSSFFont columnHeadFont = workbook.createFont();
+			columnHeadFont.setColor(HSSFColor.BLUE.index);
+			columnHeadFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			HSSFCellStyle columnHeadStyle = (HSSFCellStyle) workbook
+					.createCellStyle();
+			columnHeadStyle.setFont(font1);
+			columnHeadStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+			columnHeadStyle.setRightBorderColor(HSSFColor.BLACK.index);
+			columnHeadStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			columnHeadStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+			columnHeadStyle.setFillForegroundColor(IndexedColors.AQUA.getIndex());
+			columnHeadStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+            //Set the table header
+			sheet.addMergedRegion(new CellRangeAddress(curRowIndex,
+					curRowIndex + 1, 0,6));
+			row = sheet.createRow(curRowIndex);
+			HSSFCell begincell = row.createCell(0);
+			begincell.setCellValue(head);
+			begincell.setCellStyle(headStyle);
+			curRowIndex = curRowIndex + 2;//
+			
+			for (int i = 0; i < maxSheetRow && curDataIndex < maxRowCount; curDataIndex++, i++) {
+				row = sheet.createRow(curRowIndex);
+				if (i == 0) {
+					row.setHeight((short) 600);
+				}
+				Map map = (Map) dataList.get(curDataIndex);
+				for (int j = 0; j < map.size(); j++) {
+					if (i == 0) {
+						HSSFCell cell = row.createCell(j);
+						cell.setCellValue((String) map.get(keys[j]));
+						cell.setCellStyle(columnHeadStyle);
+					} else {
+						cell_dep = row.createCell(j);
+						cell_dep.setCellType(HSSFCell.CELL_TYPE_STRING);
+						cell_dep.setCellValue((String) map.get(keys[j]));
+						cell_dep.setCellStyle(sheetStyle);
+					}
+
+				}
+				curRowIndex = curRowIndex + 1;
+			}// for sheet
+			
+			//Set the column size to auto-fit
+			for (int i = 0; i < maxcolumnCount; i++) {
+				sheet.autoSizeColumn(i);
+			}
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+			throw new FrameworkException(e);
+		}
+	}
+
+	
+}

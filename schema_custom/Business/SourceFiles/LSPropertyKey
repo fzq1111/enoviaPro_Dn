@@ -1,0 +1,22 @@
+import matrix.db.Context;
+	import matrix.util.StringList;
+	
+	import com.matrixone.apps.domain.DomainObject;
+	import com.matrixone.apps.domain.util.MapList;
+	
+	public class ${CLASSNAME} {
+	
+		public ${CLASSNAME}() 
+		{
+			
+		}
+		
+		public MapList getLSPropertyKey(Context context,String[] args)throws Exception
+		{
+			StringList busList = new StringList("id");
+			MapList mapList = DomainObject.findObjects(context, "LS Property Key", "*", null, null, "*",  "",false,busList);
+			//System.out.println("mapList==="+mapList);
+			return mapList;
+		}
+	}
+

@@ -1,0 +1,607 @@
+/*
+**   emxCommonDocument.java
+**
+**   Copyright (c) 1992-2015 Dassault Systemes.
+**   All Rights Reserved.
+**   This program contains proprietary and trade secret information of MatrixOne,
+**   Inc.  Copyright notice is precautionary only
+**   and does not evidence any actual or intended publication of such program
+**
+*/
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Calendar;
+import java.text.NumberFormat;
+import java.text.DecimalFormat;
+import org.apache.log4j.Logger;
+import com.matrixone.apps.common.CommonDocument;
+import com.matrixone.apps.common.util.ComponentsUtil;
+import com.matrixone.apps.domain.DomainConstants;
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.util.ContextUtil;
+import com.matrixone.apps.domain.util.EnoviaResourceBundle;
+import com.matrixone.apps.domain.util.PropertyUtil;
+import com.matrixone.apps.domain.util.MapList;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.framework.ui.UIUtil;
+
+import matrix.db.*;
+import matrix.util.StringList;
+
+public class ${CLASSNAME} extends ${CLASS:emxCommonDocumentBase}
+{
+      /**
+       * Constructor.
+       *
+       * @param context the eMatrix <code>Context</code> object
+       * @param args holds no arguments
+       * @throws Exception if the operation fails
+       * @since Common 10.0.0.0
+       * @grade 0
+       */
+	  private static Logger m_logger = Logger.getLogger(${CLASSNAME}.class);
+      public ${CLASSNAME} (Context context, String[] args)
+          throws Exception
+      {
+          super(context, args);
+      }
+
+      /**
+       * This method is executed if a specific method is not specified.
+       *
+       * @param context the eMatrix <code>Context</code> object
+       * @param args holds no arguments
+       * @returns int
+       * @throws Exception if the operation fails
+       * @since Common 10.0.0.0
+       */
+      public int mxMain(Context context, String[] args)
+          throws Exception
+      {
+          if (true)
+          {
+              throw new Exception(ComponentsUtil.i18nStringNow("emxComponents.Generic.MethodOnCommonFile", context.getLocale().getLanguage()));
+          }
+          return 0;
+      }
+      
+      
+  	/**
+  	 * This is the base method executed in common Document model to checkin/update/createmaster using FCS/NonFCS.
+  	 *
+  	 * @param context the eMatrix <code>Context</code> object
+  	 * @param args holds no arguments
+  	 * @returns Map objectMap which contains objectId, filename, format pairs and
+  	 *                                                  errorMessage if any error.
+  	 * @throws Exception if the operation fails
+  	 * @since VCP 10.5.0.0
+  	 */
+  	public Map commonDocumentCheckin(Context context, String[] args) throws Exception
+  	 {
+  		  try
+  		  {
+  			  if (args == null || args.length < 1)
+  			  {
+  				  throw (new IllegalArgumentException());
+  			  }
+  			  HashMap uploadParamsMap = (HashMap)JPO.unpackArgs(args);
+  			  String objectId       = (String) uploadParamsMap.get("objectId");
+  			  String parentId       = (String) uploadParamsMap.get("parentId");
+  			  String objectAction   = (String) uploadParamsMap.get("objectAction");
+
+  			  Map objectMap = new HashMap();
+  			  String strCounnt = (String) uploadParamsMap.get("noOfFiles");
+  			  int count = 0;
+  			  try{
+  				  count = new Integer(strCounnt).intValue();
+  			  }catch(Exception ex){
+				m_logger.error(ex.getMessage(), ex);
+			  }
+
+  			  for(int i = 0; i < count; i++){
+  				  String fileName = (String) uploadParamsMap.get("fileName" + i);
+  				  if(fileName.length() >= 255){
+  						  objectMap.put("errorMessage", EnoviaResourceBundle.getProperty(context,"emxComponentsStringResource",context.getLocale(),"emxComponents.CommonDocument.FileNameLengthInvalid"));
+  						  return objectMap;
+  				  }
+  			  }
+
+  			  ContextUtil.startTransaction(context, true);
+
+  			  Map preCheckinMap = preCheckin(context, uploadParamsMap, parentId);
+  			  String newParentId = (String) preCheckinMap.get("parentId");
+  			  if (newParentId != null && !"".equals(newParentId) && !"null".equals(newParentId))
+  			  {
+  				  parentId = newParentId;
+  				  uploadParamsMap.put("parentId", parentId);
+  			  }
+  			  if ( objectAction.equalsIgnoreCase(CommonDocument.OBJECT_ACTION_CREATE_MASTER) )
+  			  {
+  				  /*
+  				   create Master with given 'type' 'name' 'revision' and other attributes
+  				   and checckin all file selected in second step to the object created.
+  				   and Crete Version object for each file.
+  				  */
+  				  objectMap = createMaster(context, uploadParamsMap);
+
+  			  }
+  			  else if( objectAction.equalsIgnoreCase(CommonDocument.OBJECT_ACTION_CREATE_MASTER_PER_FILE) )
+  			  {
+  				  /*
+  				   create Master Document with given 'Type' = Document 'name' = autoName 'revision' = default
+  				   and checckin each file in separate object created.
+  				   and Crete Version object for each file.
+  				  */
+  				  objectMap = createMasterPerFile(context, uploadParamsMap);
+
+  			  }
+  			  else if( objectAction.equalsIgnoreCase(CommonDocument.OBJECT_ACTION_UPDATE_MASTER) )
+  			  {
+  				  /*
+  				   create Document with given 'Type' = Document 'name' = autoName 'revision' = default
+  				   and checckin each file in separate object created.
+  				  */
+  				  objectMap = updateMaster(context, uploadParamsMap);
+
+  			  }
+  			  else if( objectAction.equalsIgnoreCase(CommonDocument.OBJECT_ACTION_VERSION_FILE) )
+  			  {
+  				  /*
+  				   version a File in given object
+  				  */
+  				  objectMap = versionFile(context, uploadParamsMap);
+  			  }
+  			  else if( objectAction.equalsIgnoreCase(CommonDocument.OBJECT_ACTION_CHECKIN_WITH_VERSION) )
+  			  {
+  				  /*
+  				   Checkin the files into the given object
+  				   and for each file create version object.
+  				  */
+  				  objectMap = checkinWithVersion(context, uploadParamsMap);
+  			  }
+  			  else if( objectAction.equalsIgnoreCase(CommonDocument.OBJECT_ACTION_UPDATE_HOLDER) )
+  			  {
+  				  /*
+  				   Checkin the files into the given object
+  				   and for each file create version object.
+  				  */
+  				  objectMap = updateHolder(context, uploadParamsMap);
+  			  }
+  			  else
+  			  {
+  				  if (objectId != null && !"".equals(objectId) && !"null".equals(objectId))
+  				  {
+  					  objectMap = objectCheckin(context, uploadParamsMap, null);
+  				  }
+  				  else
+  				  {
+  					  /*
+  					   create given type of object and checkin files in created object with out version.
+  					  */
+
+  					  objectMap = checkinCreateWithOutVersion(context, uploadParamsMap);
+
+  				  }
+  			 }
+  			 ContextUtil.commitTransaction(context);
+  			 return objectMap;
+  		  }
+  		  catch (Exception ex)
+  		  {
+  			  ContextUtil.abortTransaction(context);
+  			  m_logger.error(ex.getMessage(), ex);
+  			  throw ex;
+  		  }
+  	}
+  	
+	/**
+	 * This is the method executed in common Document model to checkinCreateWithOutVersion using FCS/NonFCS.
+	 *
+	 * @param context the eMatrix <code>Context</code> object
+	 * @param uploadParamsMap holds all arguments passed through checkin screens.
+	 * @returns Map objectMap which contains objectId, filename, format pairs and
+	 *                                                  errorMessage if any error.
+	 * @throws Exception if the operation fails
+	 * @since Common 10.5.0.0
+	 */
+	 public HashMap checkinCreateWithOutVersion(Context context, HashMap uploadParamsMap) throws Exception
+	 {
+		  try
+		  {
+			  return createMaster(context, uploadParamsMap, false);
+		  }
+		  catch (Exception ex )
+		  {
+			  m_logger.error(ex.getMessage(), ex);
+			  throw ex;
+		  }
+	}
+	 
+
+		/**
+		 * This is the method executed in common Document model to create master using FCS/NonFCS.
+		 *
+		 * @param context the eMatrix <code>Context</code> object
+		 * @param uploadParamsMap holds all arguments passed through checkin screens.
+		 * @param createVersion boolean to create version objects for master object.
+		 * @returns Map objectMap which contains objectId, filename, format pairs and
+		 *                                                  errorMessage if any error.
+		 * @throws Exception if the operation fails
+		 * @since VCP 10.5.0.0
+		 */
+		 public HashMap createMaster(Context context, HashMap uploadParamsMap, boolean createVersion) throws Exception
+		 {
+			  HashMap objectMap = new HashMap();
+			  try
+			  {
+				  String parentId       = (String) uploadParamsMap.get("parentId");
+				  String objectId       = (String) uploadParamsMap.get("objectId");
+				  String fcsEnabled   = (String) uploadParamsMap.get("fcsEnabled");
+				  String parentRelName  = (String) uploadParamsMap.get("parentRelName");
+				  if ( parentRelName != null )
+				  {
+				      parentRelName = PropertyUtil.getSchemaProperty(context,parentRelName);
+				  }
+				  String isFrom  = (String) uploadParamsMap.get("isFrom");
+
+				  String strCounnt = (String) uploadParamsMap.get("noOfFiles");
+				  int count = new Integer(strCounnt).intValue();
+
+	              boolean isFilePresent = false;
+
+				  // Defining the ObjectMap parameters and putting them into the Map.
+				  StringList objectIds = new StringList(count);
+				  StringList formats = new StringList(count);
+				  StringList fileNames = new StringList(count);
+				  objectMap.put("format", formats);
+				  objectMap.put("fileName", fileNames);
+				  objectMap.put("objectId", objectIds);
+				  String errorMessage = "";
+
+				  // Master Object Parameters
+				  String type = (String) uploadParamsMap.get("type");
+				 // String name = (String) uploadParamsMap.get("name");
+				  String name ="";
+				  StringList busList = new StringList("id");
+				  if("SEM Project Document".equals(type))
+				  {
+					 
+					  String projectId = (String) uploadParamsMap.get("projectId");
+					  DomainObject projectObj = new DomainObject(projectId);
+					  String semCarCode = projectObj.getAttributeValue(context,"SEM Car Code");
+					  Calendar a=Calendar.getInstance();
+					  int year = a.get(Calendar.YEAR);
+					  int month = a.get(Calendar.MONTH)+1;
+					  String strYear = Integer.toString(year);
+					  strYear = strYear.substring(strYear.length()-2,strYear.length());
+					  String strMonth = Integer.toString(month);
+					  String code =   getSEMProjectDoc(context,strYear,strMonth);
+				      name = semCarCode + strYear + strMonth+ code;
+					  
+				  }else if("SEM Meeting Document".equals(type)){
+					  
+					  String projectId = (String) uploadParamsMap.get("projectId");
+					  DomainObject projectObj = new DomainObject(projectId);
+					  String semCarCode = projectObj.getAttributeValue(context,"SEM Car Code");
+					  String code =   getSEMMeetingDoc(context);
+					  name = semCarCode + code;
+					  
+				  }else{
+					  String code =  getSEMMeetingDoc(context);
+					   name = "DOC-"+code;
+				  }
+				 
+				  
+				  String revision = (String) uploadParamsMap.get("revision");
+				  String policy = (String) uploadParamsMap.get("policy");
+				  String mDescription = (String) uploadParamsMap.get("description");
+				  String title = (String) uploadParamsMap.get("title");
+				  String accessType = (String) uploadParamsMap.get("accessType");
+				  String language = (String) uploadParamsMap.get("language");
+				  String vault = (String) uploadParamsMap.get("vault");
+				  Map mAttrMap = (Map) uploadParamsMap.get("attributeMap");
+				  String objectGeneratorRevision = (String) uploadParamsMap.get("objectGeneratorRevision");
+				  String owner = (String) uploadParamsMap.get("person");
+
+				  if (mDescription == null || "".equals(mDescription) || "null".equals(mDescription))
+				  {
+					  mDescription = (String) uploadParamsMap.get("mDescription");
+				  }
+
+				  if (title == null || "".equals(title) || "null".equals(title))
+				  {
+					  title = null;
+				  }
+				  //passing relationship name as a url parameter with out using Mapping File
+				  CommonDocument object = (CommonDocument)DomainObject.newInstance(context, CommonDocument.TYPE_DOCUMENTS);
+				  DomainObject parentObject = null;
+				  if ( parentId != null && !"".equals(parentId) && !"null".equals(parentId) )
+				  {
+					  parentObject = DomainObject.newInstance(context, parentId);
+				  }
+				  
+				  
+				  //unit
+				  Map attrMap1 = new HashMap();
+				  String unit = (String) uploadParamsMap.get("unit");
+				  if (unit == null || "".equals(unit) || "null".equals(unit))
+				  {
+					  unit = "";
+				  }else{
+					  attrMap1.put("SEM File Compiled Department",unit);
+				  }
+				  String subType = (String) uploadParamsMap.get("subType");
+				  if (subType == null || "".equals(subType) || "null".equals(subType))
+				  {
+					  subType = "";
+				  }else{
+						attrMap1.put("SEM Doc Subtype",subType);
+
+				  }
+				  String secret = (String) uploadParamsMap.get("secret");
+				  if (secret == null || "".equals(secret) || "null".equals(secret))
+				  {
+					  secret = "";
+				  }else{
+						attrMap1.put("SEM Confidentiality Level",secret);
+
+				  }
+				 
+				if("\u666E\u901A".equals(secret))
+				{
+						policy = "SEM Document";
+				}   
+				else if("\u79D8\u5BC6".equals(secret))
+				{
+					policy = "SEM Secret Document";
+				}else if("\u673A\u5BC6".equals(secret)){
+					
+					policy = "SEM Confidential Document";
+				}else if("\u7EDD\u5BC6".equals(secret)){
+					
+					policy = "SEM TopSecret Document";
+				}else{
+					policy = "Document Release";
+				}
+				
+				
+
+	              // FZS - Hitachi IR-368889
+	              PropertyUtil.setRPEValue(context, "MX_ALLOW_POV_STAMPING", "true", false);
+				  object = object.createAndConnect(context, type, name, revision, policy, mDescription,
+											vault, title, language, parentObject, parentRelName, isFrom, mAttrMap, objectGeneratorRevision);
+				  
+				 
+				  object.setName(context,name);
+				  StringList selects = new StringList(2);
+				  selects.add(DomainConstants.SELECT_ID);
+				  selects.add(CommonDocument.SELECT_MOVE_FILES_TO_VERSION);
+				  // Need to Add back -SC
+				  //selects.add(CommonDocument.SELECT_MOVE_FILES_TO_VERSION);
+				  Map objectSelectMap = object.getInfo(context,selects);
+
+				  objectId = (String)objectSelectMap.get(DomainConstants.SELECT_ID);				  
+				  boolean moveFilesToVersion = Boolean.valueOf((String) objectSelectMap.get(CommonDocument.SELECT_MOVE_FILES_TO_VERSION)).booleanValue();
+				  //modify by wangytiao
+				  //add create Route;
+				  String templateHelper = (String) uploadParamsMap.get("templateHelper");
+				  if(UIUtil.isNotNullAndNotEmpty(templateHelper))
+				  {
+					String  templateID = templateHelper.split("@")[1];
+				  	Map temMap = new HashMap();
+				    temMap.put("objectId", objectId); 
+				    temMap.put("state", "Review"); 
+				    temMap.put("templateID", templateID);
+				      String[] param = JPO.packArgs(temMap);
+				    JPO.invoke(context, "LSCreateRouteUtil", null, "JSPCreateRoutes", param, null);
+				  }
+				  //end
+				  
+				  String forderId = (String) uploadParamsMap.get("forderId");
+				  StringList connectedIdList = connectedIdList(context,objectId,"Vaulted Documents Rev2");
+
+				  if(!connectedIdList.contains(forderId))
+				  {
+					  DomainObject strForlderObj = new DomainObject(forderId);
+					  DomainRelationship del = strForlderObj.connectTo(context,"Vaulted Documents Rev2",object); 
+				  }
+				 
+
+				  String fileName0 = (String) uploadParamsMap.get("fileName0");
+				  String[] fileNameSplit = fileName0.split("\\.");
+				  object.setAttributeValue(context,"Title",fileNameSplit[0]);
+				  object.setAttributeValues(context,attrMap1);
+				  //end
+				  // Iterating through multiple files and creating version objects
+				  // for each file and connecting with Master Object.
+				  boolean deleteDummy = false;
+				  CommonDocument dummyObject = (CommonDocument)DomainObject.newInstance(context, CommonDocument.TYPE_DOCUMENT);
+				  for ( int i=0; i<count; i++)
+				  {
+					  Map attrMap = (Map) uploadParamsMap.get("attrMap" + i);
+					  if( attrMap == null )
+					  {
+						  attrMap = new HashMap();
+					  }
+	                  //364067 - inheriting attributest to files
+	                  Set attrSet = mAttrMap.keySet();
+	                  Iterator attrItr = attrSet.iterator();
+	                  String attrName = null;
+	                  String attrvalue = "";
+	                  while(attrItr.hasNext())
+	                  {
+	                      attrName = (String)attrItr.next();
+	                      attrvalue = (String)mAttrMap.get(attrName);
+	                      attrMap.put(attrName, attrvalue);
+	                  }
+	                  //364067 - inheriting attributest to files ends
+					  String description = (String) uploadParamsMap.get("description" + i);
+					  String comments = (String) uploadParamsMap.get("comments" + i);
+					  attrMap.put(CommonDocument.ATTRIBUTE_CHECKIN_REASON, comments);
+					  String fileName = (String) uploadParamsMap.get("fileName" + i);
+					  String format = (String) uploadParamsMap.get("format" + i);
+					  if (fileName != null && !"".equals(fileName) && !"null".equals(fileName))
+					  {
+	                      isFilePresent = true;
+						  if ( !checkDuplicate(context, uploadParamsMap, fileName, objectId) )
+						  {
+							  formats.addElement(format);
+							  fileNames.addElement(fileName);
+							  String checkinId = objectId;
+							  if ( createVersion )
+							  {
+								  checkinId = object.createVersion(context, description, fileName, attrMap);
+							  }
+							  if ( moveFilesToVersion )
+							  {
+								  objectIds.addElement(checkinId);
+							  } else {
+								  objectIds.addElement(objectId);
+							  }
+
+						  } else {
+							  if ( !errorMessage.equals("") )
+							  {
+								  errorMessage += ", ";
+							  } else if ( "true".equalsIgnoreCase(fcsEnabled) ){
+								  dummyObject.createObject(context,CommonDocument.TYPE_DOCUMENT, null, null, null, null);
+								  deleteDummy = true;
+							  }
+							  if ( "true".equalsIgnoreCase(fcsEnabled) )
+							  {
+								  formats.addElement(format);
+								  fileNames.addElement(fileName);
+								  objectIds.addElement(dummyObject.getObjectId());
+							  }
+							  errorMessage += fileName;
+						  }
+					  }
+				  }
+
+	              if(isFilePresent==false)  //if no files are uploaded, Document id is added to the return map
+	              {
+	                  objectIds.addElement(objectId);
+	              }
+
+				  if( !errorMessage.equals("") )
+				  {
+					  errorMessage += "<BR> \n" + EnoviaResourceBundle.getProperty(context,"emxComponentsStringResource",context.getLocale(),"emxComponentsDocumentManagement.Checkin.DocumentsAlreadyExists");
+				  }
+				  objectMap.put("errorMessage", errorMessage);
+				  objectCheckin(context, uploadParamsMap, objectMap);
+				  if( owner != null && !context.getUser().equals(owner) )
+				  {
+					  object.setOwner(context, owner);
+				  }
+				  if ( deleteDummy )
+				  {
+					  dummyObject.deleteObject(context,true);
+				  }
+				  return objectMap;
+			  }
+			  catch (Exception ex )
+			  {
+	              PropertyUtil.setRPEValue(context, "MX_ALLOW_POV_STAMPING", "false", false);
+				  m_logger.error(ex.getMessage(), ex);
+				  throw ex;			  
+			  }
+		}
+		 
+		public StringList connectedIdList(Context context,String toId,String relationship)throws Exception
+		{
+			StringList busList = new StringList("id");
+			StringList connectedIdList = new StringList();
+			try{
+				DomainObject toObject = new DomainObject(toId);
+				MapList mapList = toObject.getRelatedObjects(context,relationship,"*",busList,null,true,false,(short)1,null,null);
+				
+				for(int i = 0 ; i < mapList.size(); i++)
+				{
+					Map map = (Map)mapList.get(i);
+					String personId = (String)map.get("id");
+					connectedIdList.add(personId);
+				}		
+			}catch(Exception e){
+				m_logger.error(e.getMessage(), e);
+			}
+			return connectedIdList;
+		}
+		 
+	public String getSEMProjectDoc(Context context,String sYear,String sMonth)throws Exception
+	{
+		StringList busList = new StringList("id");
+		String generatorName = "SEMProjectDocument"+sYear+sMonth;
+		 MapList genList  = DomainObject.findObjects(context,"eService Number Generator",generatorName,"*",null,null,"",null,true,busList,(short)0);
+	     String returnValue = "";
+		 String genId ="";
+	     if(genList.size()>0)
+	     {
+			 for(int i = 0 ; i < genList.size(); i++)
+			 {
+				 Map map = (Map)genList.get(i);
+				 genId = (String)map.get("id");
+				 
+			 }
+			 
+			 if(genId.length()>0)
+		     { 
+				  DomainObject strGenObj = new DomainObject(genId);
+				  String number = strGenObj.getAttributeValue(context, "eService Next Number");
+				  NumberFormat numberFormat = new DecimalFormat(number.replaceAll("[1-9]", "0"));
+				  String new_nextNumber = numberFormat.format(Integer.valueOf(number) + 1);
+				  strGenObj.setAttributeValue(context, "eService Next Number", new_nextNumber);
+				  returnValue = number;
+		      }
+		      
+	     }else{
+	    	 DomainObject genObj = new DomainObject();
+	    	 genObj.createObject(context, "eService Number Generator", generatorName, "", "eService Object Generator", "eService Administration");
+	    	
+	    	 returnValue ="001";
+	    	 genObj.setAttributeValue(context, "eService Next Number", "002");
+	     }
+	     
+	    
+	     return returnValue;
+	}	 
+		 
+	public String getSEMMeetingDoc(Context context)throws Exception
+	{
+		StringList busList = new StringList("id");
+		String generatorName = "type_SEMMeetingDocument";
+		 MapList genList  = DomainObject.findObjects(context,"eService Number Generator",generatorName,"*",null,null,"",null,true,busList,(short)0);
+	     String returnValue = "";
+		 String genId ="";
+	     if(genList.size()>0)
+	     {
+			 for(int i = 0 ; i < genList.size(); i++)
+			 {
+				 Map map = (Map)genList.get(i);
+				 genId = (String)map.get("id");
+				 
+			 }
+			 
+			 if(genId.length()>0)
+		     { 
+				  DomainObject strGenObj = new DomainObject(genId);
+				  String number = strGenObj.getAttributeValue(context, "eService Next Number");
+				  NumberFormat numberFormat = new DecimalFormat(number.replaceAll("[1-9]", "0"));
+				  String new_nextNumber = numberFormat.format(Integer.valueOf(number) + 1);
+				  strGenObj.setAttributeValue(context, "eService Next Number", new_nextNumber);
+				  returnValue = number;
+		      }
+		      
+	     }else{
+	    	 DomainObject genObj = new DomainObject();
+	    	 genObj.createObject(context, "eService Number Generator", generatorName, "", "eService Object Generator", "eService Administration");
+	    	 returnValue ="0000001";
+	    	 genObj.setAttributeValue(context, "eService Next Number", "0000002");
+	     }
+	    
+	     return returnValue;
+	}
+}
+

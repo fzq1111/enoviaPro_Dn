@@ -1,0 +1,73 @@
+/*   mxCommonRUAuthentication
+**
+**   Copyright (c) 1992-2006 MatrixOne, Inc.
+**   All Rights Reserved.
+**   This program contains proprietary and trade secret information of MatrixOne,
+**   Inc.  Copyright notice is precautionary only
+**   and does not evidence any actual or intended publication of such program
+**
+**   This JPO to hook into MX_PAM_AUTHENTICATE_CLASS for
+**   Remote User Authentication.
+**
+*/
+
+import java.util.Map;
+
+import matrix.db.Context;
+
+/**
+ * The <code>mxCommonRUAuthentication</code> jpo contains Remote User Aunthentication methods.
+ *
+ * @version AEF 10.6.1.0 - Copyright (c) 2005, MatrixOne, Inc.
+ */
+
+public class ${CLASSNAME} extends ${CLASS:mxCommonRUAuthenticationBase}
+{
+    /**
+     * Constructor.
+     *
+     * @param context the eMatrix <code>Context</code> object
+     * @param args holds no arguments
+     * @throws Exception if the operation fails
+     * @since AEF 10.6.1.0
+     */
+    public ${CLASSNAME} (Context context, String[] args)
+        throws Exception
+    {
+        super(context, args);
+    }
+    
+    public String authenticate(Context context, String[] args) throws Exception
+    {
+      Map map = context.getCredentials();
+      if (map == null)
+        throw new Exception("no credentials");
+
+      String user = (String)map.get("HttpServletRequest.remoteUser");
+      String type = (String)map.get("HttpServletRequest.authType");
+      if (user == null)
+      {
+    	  String j_username = null;
+    	  try
+    	  {
+    		  j_username = ((String)map.get("j_username")).trim();
+    	  }catch(Exception ex)
+    	  {
+    		  //no op
+    	  }
+    	  if(j_username == null || j_username.equals(""))
+    	  {
+    		  user = "";
+    	  }
+    	  else
+    	  {
+    		  throw new Exception("missing authorization header");
+    	  }
+      }
+
+      if (type == null)
+        type = "FORM";
+
+      return "{" + type + "}" + user;
+    }
+}

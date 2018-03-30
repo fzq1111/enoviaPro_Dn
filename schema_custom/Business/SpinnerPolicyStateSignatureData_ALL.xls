@@ -1,0 +1,4 @@
+Policy Name	State Name	Signature Name	Users for Approve (use "|" delim)	Users for Reject (use "|" delim)	Users for Ignore (use "|" delim)	Branch State	Filter
+Meeting	Scheduled	GoToCancel	User Agent			Cancelled	attribute[Branch To] == 'Cancel'
+Meeting	Scheduled	GoToComplete	User Agent			Complete	attribute[Branch To] == 'None'
+
